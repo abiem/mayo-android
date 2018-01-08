@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -14,7 +15,7 @@ import android.widget.Button;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
-import com.mayo.Classes.CustomViewPager;
+import com.mayo.viewclasses.CustomViewPager;
 import com.mayo.adapters.ViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.interfaces.ButtonClickListener;
@@ -53,19 +54,24 @@ public class MainActivity extends AppCompatActivity implements ButtonClickListen
         TutorialModel tutorialModelOne = new TutorialModel();
         tutorialModelOne.setTextMessage(getResources().getString(R.string.tutorial1));
         tutorialModelOne.setButtonMessage(getResources().getString(R.string.button_text_tutorial_one));
+        tutorialModelOne.setBackgroundView(ContextCompat.getDrawable(this, R.drawable.background_tutorial_one));
         tutorialModels.add(tutorialModelOne);
         TutorialModel tutorialModelTwo = new TutorialModel();
         tutorialModelTwo.setTextMessage(getResources().getString(R.string.tutorial2));
         tutorialModelTwo.setButtonMessage(getResources().getString(R.string.button_text_tutorial_second));
+        tutorialModelTwo.setBackgroundView(ContextCompat.getDrawable(this, R.drawable.background_tutorial_second));
         tutorialModels.add(tutorialModelTwo);
         TutorialModel tutorialModelThree = new TutorialModel();
         tutorialModelThree.setTextMessage(getResources().getString(R.string.tutorial3));
         tutorialModelThree.setButtonMessage(getResources().getString(R.string.button_text_tutorial_third));
+        tutorialModelThree.setBackgroundView(ContextCompat.getDrawable(this, R.drawable.background_tutorial_third));
         tutorialModels.add(tutorialModelThree);
         TutorialModel tutorialModelFour = new TutorialModel();
         tutorialModelFour.setTextMessage(getResources().getString(R.string.tutorial4));
         tutorialModelFour.setButtonMessage(getResources().getString(R.string.button_text_tutorial_fourth));
+        tutorialModelFour.setBackgroundView(ContextCompat.getDrawable(this, R.drawable.background_tutorial_fourth));
         tutorialModels.add(tutorialModelFour);
+
     }
 
     private void setViewPager() {
@@ -107,22 +113,23 @@ public class MainActivity extends AppCompatActivity implements ButtonClickListen
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.buttontutorialfirst:
-                mCustomViewPager.setCurrentItem(1);
+        switch (String.valueOf(v.getTag())) {
+            case "0":
+                mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 break;
-            case R.id.buttontutorialsecond:
-                mCustomViewPager.setCurrentItem(2);
+            case "1":
+                mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 break;
-            case R.id.buttontutorialthird:
+            case "2":
                 locationDialogView();
                 break;
-            case R.id.buttontutorialfourth:
+            case "3":
                 //below API level 21
-                if (CommonUtility.askForPermissionLocation(MainActivity.this)) {
+                if (CommonUtility.askForPermissionLocation(this)) {
                     showMapActivity();
                 }
                 break;
+
         }
     }
 
@@ -134,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements ButtonClickListen
                 @Override
                 public void onClick(View v) {
                     dialog.dismiss();
-                    mCustomViewPager.setCurrentItem(3);
+                    mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 }
             });
         }

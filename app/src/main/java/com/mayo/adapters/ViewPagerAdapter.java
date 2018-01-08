@@ -1,13 +1,15 @@
 package com.mayo.adapters;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import com.mayo.Classes.enums.CustomPagerEnum;
 import com.mayo.R;
 import com.mayo.interfaces.ButtonClickListener;
 import com.mayo.models.TutorialModel;
@@ -32,25 +34,20 @@ public class ViewPagerAdapter extends PagerAdapter implements View.OnClickListen
 
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {
-        CustomPagerEnum customPagerEnum = CustomPagerEnum.values()[position];
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        ViewGroup layout = (ViewGroup) inflater.inflate(customPagerEnum.getLayoutResId(), collection, false);
-        Button mFirstTutorial = (Button) layout.findViewById(R.id.buttontutorialfirst);
-        Button mSecondTutorial = (Button) layout.findViewById(R.id.buttontutorialsecond);
-        Button mThirdTutorial = (Button) layout.findViewById(R.id.buttontutorialthird);
-        Button mFourthTutorial = (Button) layout.findViewById(R.id.buttontutorialfourth);
-        if (mFirstTutorial != null) {
-            mFirstTutorial.setOnClickListener(this);
+        ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.tutorial_screen, collection, false);
+        Button tutorialButton = (Button) layout.findViewById(R.id.buttontutorial);
+        TextView textView = (TextView) layout.findViewById(R.id.tutorialText);
+        RelativeLayout backgroundView = (RelativeLayout) layout.findViewById(R.id.backgroundview);
+        tutorialButton.setText(mTutorialModelArrayList.get(position).getButtonMessage());
+        tutorialButton.setTag(String.valueOf(position));
+        textView.setText(mTutorialModelArrayList.get(position).getTextMessage());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            backgroundView.setBackground(mTutorialModelArrayList.get(position).getBackgroundView());
+        } else {
+            backgroundView.setBackgroundDrawable(mTutorialModelArrayList.get(position).getBackgroundView());
         }
-        if (mSecondTutorial != null) {
-            mSecondTutorial.setOnClickListener(this);
-        }
-        if (mThirdTutorial != null) {
-            mThirdTutorial.setOnClickListener(this);
-        }
-        if (mFourthTutorial != null) {
-            mFourthTutorial.setOnClickListener(this);
-        }
+        tutorialButton.setOnClickListener(this);
         collection.addView(layout);
         return layout;
     }
@@ -63,7 +60,7 @@ public class ViewPagerAdapter extends PagerAdapter implements View.OnClickListen
 
     @Override
     public int getCount() {
-        return CustomPagerEnum.values().length;
+        return mTutorialModelArrayList.size();
     }
 
     @Override
@@ -71,11 +68,6 @@ public class ViewPagerAdapter extends PagerAdapter implements View.OnClickListen
         return view == object;
     }
 
-    @Override
-    public CharSequence getPageTitle(int position) {
-        CustomPagerEnum customPagerEnum = CustomPagerEnum.values()[position];
-        return mContext.getString(customPagerEnum.getTitleResId());
-    }
 
     @Override
     public void onClick(View v) {

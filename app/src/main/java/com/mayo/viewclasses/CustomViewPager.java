@@ -1,4 +1,4 @@
-package com.mayo.Classes;
+package com.mayo.viewclasses;
 
 import android.content.Context;
 import android.support.v4.view.ViewPager;

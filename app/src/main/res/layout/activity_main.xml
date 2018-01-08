@@ -6,13 +6,12 @@
     android:background="@drawable/rectangle_background"
     tools:context="com.mayo.activities.MainActivity">
 
-    <com.mayo.Classes.CustomViewPager
+    <com.mayo.viewclasses.CustomViewPager
         android:id="@+id/viewPagerTutorial"
         android:layout_width="match_parent"
         android:layout_height="@dimen/height_220"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/margin_30"
-        android:elevation="10dp" />
+        android:layout_marginBottom="@dimen/margin_30" />
 
 
 </RelativeLayout>

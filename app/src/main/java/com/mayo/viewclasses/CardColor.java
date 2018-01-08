@@ -1,4 +1,4 @@
-package com.mayo.Classes;
+package com.mayo.viewclasses;
 
 import com.mayo.R;
 

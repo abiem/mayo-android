@@ -13,6 +13,7 @@
 
     <!--TextSize-->
     <dimen name="tx_18">18sp</dimen>
+    <dimen name="tx_16">16sp</dimen>
     <dimen name="tx_24">24sp</dimen>
 
     <!--Heights of layouts-->
