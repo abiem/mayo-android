@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "420996576853",
+    "firebase_url": "https://mayo-7996c.firebaseio.com",
+    "project_id": "mayo-7996c",
+    "storage_bucket": "mayo-7996c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:420996576853:android:93953c22fb41fc9d",
+        "android_client_info": {
+          "package_name": "com.mayo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "420996576853-vnc9n46pql765ivamdac4qpbqnfu94k2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCsc89Gjle3AIAdallDoD9d49NKIkS9Lo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
