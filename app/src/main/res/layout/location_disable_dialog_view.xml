@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/margin_20"
+    android:background="@drawable/background_white"
+    android:orientation="vertical"
+    android:padding="@dimen/padding_20">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/location_disable_message"
+        android:textColor="@color/colorLightBlue"
+        android:textSize="@dimen/tx_18" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/notnowbutton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin_10"
+            android:layout_marginRight="@dimen/margin_10"
+            android:layout_marginTop="@dimen/margin_20"
+            android:layout_weight="1"
+            android:background="@drawable/button_background_two"
+            android:text="@string/not_now"
+            android:textAllCaps="false"
+            android:textColor="@color/colorLightBlue" />
+
+        <Button
+            android:id="@+id/settingsbutton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin_10"
+            android:layout_marginStart="@dimen/margin_10"
+            android:layout_marginTop="@dimen/margin_20"
+            android:layout_weight="1"
+            android:background="@drawable/button_background_two"
+            android:text="@string/settings"
+            android:textAllCaps="false"
+            android:textColor="@color/colorLightBlue" />
+
+        android:textColor="@color/colorLightBlue" />
+    </LinearLayout>
+</LinearLayout>

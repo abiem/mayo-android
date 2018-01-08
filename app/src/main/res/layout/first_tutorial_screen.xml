@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_add_category"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/height_220"
+    app:cardCornerRadius="@dimen/rd_4">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/background_tutorial_one"
+        android:orientation="vertical"
+        android:padding="@dimen/activity_vertical_margin">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tutorial1"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_24" />
+
+
+        <Button
+            android:id="@+id/buttontutorialfirst"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/height_50"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/button_background"
+            android:text="@string/button_text_tutorial_one"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_18" />
+
+
+    </RelativeLayout>
+</android.support.v7.widget.CardView>

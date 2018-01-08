@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Margin-->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="margin_24">24dp</dimen>
+    <dimen name="margin_20">20dp</dimen>
+    <dimen name="margin_10">10dp</dimen>
+    <dimen name="margin_30">30dp</dimen>
+
+    <!--Padding-->
+    <dimen name="padding_20">20dp</dimen>
+
+    <!--TextSize-->
+    <dimen name="tx_18">18sp</dimen>
+    <dimen name="tx_24">24sp</dimen>
+
+    <!--Heights of layouts-->
+    <dimen name="height_200">200dp</dimen>
+    <dimen name="height_250">250dp</dimen>
+    <dimen name="height_220">220dp</dimen>
+    <dimen name="height_50">50dp</dimen>
+
+    <!--Radius-->
+    <dimen name="rd_4">4dp</dimen>
+
+    <!--Elevation-->
+    <dimen name="el_5">5dp</dimen>
+</resources>

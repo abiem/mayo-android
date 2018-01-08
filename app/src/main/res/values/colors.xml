@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorLightPink">#D5C2E6</color>
+    <color name="colorDimLightBlue">#76BFE1</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="colorSkyBlue">#529BC0</color>
+    <color name="colorDimLightGreen">#58BCCB</color>
+    <color name="colorDarkLightGreen">#4fb5b2</color>
+    <color name="colorGreen">#bee7c7</color>
+    <color name="colorLightBlue">#08bbdb</color>
+    <color name="colorPink">#d5c2e6</color>
+    <color name="colorRed">#e86d5d</color>
+    <color name="colorOrange">#e8c378</color>
+    <color name="colorDarkGreen">#9cd72f</color>
+    <color name="colorLightGreen">#90e2ad</color>
+    <color name="colorPurple">#c96dd8</color>
+    <color name="colorNewPink">#ff91a5</color>
+    <color name="colorDarkPink">#e87185</color>
+    <color name="colorGrey">#eae6f2</color>
+    <color name="colorOffYellow">#bccb4c</color>
+    <color name="colorYellow">#f3e24d</color>
+    <color name="colorDarkGreenNew">#1dae73</color>
+    <color name="colorLightGreenNew">#c1d96e</color>
+    <color name="colorDarkBrown">#ac664c</color>
+    <color name="colorLightBrown">#cda83d</color>
+    <color name="colorDarkBlue">#508fbc</color>
+    <color name="colorLightBlueNew">#5ac7cf</color>
+    <color name="colorLightYellow">#e8c378</color>
+    <color name="colorLightGrey">#888888</color>
+    <color name="colorLightWhite">#F1F1F1</color>
+    <color name="colorDarkTransparent">#A0000000</color>
+</resources>

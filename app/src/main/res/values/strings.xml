@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Mayo</string>
+    <string name="google_maps_key">AIzaSyCzo4xHtqFTCvq52ASTIKcvyADwwo4BB8s</string>
+    <string name="notsupported">Google map not supported in your device</string>
+    <string name="cantgetlocation">Can\'t get current location</string>
+    <string name="open_location_settings">Please enable Location.</string>
+    <string name="givelocationpermission">Please give location permission.</string>
+    <string name="tip_message_one">TIP: Mayo works best if you choose \"Always share location\".</string>
+    <string name="tip_message_two">We value your privacy and batter life so \'Always\' simply allows us to periodically locate nearby
+        help quests even if you forget to open the app :)</string>
+    <string name="got_it">Got it</string>
+    <string name="location_disable_message">Oh oh! We need your help with location to help us help you. You can enable location for Mayo in Settings</string>
+    <string name="not_now">Not now</string>
+    <string name="settings">Settings</string>
+    <string name="help_message">What do you need help with?</string>
+    <string name="ai_message">So our AI is a bit bored, help us by sending a message!</string>
+    <string name="can_help">I can help</string>
+
+
+    <!--Tutorial Strings-->
+    <string name="tutorial1">We all need a little help sometimes in person.</string>
+    <string name="tutorial2">Lets\'s bring the world closer together &amp; lend a hand to those beside us.</string>
+    <string name="tutorial3">Now help us figure out where you are so you can help others &amp; collect Mayo points!</string>
+    <string name="tutorial4">We won;t share your location unless the app is open infront of you.</string>
+    <string name="button_text_tutorial_one">Right</string>
+    <string name="button_text_tutorial_second">Oh yeah!</string>
+    <string name="button_text_tutorial_third">Alright!</string>
+    <string name="button_text_tutorial_fourth">OK let\'s go!</string>
+    <string name="first_tutorial_screen">first</string>
+    <string name="second_tutorial_screen">second</string>
+    <string name="third_tutorial_screen">third</string>
+    <string name="fourth_tutorial_screen">fourth</string>
+</resources>

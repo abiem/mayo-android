@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/background_white"
+    android:layout_margin="@dimen/margin_20"
+    android:orientation="vertical"
+    android:padding="@dimen/padding_20">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/tip_message_one"
+        android:textColor="@color/colorLightBlue"
+        android:textSize="@dimen/tx_18" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_20"
+        android:contentDescription="@string/open_location_settings"
+        android:src="@drawable/location_image" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_20"
+        android:text="@string/tip_message_two"
+        android:textColor="@color/colorLightBlue"
+        android:textSize="@dimen/tx_18" />
+
+    <Button
+        android:id="@+id/gotitbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_20"
+        android:background="@drawable/button_background_two"
+        android:text="@string/got_it"
+        android:textAllCaps="false"
+        android:textColor="@color/colorLightBlue" />
+
+</LinearLayout>
