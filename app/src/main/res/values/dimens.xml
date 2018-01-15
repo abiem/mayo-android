@@ -6,25 +6,49 @@
     <dimen name="margin_24">24dp</dimen>
     <dimen name="margin_20">20dp</dimen>
     <dimen name="margin_10">10dp</dimen>
+    <dimen name="margin_5">5dp</dimen>
+    <dimen name="margin_15">15dp</dimen>
     <dimen name="margin_30">30dp</dimen>
+    <dimen name="margin_40">40dp</dimen>
+    <dimen name="margin_50">50dp</dimen>
 
     <!--Padding-->
     <dimen name="padding_20">20dp</dimen>
+    <dimen name="padding_16">16dp</dimen>
 
     <!--TextSize-->
     <dimen name="tx_18">18sp</dimen>
+    <dimen name="tx_22">22sp</dimen>
+    <dimen name="tx_20">24sp</dimen>
     <dimen name="tx_16">16sp</dimen>
     <dimen name="tx_24">24sp</dimen>
+    <dimen name="tx_26">26sp</dimen>
 
     <!--Heights of layouts-->
     <dimen name="height_200">200dp</dimen>
     <dimen name="height_250">250dp</dimen>
+    <dimen name="height_270">270dp</dimen>
+    <dimen name="height_300">300dp</dimen>
     <dimen name="height_220">220dp</dimen>
     <dimen name="height_50">50dp</dimen>
+    <dimen name="height_20">20dp</dimen>
+    <dimen name="height_80">80dp</dimen>
+
+    <!--Widths of layouts-->
+    <dimen name="width_20">20dp</dimen>
+    <dimen name="width_15">15dp</dimen>
+    <dimen name="width_80">80dp</dimen>
+
 
     <!--Radius-->
     <dimen name="rd_4">4dp</dimen>
 
     <!--Elevation-->
     <dimen name="el_5">5dp</dimen>
+    <dimen name="el_7">7dp</dimen>
+    <dimen name="el_10">10dp</dimen>
+    <dimen name="el_15">15dp</dimen>
+    <dimen name="el_20">20dp</dimen>
+    <dimen name="el_25">25dp</dimen>
+    <dimen name="el_36">36dp</dimen>
 </resources>

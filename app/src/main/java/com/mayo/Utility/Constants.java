@@ -6,15 +6,29 @@ package com.mayo.Utility;
 
 public class Constants {
     //messages
-    public static final String sOk = "Ok";
+    static final String sOk = "Ok";
 
     //permission code
     public static final int sKeyPermissionCodeForLocation = 10001;
 
     //camera zoom
-    public static final int sKeyCameraZoom = 14;
+    public static final int sKeyCameraZoom = 16;
 
     //setting package
-    public static final String sKeyForPackage = "package:";
+    static final String sKeyForPackage = "package:";
+
+    public static final int sKeyForMapRadius = 200;
+
+    class sharedPreferences {
+        static final String sTutorialDone = "isTutorialDone";
+        static final String sUserId = "firebaseUserId";
+        static final String sDeviceToken = "deviceToken";
+    }
+
+    public enum TutorialViewScreen {
+        FIRST, SECOND, THIRD, FOURTH;
+
+
+    }
 
 }

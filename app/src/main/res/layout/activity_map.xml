@@ -12,5 +12,23 @@
         android:apiKey="@string/google_maps_key"
         android:enabled="true" />
 
+    <Button
+        android:id="@+id/countbutton"
+        android:layout_width="@dimen/width_80"
+        android:layout_height="@dimen/height_80"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/margin_20"
+        android:background="@drawable/background_oval"
+        android:contentDescription="@string/count"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:textSize="@dimen/tx_18" />
+
+    <com.mayo.viewclasses.CustomViewPager
+        android:id="@+id/viewPagerMapView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_270"
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

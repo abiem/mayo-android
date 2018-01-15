@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activities.MainActivity_"
+            android:name=".activities.IntroActivity_"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeWithNoActionBar">
             <intent-filter>
@@ -34,8 +34,20 @@
         <activity
             android:name=".activities.MapActivity_"
             android:screenOrientation="portrait"
-            android:theme="@style/AppThemeWithNoActionBar"/>
+            android:theme="@style/AppThemeWithNoActionBar" />
 
+
+        <service android:name=".firebase.services.MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".firebase.services.MyFirebaseInstanceIDService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
 
         <service
             android:name=".backgroundservice.BackgroundLocationService"

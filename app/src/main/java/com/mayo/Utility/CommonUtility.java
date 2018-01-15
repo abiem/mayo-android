@@ -6,23 +6,29 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.mayo.R;
-import com.mayo.activities.MainActivity;
+import com.mayo.activities.IntroActivity;
+import com.mayo.viewclasses.CardColor;
 
 /**
  * Created by Lakshmikodali on 02/01/18.
@@ -31,6 +37,61 @@ import com.mayo.activities.MainActivity;
 public class CommonUtility {
     private static AlertDialog mAlertDialog;
     private static Dialog mCustomDialog;
+    private static SharedPreferences mSharedPreferences;
+
+    private static void initializeSharedPreference(Context context) {
+        CommonUtility.mSharedPreferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
+    }
+
+    // Save if user tutorial is done
+    public static void setTutorialDone(boolean pValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sTutorialDone, pValue);
+        editor.apply();
+    }
+
+    public static boolean getTutorialDone(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sTutorialDone, false);
+    }
+
+    public static void setUserId(String pId, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putString(Constants.sharedPreferences.sUserId, pId);
+        editor.apply();
+    }
+
+    public static String getUserId(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getString(Constants.sharedPreferences.sUserId, "");
+    }
+
+    public static void setDeviceToken(String pToken, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putString(Constants.sharedPreferences.sDeviceToken, pToken);
+        editor.apply();
+    }
+
+    public static String getDeviceToken(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, "");
+    }
+
 
     public static boolean askForPermissionLocation(Activity activity) {
         int permissionCheck;
@@ -43,6 +104,11 @@ public class CommonUtility {
             return false;
         }
         return true;
+    }
+
+    public static String[] checkPermissions() {
+        return new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,};
     }
 
     public static boolean googleServicesAvailable(Activity activity) {
@@ -90,7 +156,7 @@ public class CommonUtility {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                if (pContext instanceof MainActivity) {
+                                if (pContext instanceof IntroActivity) {
                                     Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                                     pContext.startActivity(myIntent);
                                 }
@@ -118,5 +184,30 @@ public class CommonUtility {
         return null;
     }
 
+    public static void goToSettings(Context pContext) {
+        Intent myAppSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse(com.mayo.Utility.Constants.sKeyForPackage + pContext.getPackageName()));
+        myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
+        myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        pContext.startActivity(myAppSettings);
+    }
+
+    public static Bitmap drawableToBitmap(Drawable pDrawable) {
+        Bitmap bitmap = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        pDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        pDrawable.draw(canvas);
+        return bitmap;
+    }
+
+    public static Drawable getGradientDrawable(String pBottomColor, String pTopColor, Context pContext) {
+        int colors[] = {Color.parseColor(pBottomColor), Color.parseColor(pTopColor)};
+        GradientDrawable gradient = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, colors);
+        gradient.setShape(GradientDrawable.RECTANGLE);
+        gradient.setCornerRadius(pContext.getResources().getDimension(R.dimen.rd_4));
+        gradient.setGradientType(GradientDrawable.LINEAR_GRADIENT);
+        gradient.setGradientCenter(70.0f, 0.0f);
+        return gradient;
+    }
 
 }

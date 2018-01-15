@@ -1,24 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/activity_add_category"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/height_220"
+    android:layout_height="@dimen/height_270"
+    android:background="@android:drawable/dialog_holo_light_frame"
+    app:cardElevation="30dp"
     app:cardCornerRadius="@dimen/rd_4">
+
 
     <RelativeLayout
         android:id="@+id/backgroundview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="@dimen/activity_vertical_margin">
+        android:padding="@dimen/padding_16">
 
         <TextView
             android:id="@+id/tutorialText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="@dimen/tx_24" />
+            android:textSize="@dimen/tx_22" />
 
 
         <Button
@@ -26,12 +28,10 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/height_50"
             android:layout_alignParentBottom="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginStart="10dp"
             android:background="@drawable/button_background"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            android:textSize="@dimen/tx_18" />
+            android:textSize="@dimen/tx_22" />
 
 
     </RelativeLayout>

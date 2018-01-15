@@ -15,6 +15,13 @@
     <string name="help_message">What do you need help with?</string>
     <string name="ai_message">So our AI is a bit bored, help us by sending a message!</string>
     <string name="can_help">I can help</string>
+    <string name="count">This is for count check.</string>
+    <string name="my_location">My Location</string>
+    <string name="auth_failed">Authentication failed.</string>
+    <string name="points_message">Your mayo points can be exchanged for rewards in the</string>
+    <string name="you_have">You have</string>
+    <string name="remove_score_view">Remove Score View</string>
+    <string name="show_gif_image">This is for showing gif image</string>
 
 
     <!--Tutorial Strings-->

@@ -7,41 +7,31 @@ import java.util.Random;
 /**
  * Created by Lakshmikodali on 07/01/18.
  */
-class CardColor {
+public class CardColor {
 
     // array of arrays of color choices
     // first is start color
     // second is end color
-    int[][] choices = {
-            {R.color.colorDarkLightGreen, R.color.colorGreen}, // dark green 1 to light green 1
-            {R.color.colorLightBlue, R.color.colorPink}, // light blue 1 to pink 1
-            {R.color.colorRed, R.color.colorOrange}, // red 1 to orange 1
-            {R.color.colorDarkGreen, R.color.colorLightGreen},// dark green 2 to light green 2
-            {R.color.colorPurple, R.color.colorNewPink}, // purple to pink
-            {R.color.colorDarkPink, R.color.colorGrey}, // pink to grey
-            {R.color.colorOffYellow, R.color.colorYellow}, // off yellow to yellow
-            {R.color.colorDarkGreenNew, R.color.colorLightGreenNew}, // dark green 3 to light green 3
-            {R.color.colorDarkBrown, R.color.colorLightBrown}, // dark brown to light brown
-            {R.color.colorDarkBlue, R.color.colorLightBlueNew}, // dark blue to light blue
-            {R.color.colorRed, R.color.colorOrange} // dark red to light orange
+    public static String[][] choices = {
+            {"#4fb5b2", "#bee7c7"}, // dark green 1 to light green 1
+            {"#08bbdb", "#d5c2e6"}, // light blue 1 to pink 1
+            {"#e86d5d", "#e8c378"}, // red 1 to orange 1
+            {"#9cd72f", "#90e2ad"},// dark green 2 to light green 2
+            {"#c96dd8", "#ff91a5"}, // purple to pink
+            {"#e87185", "#eae6f2"}, // pink to grey
+            {"#bccb4c", "#f3e24d"}, // off yellow to yellow
+            {"#1dae73", "#c1d96e"}, // dark green 3 to light green 3
+            {"#ac664c", "#cda83d"}, // dark brown to light brown
+            {"#508fbc", "#5ac7cf"}, // dark blue to light blue
+            {"#e86d5d", "#e8c378"} // dark red to light orange
     };
 
-    int[] expireCard = {R.color.colorLightGrey, R.color.colorLightWhite};
+    public static String[] expireCard = {"#888888", "#F1F1F1"};
 
-    private int generateRandomNumber() {
+    public static int generateRandomColor() {
         // generate random number between 0 and length of color choices
         Random random = new Random();
-        int numChoose = random.nextInt(choices.length);
-        return choices[numChoose][0];
+        return random.nextInt(choices.length);
     }
 
-    int generateRandomColor() {
-        // generate random number
-        int randomNumber = generateRandomNumber();
-
-        // use the random number as index for the colors array
-
-        // return generated color array
-        return choices[randomNumber][0];
-    }
 }
