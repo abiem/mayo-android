@@ -26,9 +26,11 @@
 
     <!--Heights of layouts-->
     <dimen name="height_200">200dp</dimen>
+    <dimen name="height_240">240dp</dimen>
     <dimen name="height_250">250dp</dimen>
     <dimen name="height_270">270dp</dimen>
     <dimen name="height_300">300dp</dimen>
+    <dimen name="height_320">320dp</dimen>
     <dimen name="height_220">220dp</dimen>
     <dimen name="height_50">50dp</dimen>
     <dimen name="height_20">20dp</dimen>

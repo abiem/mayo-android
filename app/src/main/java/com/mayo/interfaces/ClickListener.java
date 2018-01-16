@@ -6,6 +6,6 @@ import android.view.View;
  * Created by Lakshmikodali on 08/01/18.
  */
 
-public interface ButtonClickListener {
+public interface ClickListener {
     void onClick(View v);
 }

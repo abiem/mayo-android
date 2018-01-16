@@ -21,8 +21,11 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -90,6 +93,22 @@ public class CommonUtility {
             initializeSharedPreference(pContext);
         }
         return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, "");
+    }
+
+    public static void setSoftKeyBoardState(boolean pcheckState, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sSoftKeyBoard, pcheckState);
+        editor.apply();
+    }
+
+    public static boolean getSoftKeyBoardState(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sSoftKeyBoard, false);
     }
 
 
@@ -208,6 +227,19 @@ public class CommonUtility {
         gradient.setGradientType(GradientDrawable.LINEAR_GRADIENT);
         gradient.setGradientCenter(70.0f, 0.0f);
         return gradient;
+    }
+
+    public static void showSoftKeyBoard(Context pContext) {
+        InputMethodManager imm = (InputMethodManager) pContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null)
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+    }
+
+    public static void hideSoftKeyboard(Activity pActivity) {
+        InputMethodManager imm = (InputMethodManager) pActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null && pActivity.getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(pActivity.getCurrentFocus().getWindowToken(), 0);
+        }
     }
 
 }

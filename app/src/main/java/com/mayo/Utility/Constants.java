@@ -19,16 +19,19 @@ public class Constants {
 
     public static final int sKeyForMapRadius = 200;
 
+    public static final float sTransparencyLevel = 0.5f;
+    public static final float sTransparencyLevelBackground = 0.9f;
+
     class sharedPreferences {
         static final String sTutorialDone = "isTutorialDone";
         static final String sUserId = "firebaseUserId";
         static final String sDeviceToken = "deviceToken";
+        static final String sSoftKeyBoard= "softKeyBoardShown";
     }
 
     public enum TutorialViewScreen {
-        FIRST, SECOND, THIRD, FOURTH;
-
-
+        FIRST, SECOND, THIRD, FOURTH
     }
+
 
 }

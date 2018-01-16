@@ -1,26 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/height_270"
-    android:background="@android:drawable/dialog_holo_light_frame"
-    app:cardCornerRadius="@dimen/rd_4"
-    app:cardElevation="30dp">
+    android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/backgroundmapviewpager"
+    <android.support.v7.widget.CardView
+        android:id="@+id/mapcardView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_240"
+        android:background="@android:drawable/dialog_holo_light_frame"
+        app:cardCornerRadius="@dimen/rd_4"
+        app:cardElevation="@dimen/el_36">
+
+        <RelativeLayout
+            android:id="@+id/backgroundmapviewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorDarkBlue"
+            android:orientation="vertical"
+            android:padding="@dimen/padding_16">
+
+
+            <EditText
+                android:id="@+id/postEditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="text"
+                android:textColor="@color/white"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/viewText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="@color/white"
+                android:textSize="@dimen/tx_22" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/parentimagebutton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <ImageButton
+                        android:id="@+id/imagebutton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/clear"
+                        tools:ignore="ContentDescription" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/textbutton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@color/transparent"
+                    android:text="@string/post"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/tx_20" />
+            </LinearLayout>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <TextView
+        android:id="@+id/msg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_16">
-
-        <TextView
-            android:id="@+id/viewText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="@dimen/tx_22" />
-
-
-    </RelativeLayout>
-</android.support.v7.widget.CardView>
+        android:layout_gravity="bottom"
+        android:background="@color/transparent"
+        android:padding="@dimen/padding_16"
+        android:textColor="@color/white" />
+</LinearLayout>

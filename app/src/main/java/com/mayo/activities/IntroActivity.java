@@ -9,16 +9,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
-import com.bumptech.glide.Glide;
 import com.cunoraz.gifview.library.GifView;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
-import com.mayo.firebase.auth.AnonymousAuth;
 import com.mayo.viewclasses.CustomViewPager;
 import com.mayo.adapters.IntroViewPagerAdapter;
 import com.mayo.application.MayoApplication;
-import com.mayo.interfaces.ButtonClickListener;
+import com.mayo.interfaces.ClickListener;
 import com.mayo.models.TutorialModel;
 
 import org.androidannotations.annotations.AfterViews;
@@ -31,7 +29,7 @@ import java.util.ArrayList;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_intro)
-public class IntroActivity extends AppCompatActivity implements ButtonClickListener {
+public class IntroActivity extends AppCompatActivity implements ClickListener {
     @App
     MayoApplication mMayoApplication;
 
@@ -50,7 +48,7 @@ public class IntroActivity extends AppCompatActivity implements ButtonClickListe
             mMayoApplication.setActivity(this);
             setTutorialArray();
             setViewPager();
-            AnonymousAuth.signInAnonymously(this);
+            //AnonymousAuth.signInAnonymously(this);
         } else {
             showMapActivity();
         }

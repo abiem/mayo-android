@@ -22,6 +22,8 @@
     <string name="you_have">You have</string>
     <string name="remove_score_view">Remove Score View</string>
     <string name="show_gif_image">This is for showing gif image</string>
+    <string name="post">Post</string>
+    <string name="expire_msg">Automatically expires in 1 hr or if you leave the area</string>
 
 
     <!--Tutorial Strings-->

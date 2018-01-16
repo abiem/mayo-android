@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -51,7 +52,9 @@ import com.mayo.adapters.IntroViewPagerAdapter;
 import com.mayo.adapters.MapViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
+import com.mayo.interfaces.ClickListener;
 import com.mayo.interfaces.LocationUpdationInterface;
+import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.TutorialModel;
 import com.mayo.viewclasses.CardColor;
@@ -69,7 +72,7 @@ import static com.mayo.Utility.CommonUtility.isLocationEnabled;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_map)
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationUpdationInterface {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationUpdationInterface, ViewClickListener {
 
     @App
     MayoApplication mMayoApplication;
@@ -82,6 +85,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @ViewById(R.id.viewPagerMapView)
     CustomViewPager mViewPagerMap;
+
+    @ViewById(R.id.relativeMapLayout)
+    RelativeLayout mRelativeMapLayout;
 
     GoogleMap mGoogleMap;
     GoogleApiClient mGoogleApiClient;
@@ -99,6 +105,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMapView.onCreate(null);
         setDataModel();
         setViewPager();
+        scrollViewPager();
         if (CommonUtility.googleServicesAvailable(this)) {
             mMapView.getMapAsync(MapActivity.this);
         } else {
@@ -138,6 +145,35 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    private void scrollViewPager() {
+        mViewPagerMap.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                switch (position) {
+                    case 0:
+                        if (CommonUtility.getSoftKeyBoardState(MapActivity.this)) {
+                            CommonUtility.showSoftKeyBoard(MapActivity.this);
+                        }
+                        break;
+                    default:
+                        CommonUtility.hideSoftKeyboard(MapActivity.this);
+
+                }
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+    }
+
     private void setDataModel() {
         mMapDataModels = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
@@ -160,7 +196,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mViewPagerMap.setClipToPadding(false);
         mViewPagerMap.setPadding(64, 80, 64, 80);
         mViewPagerMap.setPageMargin(24);
-        mViewPagerMap.setAdapter(new MapViewPagerAdapter(this, mMapDataModels));
+        mViewPagerMap.setAdapter(new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap));
         mViewPagerMap.setCurrentItem(1);
     }
 
@@ -331,4 +367,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
+    @Override
+    public void onClick(View v, int position) {
+        switch (position) {
+            case 0:
+                CommonUtility.setSoftKeyBoardState(true, this);
+                CommonUtility.showSoftKeyBoard(this);
+                break;
+        }
+    }
 }

@@ -11,7 +11,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mayo.R;
-import com.mayo.interfaces.ButtonClickListener;
+import com.mayo.interfaces.ClickListener;
 import com.mayo.models.TutorialModel;
 
 import java.util.ArrayList;
@@ -23,12 +23,12 @@ import java.util.ArrayList;
 
 public class IntroViewPagerAdapter extends PagerAdapter implements View.OnClickListener {
     private Context mContext;
-    private ButtonClickListener mButtonClickListener;
+    private ClickListener mClickListener;
     private ArrayList<TutorialModel> mTutorialModelArrayList;
 
-    public IntroViewPagerAdapter(Context pContext, ButtonClickListener pButtonClickListener, ArrayList<TutorialModel> pTutorialModelList) {
+    public IntroViewPagerAdapter(Context pContext, ClickListener pClickListener, ArrayList<TutorialModel> pTutorialModelList) {
         mContext = pContext;
-        mButtonClickListener = pButtonClickListener;
+        mClickListener = pClickListener;
         mTutorialModelArrayList = pTutorialModelList;
     }
 
@@ -71,6 +71,6 @@ public class IntroViewPagerAdapter extends PagerAdapter implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        mButtonClickListener.onClick(v);
+        mClickListener.onClick(v);
     }
 }

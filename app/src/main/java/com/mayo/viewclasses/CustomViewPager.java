@@ -1,5 +1,6 @@
 package com.mayo.viewclasses;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
@@ -17,6 +18,7 @@ public class CustomViewPager extends ViewPager {
         this.enabled = true;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return this.enabled && super.onTouchEvent(event);
