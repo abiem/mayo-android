@@ -33,6 +33,12 @@ import com.mayo.R;
 import com.mayo.activities.IntroActivity;
 import com.mayo.viewclasses.CardColor;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 /**
  * Created by Lakshmikodali on 02/01/18.
  */
@@ -41,6 +47,7 @@ public class CommonUtility {
     private static AlertDialog mAlertDialog;
     private static Dialog mCustomDialog;
     private static SharedPreferences mSharedPreferences;
+    private static SimpleDateFormat utcTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US);
 
     private static void initializeSharedPreference(Context context) {
         CommonUtility.mSharedPreferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
@@ -240,6 +247,24 @@ public class CommonUtility {
         if (imm != null && pActivity.getCurrentFocus() != null) {
             imm.hideSoftInputFromWindow(pActivity.getCurrentFocus().getWindowToken(), 0);
         }
+    }
+
+    public static String convertLocalTimeToUTC() {
+        Date date = null;
+        utcTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            date = utcTimeFormat.parse(utcTimeFormat.format(new Date()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        if (date != null) {
+            return String.valueOf(date.getTime());
+        }
+        return null;
+    }
+
+    public static String getLocalTime() {
+        return utcTimeFormat.format(new Date());
     }
 
 }

@@ -39,4 +39,10 @@
     <string name="second_tutorial_screen">second</string>
     <string name="third_tutorial_screen">third</string>
     <string name="fourth_tutorial_screen">fourth</string>
+
+    <!--Task  Messages-->
+    <string name="STATUS_FOR_THANKED">Owner marked as done and the people all thanked for</string>
+    <string name="STATUS_FOR_NOT_HELPED">Owner marked as done and no one helped</string>
+    <string name="STATUS_FOR_TIME_EXPIRED">Expired due to time limit</string>
+    <string name="STATUS_FOR_MOVING_OUT">Expired due to time limit</string>
 </resources>

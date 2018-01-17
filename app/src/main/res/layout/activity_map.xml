@@ -29,8 +29,7 @@
     <com.mayo.viewclasses.CustomViewPager
         android:id="@+id/viewPagerMapView"
         android:layout_width="match_parent"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
+        android:fitsSystemWindows="true"
         android:layout_height="@dimen/height_300"
         android:layout_alignParentBottom="true" />
 

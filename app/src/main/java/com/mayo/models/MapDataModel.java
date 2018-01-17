@@ -8,12 +8,20 @@ import android.graphics.drawable.Drawable;
 
 public class MapDataModel {
     private Drawable backgroundView;
-
+    private GradientColor gradientColor;
     public Drawable getBackgroundView() {
         return backgroundView;
     }
 
     public void setBackgroundView(Drawable backgroundView) {
         this.backgroundView = backgroundView;
+    }
+
+    public GradientColor getGradientColor() {
+        return gradientColor;
+    }
+
+    public void setGradientColor(GradientColor gradientColor) {
+        this.gradientColor = gradientColor;
     }
 }

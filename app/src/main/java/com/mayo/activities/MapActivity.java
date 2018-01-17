@@ -22,6 +22,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
@@ -52,10 +53,13 @@ import com.mayo.adapters.IntroViewPagerAdapter;
 import com.mayo.adapters.MapViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
+import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.interfaces.ClickListener;
 import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
+import com.mayo.models.GradientColor;
 import com.mayo.models.MapDataModel;
+import com.mayo.models.Task;
 import com.mayo.models.TutorialModel;
 import com.mayo.viewclasses.CardColor;
 import com.mayo.viewclasses.CustomViewPager;
@@ -156,9 +160,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onPageSelected(int position) {
                 switch (position) {
                     case 0:
-                        if (CommonUtility.getSoftKeyBoardState(MapActivity.this)) {
-                            CommonUtility.showSoftKeyBoard(MapActivity.this);
-                        }
+//                        if (CommonUtility.getSoftKeyBoardState(MapActivity.this)) {
+//                            CommonUtility.showSoftKeyBoard(MapActivity.this);
+//                        }
                         break;
                     default:
                         CommonUtility.hideSoftKeyboard(MapActivity.this);
@@ -179,6 +183,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         for (int i = 0; i < 4; i++) {
             MapDataModel mapDataModel = new MapDataModel();
             int color = CardColor.generateRandomColor();
+            GradientColor gradientColor = new GradientColor();
+            gradientColor.setStartColor(CardColor.choices[color][1]);
+            gradientColor.setEndColor(CardColor.choices[color][0]);
+            mapDataModel.setGradientColor(gradientColor);
             Drawable drawable = CommonUtility.getGradientDrawable(CardColor.choices[color][0], CardColor.choices[color][1], this);
             mapDataModel.setBackgroundView(drawable);
             mMapDataModels.add(mapDataModel);
@@ -188,6 +196,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         MapDataModel mapDataModel = new MapDataModel();
         Drawable drawable = CommonUtility.getGradientDrawable(CardColor.expireCard[0], CardColor.expireCard[1], this);
         mapDataModel.setBackgroundView(drawable);
+        GradientColor gradientColor = new GradientColor();
+        gradientColor.setStartColor(CardColor.expireCard[1]);
+        gradientColor.setEndColor(CardColor.expireCard[0]);
+        mapDataModel.setGradientColor(gradientColor);
         mMapDataModels.add(mapDataModel);
     }
 
@@ -368,12 +380,41 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     @Override
-    public void onClick(View v, int position) {
-        switch (position) {
+    public void onClick(View pView, int pPosition,String pMessage) {
+        switch (pPosition) {
             case 0:
-                CommonUtility.setSoftKeyBoardState(true, this);
-                CommonUtility.showSoftKeyBoard(this);
+                switch (pView.getId()) {
+                    case R.id.viewText:
+                        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                        CommonUtility.setSoftKeyBoardState(true, this);
+                        break;
+                    case R.id.textbutton:
+                        Task task = setNewTask(pPosition,pMessage);
+                        CommonUtility.getUserId(this);
+                        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+                        firebaseDatabase.writeNewTask(task);
+                        break;
+                    case R.id.imagebutton:
+                        break;
+                }
                 break;
         }
+    }
+
+    private Task setNewTask(int pPosition,String pMessage) {
+        Task task = new Task();
+        task.setCreatedby(CommonUtility.getUserId(this));
+        task.setTaskID(CommonUtility.convertLocalTimeToUTC());
+        task.setHelpedBy(Constants.sConstantString);
+        task.setTimeCreated(CommonUtility.getLocalTime()); //this is time when we create task
+        task.setCompleted(false);
+        task.setTimeUpdated(CommonUtility.getLocalTime()); //this is updated but first time when we create task
+        task.setUserMovedOutside(false);
+        task.setRecentActivity(false);
+        task.setStartColor(mMapDataModels.get(pPosition).getGradientColor().getStartColor().substring(1));
+        task.setEndColor(mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1));
+        task.setCompleteType("");
+        task.setTaskDescription(pMessage);
+        return task;
     }
 }

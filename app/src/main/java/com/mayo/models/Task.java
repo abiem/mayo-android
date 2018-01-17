@@ -9,8 +9,8 @@ import java.util.Date;
 public class Task {
     private String taskDescription;
     private boolean completed;
-    private Date timeCreated;
-    private Date timeUpdated;
+    private String timeCreated;
+    private String timeUpdated;
     private String startColor;
     private String endColor;
     private String taskID;
@@ -36,19 +36,19 @@ public class Task {
         this.completed = completed;
     }
 
-    public Date getTimeCreated() {
+    public String getTimeCreated() {
         return timeCreated;
     }
 
-    public void setTimeCreated(Date timeCreated) {
+    public void setTimeCreated(String timeCreated) {
         this.timeCreated = timeCreated;
     }
 
-    public Date getTimeUpdated() {
+    public String getTimeUpdated() {
         return timeUpdated;
     }
 
-    public void setTimeUpdated(Date timeUpdated) {
+    public void setTimeUpdated(String timeUpdated) {
         this.timeUpdated = timeUpdated;
     }
 

@@ -9,15 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mayo.R;
 import com.mayo.Utility.Constants;
-import com.mayo.activities.MapActivity;
-import com.mayo.interfaces.ClickListener;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.MapDataModel;
 import com.mayo.viewclasses.CustomViewPager;
@@ -34,6 +32,12 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     private ArrayList<MapDataModel> mMapDataModelArrayList;
     private ViewClickListener mClickListener;
     private CustomViewPager mCustomViewPager;
+    private TextView mViewText;
+    private TextView mBelowViewPagerText;
+    private LinearLayout mParentImageButton;
+    private ImageButton mImageButton;
+    private EditText mEditText;
+    private Button mTextButton;
 
     public MapViewPagerAdapter(Context pContext, ArrayList<MapDataModel> pMapDataModel, ViewClickListener pClickListener, CustomViewPager pCustomViewPager) {
         mContext = pContext;
@@ -45,24 +49,27 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen, collection, false);
-        RelativeLayout backgroundView = (RelativeLayout) layout.findViewById(R.id.backgroundmapviewpager);
-        TextView viewText = (TextView) layout.findViewById(R.id.viewText);
-        TextView belowViewPagerText = (TextView) layout.findViewById(R.id.msg);
-        LinearLayout parentImageButton = (LinearLayout) layout.findViewById(R.id.parentimagebutton);
-        ImageButton imageButton = (ImageButton) layout.findViewById(R.id.imagebutton);
-        Button textButton = (Button) layout.findViewById(R.id.textbutton);
+        ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_one, collection, false);
+        LinearLayout backgroundView = (LinearLayout) layout.findViewById(R.id.backgroundmapviewpager);
+        mViewText = (TextView) layout.findViewById(R.id.viewText);
+        mBelowViewPagerText = (TextView) layout.findViewById(R.id.msg);
+        mParentImageButton = (LinearLayout) layout.findViewById(R.id.parentimagebutton);
+        mImageButton = (ImageButton) layout.findViewById(R.id.imagebutton);
+        mTextButton = (Button) layout.findViewById(R.id.textbutton);
+        mEditText = (EditText) layout.findViewById(R.id.postEditText);
         CardView mapCardView = (CardView) layout.findViewById(R.id.mapcardView);
-        viewText.setOnClickListener(this);
         if (position == 0) {
-            viewText.setText(mContext.getResources().getString(R.string.help_message));
-            imageButton.setAlpha(Constants.sTransparencyLevel);
-            viewText.setAlpha(Constants.sTransparencyLevel);
-            textButton.setAlpha(Constants.sTransparencyLevel);
-            belowViewPagerText.setText(mContext.getResources().getString(R.string.expire_msg));
+            mViewText.setText(mContext.getResources().getString(R.string.help_message));
+            mImageButton.setAlpha(Constants.sTransparencyLevelFade);
+            mViewText.setAlpha(Constants.sTransparencyLevelFade);
+            mTextButton.setAlpha(Constants.sTransparencyLevelFade);
+            mBelowViewPagerText.setText(mContext.getResources().getString(R.string.expire_msg));
+            mViewText.setOnClickListener(this);
+            mTextButton.setOnClickListener(this);
+            mImageButton.setOnClickListener(this);
         } else {
-            parentImageButton.setVisibility(View.GONE);
-            textButton.setVisibility(View.GONE);
+            mParentImageButton.setVisibility(View.GONE);
+            mTextButton.setVisibility(View.GONE);
         }
         if (position == 4) {
             backgroundView.setAlpha(Constants.sTransparencyLevelBackground);
@@ -98,6 +105,10 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     @Override
     public void onClick(View v) {
         int position = mCustomViewPager.getCurrentItem();
-        mClickListener.onClick(v, position);
+        if (v.getId() == R.id.viewText) {
+            mEditText.setVisibility(View.VISIBLE);
+            mViewText.setVisibility(View.GONE);
+        }
+        mClickListener.onClick(v, position,mEditText.getText().toString());
     }
 }

@@ -19,8 +19,10 @@ public class Constants {
 
     public static final int sKeyForMapRadius = 200;
 
-    public static final float sTransparencyLevel = 0.5f;
-    public static final float sTransparencyLevelBackground = 0.9f;
+    public static final float sTransparencyLevelFade = 0.5f;
+    public static final float sTransparencyLevelFull = 0.0f;
+    public static final float sTransparencyLevelBackground = 0.8f;
+    public static final String sConstantString="";
 
     class sharedPreferences {
         static final String sTutorialDone = "isTutorialDone";
