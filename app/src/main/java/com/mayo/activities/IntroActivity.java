@@ -7,7 +7,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.cunoraz.gifview.library.GifView;
 import com.mayo.R;
@@ -39,6 +43,9 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
 
     @ViewById(R.id.imageintroview)
     GifView imageIntroView;
+
+    @ViewById(R.id.rotateimage)
+    ImageView rotateImage;
 
     ArrayList<TutorialModel> tutorialModels;
 
@@ -112,10 +119,13 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         switch (whichView) {
             case FIRST:
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
+                Animation animation = AnimationUtils.loadAnimation(this, R.anim.rotate);
+                rotateImage.startAnimation(animation);
                 break;
             case SECOND:
                 imageIntroView.setVisibility(View.VISIBLE);
                 //Glide.with(this).load(R.drawable.second_tutorial_pin).asGif().into(imageIntroView);
+
                 imageIntroView.setGifResource(R.drawable.second_tutorial_pin);
                 imageIntroView.play();
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);

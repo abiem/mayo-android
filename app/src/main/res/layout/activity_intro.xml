@@ -6,14 +6,23 @@
     android:background="@drawable/rectangle_background"
     tools:context="com.mayo.activities.IntroActivity">
 
+    <ImageView
+        android:id="@+id/rotateimage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:textSize="@dimen/tx_20"
+        android:contentDescription="@string/rotateimage" />
+
     <com.cunoraz.gifview.library.GifView
         android:id="@+id/imageintroview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="visible"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_10"
-        android:contentDescription="@string/show_gif_image" />
+        android:contentDescription="@string/show_gif_image"
+        android:visibility="visible" />
 
     <com.mayo.viewclasses.CustomViewPager
         android:id="@+id/viewPagerTutorial"

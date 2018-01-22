@@ -39,6 +39,7 @@
     <string name="second_tutorial_screen">second</string>
     <string name="third_tutorial_screen">third</string>
     <string name="fourth_tutorial_screen">fourth</string>
+    <string name="rotateimage">Rotate image in image view</string>
 
     <!--Task  Messages-->
     <string name="STATUS_FOR_THANKED">Owner marked as done and the people all thanked for</string>

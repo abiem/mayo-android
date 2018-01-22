@@ -1,94 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/height_270"
+    android:layout_height="match_parent"
+    android:background="@drawable/shadow"
     android:orientation="vertical">
 
-    <android.support.v7.widget.CardView
-        android:id="@+id/mapcardView"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/height_240"
-        app:cardCornerRadius="@dimen/rd_4"
-        app:cardElevation="@dimen/el_36">
-
-        <LinearLayout
-            android:id="@+id/backgroundmapviewpager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/colorDarkBlue"
-            android:orientation="vertical"
-            android:padding="@dimen/padding_16">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-
-                <EditText
-                    android:id="@+id/postEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/transparent"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:textColor="@color/white"
-                    android:visibility="visible" />
-
-                <TextView
-                    android:id="@+id/viewText"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/tx_22"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:id="@+id/parentimagebutton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:gravity="center">
-
-                    <ImageButton
-                        android:id="@+id/imagebutton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/clear"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/textbutton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@color/transparent"
-                    android:text="@string/post"
-                    android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/tx_20" />
-            </LinearLayout>
-        </LinearLayout>
-    </android.support.v7.widget.CardView>
-
-    <TextView
-        android:id="@+id/msg"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="bottom"
-        android:background="@color/transparent"
-        android:padding="@dimen/padding_16"
-        android:textColor="@color/white" />
-</LinearLayout>
+        android:orientation="vertical">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/mapcardView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="9"
+            app:cardCornerRadius="@dimen/rd_4">
+
+            <LinearLayout
+                android:id="@+id/backgroundmapviewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorDarkBlue"
+                android:orientation="vertical"
+                android:padding="@dimen/padding_16">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+
+                    <EditText
+                        android:id="@+id/postEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/transparent"
+                        android:gravity="top"
+                        android:inputType="textMultiLine"
+                        android:textColor="@color/white"
+                        android:visibility="visible" />
+
+                    <TextView
+                        android:id="@+id/viewText"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/tx_22"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/parentimagebutton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <ImageButton
+                            android:id="@+id/imagebutton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/clear"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/textbutton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@color/transparent"
+                        android:text="@string/post"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/tx_20" />
+                </LinearLayout>
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+
+        <TextView
+            android:id="@+id/msg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom"
+            android:layout_weight="1"
+            android:background="@color/transparent"
+            android:padding="@dimen/padding_16"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+
+</RelativeLayout>
