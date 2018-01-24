@@ -4,30 +4,51 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/rectangle_background"
+    android:clipChildren="false"
     tools:context="com.mayo.activities.IntroActivity">
 
     <ImageView
         android:id="@+id/rotateimage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/scale_40"
+        android:layout_marginTop="@dimen/scale_400"
+        android:contentDescription="@string/rotateimage"
+        android:fitsSystemWindows="true"
+        android:scaleType="centerCrop"
+        android:src="@drawable/flare_rotation"
         android:textColor="@color/white"
         android:textSize="@dimen/tx_20"
-        android:contentDescription="@string/rotateimage" />
+        android:visibility="gone" />
 
     <com.cunoraz.gifview.library.GifView
-        android:id="@+id/imageintroview"
-        android:layout_width="wrap_content"
+        android:id="@+id/imageHandsView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_10"
+        android:layout_marginTop="@dimen/margin_50"
         android:contentDescription="@string/show_gif_image"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
         android:visibility="visible" />
+
+    <com.cunoraz.gifview.library.GifView
+        android:id="@+id/imagePins"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_50"
+        android:contentDescription="@string/show_gif_image"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        android:visibility="gone" />
+
 
     <com.mayo.viewclasses.CustomViewPager
         android:id="@+id/viewPagerTutorial"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/height_270"
+        android:layout_height="@dimen/height_300"
         android:layout_alignParentBottom="true" />
 
 

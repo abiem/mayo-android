@@ -102,19 +102,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private BackgroundLocationService mBackgroundLocationService;
     ArrayList<MapDataModel> mMapDataModels;
+    Dialog mDialog;
 
     @AfterViews
     protected void init() {
         mMayoApplication.setActivity(this);
         mMapView.onCreate(null);
-        setDataModel();
-        setViewPager();
-        scrollViewPager();
-        if (CommonUtility.googleServicesAvailable(this)) {
-            mMapView.getMapAsync(MapActivity.this);
-        } else {
-            mMayoApplication.showToast(this, getResources().getString(R.string.notsupported));
-        }
+        //setDataModel();
+        //setViewPager();
+        //scrollViewPager();
+        checkGoogleServiceAvailable();
         mCountButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,15 +120,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
-    private void checkPermissions() {
+    private void checkGoogleServiceAvailable() {
+        if (CommonUtility.googleServicesAvailable(this)) {
+            mMapView.getMapAsync(MapActivity.this);
+        } else {
+            mMayoApplication.showToast(this, getResources().getString(R.string.notsupported));
+        }
+    }
+
+    private boolean checkPermissions() {
+        boolean isPermission = true;
         String permission[] = CommonUtility.checkPermissions();
         for (String aPermission : permission) {
             if (ContextCompat.checkSelfPermission(this, aPermission) != PackageManager.PERMISSION_GRANTED) {
                 locationNotEnabled();
-                disableLocationDialogView();
+                disableLocationDialogView(Constants.PermissionDialog.AppPermissionDialog.ordinal());
+                isPermission = false;
                 break;
             }
         }
+        return isPermission;
     }
 
     private void showPointView() {
@@ -217,6 +225,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onResume() {
         super.onResume();
         mMapView.onResume();
+        if (mGoogleMap != null) {
+            if (mDialog != null && checkPermissions()) {
+                mDialog.dismiss();
+                return;
+            }
+            if (!isLocationEnabled(this)) {
+                locationNotEnabled();
+                disableLocationDialogView(Constants.PermissionDialog.LocationDialog.ordinal());
+            }
+        }
     }
 
     @Override
@@ -232,7 +250,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         if (!isLocationEnabled(this)) {
             locationNotEnabled();
-            disableLocationDialogView();
+            disableLocationDialogView(Constants.PermissionDialog.LocationDialog.ordinal());
             return;
         }
         checkPermissions();
@@ -358,29 +376,34 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
-    private void disableLocationDialogView() {
-        final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.location_disable_dialog_view);
-        if (dialog != null) {
-            Button NotNowButton = (Button) dialog.findViewById(R.id.notnowbutton);
-            Button SettingButton = (Button) dialog.findViewById(R.id.settingsbutton);
+    private void disableLocationDialogView(final int val) {
+        if (mDialog == null) {
+            mDialog = CommonUtility.showCustomDialog(this, R.layout.location_disable_dialog_view);
+        }
+        if (mDialog != null) {
+            Button NotNowButton = (Button) mDialog.findViewById(R.id.notnowbutton);
+            Button SettingButton = (Button) mDialog.findViewById(R.id.settingsbutton);
             NotNowButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    dialog.dismiss();
+                    mDialog.dismiss();
                 }
             });
             SettingButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CommonUtility.goToSettings(MapActivity.this);
+                    if (val == Constants.PermissionDialog.AppPermissionDialog.ordinal()) {
+                        CommonUtility.goToSettings(MapActivity.this);
+                    } else {
+                        CommonUtility.goToSettingsForGpsLocation(MapActivity.this);
+                    }
                 }
             });
         }
     }
 
-
     @Override
-    public void onClick(View pView, int pPosition,String pMessage) {
+    public void onClick(View pView, int pPosition, String pMessage) {
         switch (pPosition) {
             case 0:
                 switch (pView.getId()) {
@@ -389,7 +412,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         CommonUtility.setSoftKeyBoardState(true, this);
                         break;
                     case R.id.textbutton:
-                        Task task = setNewTask(pPosition,pMessage);
+                        Task task = setNewTask(pPosition, pMessage);
                         CommonUtility.getUserId(this);
                         FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
                         firebaseDatabase.writeNewTask(task);
@@ -401,7 +424,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    private Task setNewTask(int pPosition,String pMessage) {
+    private Task setNewTask(int pPosition, String pMessage) {
         Task task = new Task();
         task.setCreatedby(CommonUtility.getUserId(this));
         task.setTaskID(CommonUtility.convertLocalTimeToUTC());

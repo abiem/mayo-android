@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     android:id="@+id/relativeMapLayout"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.mayo.activities.MapActivity">
 
@@ -19,18 +19,21 @@
         android:layout_height="@dimen/height_80"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/margin_20"
+        android:layout_marginEnd="@dimen/margin_20"
+        android:layout_marginRight="@dimen/margin_20"
+        android:layout_marginTop="@dimen/margin_40"
         android:background="@drawable/background_oval"
         android:contentDescription="@string/count"
         android:gravity="center"
+        android:text="0"
         android:textColor="@color/white"
-        android:textSize="@dimen/tx_18" />
+        android:textSize="@dimen/tx_22" />
 
     <com.mayo.viewclasses.CustomViewPager
         android:id="@+id/viewPagerMapView"
         android:layout_width="match_parent"
-        android:fitsSystemWindows="true"
         android:layout_height="@dimen/height_300"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:fitsSystemWindows="true" />
 
 </RelativeLayout>

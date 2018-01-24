@@ -7,6 +7,7 @@
     <dimen name="margin_20">20dp</dimen>
     <dimen name="margin_10">10dp</dimen>
     <dimen name="margin_5">5dp</dimen>
+    <dimen name="margin_8">8dp</dimen>
     <dimen name="margin_15">15dp</dimen>
     <dimen name="margin_30">30dp</dimen>
     <dimen name="margin_40">40dp</dimen>
@@ -19,6 +20,7 @@
     <!--TextSize-->
     <dimen name="tx_18">18sp</dimen>
     <dimen name="tx_22">22sp</dimen>
+    <dimen name="tx_25">25sp</dimen>
     <dimen name="tx_20">24sp</dimen>
     <dimen name="tx_16">16sp</dimen>
     <dimen name="tx_24">24sp</dimen>
@@ -53,4 +55,14 @@
     <dimen name="el_20">20dp</dimen>
     <dimen name="el_25">25dp</dimen>
     <dimen name="el_36">36dp</dimen>
+
+    <!--Scaling Size-->
+    <dimen name="scale_210">-210dp</dimen>
+    <dimen name="scale_240">-240dp</dimen>
+    <dimen name="scale_270">-270dp</dimen>
+    <dimen name="scale_300">-300dp</dimen>
+    <dimen name="scale_400">-400dp</dimen>
+    <dimen name="scale_50">-50dp</dimen>
+    <dimen name="scale_40">-40dp</dimen>
+
 </resources>

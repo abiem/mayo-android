@@ -203,6 +203,9 @@ public class CommonUtility {
             lp.height = WindowManager.LayoutParams.MATCH_PARENT;
             mCustomDialog.setContentView(pLayout);
             mCustomDialog.getWindow().setAttributes(lp);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mCustomDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            }
             mCustomDialog.getWindow().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(pActivity, R.color.colorDarkTransparent)));
             mCustomDialog.show();
             return mCustomDialog;
@@ -213,6 +216,13 @@ public class CommonUtility {
     public static void goToSettings(Context pContext) {
         Intent myAppSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.parse(com.mayo.Utility.Constants.sKeyForPackage + pContext.getPackageName()));
+        myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
+        myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        pContext.startActivity(myAppSettings);
+    }
+
+    public static void goToSettingsForGpsLocation(Context pContext) {
+        Intent myAppSettings = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
         myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
         myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         pContext.startActivity(myAppSettings);

@@ -5,7 +5,9 @@
     <string name="cantgetlocation">Can\'t get current location</string>
     <string name="open_location_settings">Please enable Location.</string>
     <string name="givelocationpermission">Please give location permission.</string>
-    <string name="tip_message_one">TIP: Mayo works best if you choose \"Always share location\".</string>
+    <string name="tip_message_one">TIP:</string>
+    <string name="tip_message_one_new"> Mayo works best if you choose </string>
+    <string name="tip_message_one_new2">  \"Always share location\".</string>
     <string name="tip_message_two">We value your privacy and batter life so \'Always\' simply allows us to periodically locate nearby
         help quests even if you forget to open the app :)</string>
     <string name="got_it">Got it</string>
@@ -30,7 +32,7 @@
     <string name="tutorial1">We all need a little help sometimes in person.</string>
     <string name="tutorial2">Lets\'s bring the world closer together &amp; lend a hand to those beside us.</string>
     <string name="tutorial3">Now help us figure out where you are so you can help others &amp; collect Mayo points!</string>
-    <string name="tutorial4">We won;t share your location unless the app is open infront of you.</string>
+    <string name="tutorial4">We won\'t share your location unless the app is open infront of you.</string>
     <string name="button_text_tutorial_one">Right</string>
     <string name="button_text_tutorial_second">Oh yeah!</string>
     <string name="button_text_tutorial_third">Alright!</string>

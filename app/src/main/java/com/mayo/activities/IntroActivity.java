@@ -2,7 +2,9 @@ package com.mayo.activities;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.pm.PackageManager;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +13,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.cunoraz.gifview.library.GifView;
 import com.mayo.R;
@@ -29,8 +30,8 @@ import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
-
 import java.util.ArrayList;
+
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_intro)
@@ -41,22 +42,30 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     @ViewById(R.id.viewPagerTutorial)
     CustomViewPager mCustomViewPager;
 
-    @ViewById(R.id.imageintroview)
-    GifView imageIntroView;
-
     @ViewById(R.id.rotateimage)
     ImageView rotateImage;
 
+    @ViewById(R.id.imageHandsView)
+    GifView imageHandView;
+
+    @ViewById(R.id.imagePins)
+    GifView imagePins;
+
+
     ArrayList<TutorialModel> tutorialModels;
+    CountDown mCountDown;
+    boolean isHandViewShown;
 
     @AfterViews
     protected void init() {
-        imageIntroView.setVisibility(View.GONE);
+        imageHandView.setVisibility(View.GONE);
+        imageHandView.setGifResource(R.drawable.thanks);
+        imagePins.setGifResource(R.drawable.newpin);
         if (!CommonUtility.getTutorialDone(this)) {
             mMayoApplication.setActivity(this);
             setTutorialArray();
             setViewPager();
-            AnonymousAuth.signInAnonymously(this);
+            //AnonymousAuth.signInAnonymously(this);
         } else {
             showMapActivity();
         }
@@ -119,19 +128,20 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         switch (whichView) {
             case FIRST:
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
-                Animation animation = AnimationUtils.loadAnimation(this, R.anim.rotate);
-                rotateImage.startAnimation(animation);
+                playGifImage();
+                mCountDown = new CountDown(3500, 1000);
                 break;
             case SECOND:
-                imageIntroView.setVisibility(View.VISIBLE);
-                //Glide.with(this).load(R.drawable.second_tutorial_pin).asGif().into(imageIntroView);
-
-                imageIntroView.setGifResource(R.drawable.second_tutorial_pin);
-                imageIntroView.play();
+                rotateImage.clearAnimation();
+                rotateImage.setVisibility(View.GONE);
+                pauseGifImage();
+                playGifImageSecond();
+                mCountDown.cancel();
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 break;
             case THIRD:
                 locationDialogView();
+                mCountDown.cancel();
                 break;
             case FOURTH:
                 //below API level 21
@@ -152,9 +162,9 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
                 @Override
                 public void onClick(View v) {
                     dialog.dismiss();
-                    //Glide.with(IntroActivity.this).load(R.drawable.third_tutorial_pin).asGif().into(imageIntroView);
-                    imageIntroView.setGifResource(R.drawable.third_tutorial_pin);
-                    imageIntroView.play();
+                    pauseGifImageSecond();
+                    imageHandView.setGifResource(R.drawable.thirdpin);
+                    playGifImage();
                     mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 }
             });
@@ -163,9 +173,54 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
 
 
     private void openMapActivity() {
-        imageIntroView.pause();
+        imageHandView.pause();
         MapActivity_.intent(IntroActivity.this).start();
     }
-}
 
+    private class CountDown extends CountDownTimer {
+        CountDown(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            start();
+        }
+
+        @Override
+        public void onFinish() {
+            if (isHandViewShown) {
+                imageHandView.setVisibility(View.GONE);
+            }
+            mCountDown.cancel();
+            if (!isHandViewShown) {
+                rotateImage.setVisibility(View.VISIBLE);
+                Animation animation = AnimationUtils.loadAnimation(IntroActivity.this, R.anim.rotate);
+                rotateImage.startAnimation(animation);
+                mCountDown = new CountDown(2500, 1000);
+                isHandViewShown = true;
+            }
+        }
+
+        @Override
+        public void onTick(long duration) {
+        }
+    }
+
+    private void playGifImage() {
+        imageHandView.setVisibility(View.VISIBLE);
+        imageHandView.play();
+    }
+
+    private void pauseGifImage() {
+        imageHandView.pause();
+        imageHandView.setVisibility(View.GONE);
+    }
+
+    private void playGifImageSecond() {
+        imagePins.setVisibility(View.VISIBLE);
+        imagePins.play();
+    }
+
+    private void pauseGifImageSecond() {
+        imagePins.pause();
+        imagePins.setVisibility(View.GONE);
+    }
+}
 
