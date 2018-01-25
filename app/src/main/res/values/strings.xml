@@ -16,6 +16,8 @@
     <string name="settings">Settings</string>
     <string name="help_message">What do you need help with?</string>
     <string name="ai_message">So our AI is a bit bored, help us by sending a message!</string>
+    <string name="helping_message">Helping people around you is simple. Swipe the cards or look around the map.</string>
+    <string name="need_help">Need help? Swipe to the very left to setup a help quest.</string>
     <string name="can_help">I can help</string>
     <string name="count">This is for count check.</string>
     <string name="my_location">My Location</string>
@@ -26,6 +28,11 @@
     <string name="show_gif_image">This is for showing gif image</string>
     <string name="post">Post</string>
     <string name="expire_msg">Automatically expires in 1 hr or if you leave the area</string>
+    <string name="ai_chat_thanks_message">Thanks for the help! Do you want to be notified when you get a response back?</string>
+    <string name="sure_message">Sure</string>
+    <string name="wooho">Wooho thank you!</string>
+    <string name="send_message">Send</string>
+    <string name="new_message">New Message</string>
 
 
     <!--Tutorial Strings-->

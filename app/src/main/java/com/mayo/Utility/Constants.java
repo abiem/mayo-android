@@ -38,4 +38,8 @@ public class Constants {
     public enum PermissionDialog {
         AppPermissionDialog, LocationDialog
     }
+
+    public enum UserType {
+        SELF, OTHER
+    }
 }

@@ -6,6 +6,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimary</item>
+        <item name="actionBarStyle">@style/AppThemeActionBar</item>
     </style>
 
     <!-- Base application theme. -->
@@ -14,6 +15,17 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorDarkBlue</item>
         <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+
+    <style name="AppThemeActionBar" parent="@style/Widget.AppCompat.ActionBar">
+        <item name="displayOptions">showCustom</item>
+        <item name="background">@color/colorGrey</item>
+        <item name="actionBarSize">50dp</item>
+        <item name="height">50dp</item>
+        <item name="contentInsetLeft">0dp</item>
+        <item name="contentInsetStart">0dp</item>
+        <item name="contentInsetEnd">0dp</item>
+        <item name="android:layout_marginLeft">0dp</item>
     </style>
 
 

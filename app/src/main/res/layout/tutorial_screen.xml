@@ -5,7 +5,7 @@
     android:layout_height="@dimen/height_270"
     android:background="@android:drawable/dialog_holo_light_frame"
     app:cardCornerRadius="@dimen/rd_4"
-    app:cardElevation="30dp">
+    app:cardElevation="@dimen/el_30">
 
         <RelativeLayout
             android:id="@+id/backgroundview"

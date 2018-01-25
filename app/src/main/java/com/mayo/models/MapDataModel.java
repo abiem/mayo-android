@@ -9,6 +9,8 @@ import android.graphics.drawable.Drawable;
 public class MapDataModel {
     private Drawable backgroundView;
     private GradientColor gradientColor;
+    private String textMessage;
+    private String buttonMessage;
     public Drawable getBackgroundView() {
         return backgroundView;
     }
@@ -23,5 +25,21 @@ public class MapDataModel {
 
     public void setGradientColor(GradientColor gradientColor) {
         this.gradientColor = gradientColor;
+    }
+
+    public String getTextMessage() {
+        return textMessage;
+    }
+
+    public void setTextMessage(String textMessage) {
+        this.textMessage = textMessage;
+    }
+
+    public String getButtonMessage() {
+        return buttonMessage;
+    }
+
+    public void setButtonMessage(String buttonMessage) {
+        this.buttonMessage = buttonMessage;
     }
 }

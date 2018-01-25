@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/margin_60"
+    android:layout_marginLeft="@dimen/margin_10"
+    android:layout_marginRight="@dimen/margin_60"
+    android:layout_marginStart="@dimen/margin_10"
+    android:background="@drawable/chat_bubble_grey">
+
+    <TextView
+        android:id="@+id/textview_message_reciever"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_20"
+        android:autoLink="web"
+        android:padding="@dimen/padding_8"
+        android:textColor="@color/white"
+        android:textSize="@dimen/tx_18" />
+
+
+</RelativeLayout>

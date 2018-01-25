@@ -12,10 +12,13 @@
     <dimen name="margin_30">30dp</dimen>
     <dimen name="margin_40">40dp</dimen>
     <dimen name="margin_50">50dp</dimen>
+    <dimen name="margin_60">60dp</dimen>
 
     <!--Padding-->
     <dimen name="padding_20">20dp</dimen>
     <dimen name="padding_16">16dp</dimen>
+    <dimen name="padding_8">8dp</dimen>
+    <dimen name="padding_4">4dp</dimen>
 
     <!--TextSize-->
     <dimen name="tx_18">18sp</dimen>
@@ -23,6 +26,7 @@
     <dimen name="tx_25">25sp</dimen>
     <dimen name="tx_20">24sp</dimen>
     <dimen name="tx_16">16sp</dimen>
+    <dimen name="tx_14">14sp</dimen>
     <dimen name="tx_24">24sp</dimen>
     <dimen name="tx_26">26sp</dimen>
 
@@ -36,6 +40,8 @@
     <dimen name="height_220">220dp</dimen>
     <dimen name="height_50">50dp</dimen>
     <dimen name="height_20">20dp</dimen>
+    <dimen name="height_4">4dp</dimen>
+    <dimen name="height_8">8dp</dimen>
     <dimen name="height_80">80dp</dimen>
 
     <!--Widths of layouts-->
@@ -46,6 +52,7 @@
 
     <!--Radius-->
     <dimen name="rd_4">4dp</dimen>
+    <dimen name="rd_8">8dp</dimen>
 
     <!--Elevation-->
     <dimen name="el_5">5dp</dimen>
@@ -54,6 +61,7 @@
     <dimen name="el_15">15dp</dimen>
     <dimen name="el_20">20dp</dimen>
     <dimen name="el_25">25dp</dimen>
+    <dimen name="el_30">30dp</dimen>
     <dimen name="el_36">36dp</dimen>
 
     <!--Scaling Size-->

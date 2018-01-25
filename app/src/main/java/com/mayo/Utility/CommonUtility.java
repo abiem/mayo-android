@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -21,11 +22,13 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -275,6 +278,23 @@ public class CommonUtility {
 
     public static String getLocalTime() {
         return utcTimeFormat.format(new Date());
+    }
+
+    public static String timeFormat(long pMessage) {
+        SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("h:mm a", Locale.US);
+        return SIMPLE_DATE_FORMAT.format(pMessage);
+    }
+
+    private boolean isKeyboardShown(View rootView) {
+    /* 128dp = 32dp * 4, minimum button height 32dp and generic 4 rows soft keyboard */
+        final int SOFT_KEYBOARD_HEIGHT_DP_THRESHOLD = 128;
+        Rect r = new Rect();
+        rootView.getWindowVisibleDisplayFrame(r);
+        DisplayMetrics dm = rootView.getResources().getDisplayMetrics();
+    /* heightDiff = rootView height - status bar height (r.top) - visible frame height (r.bottom - r.top) */
+        int heightDiff = rootView.getBottom() - r.bottom;
+    /* Threshold size: dp to pixels, multiply with display density */
+        return heightDiff > SOFT_KEYBOARD_HEIGHT_DP_THRESHOLD * dm.density;
     }
 
 }

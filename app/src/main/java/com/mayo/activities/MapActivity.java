@@ -41,6 +41,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -104,13 +105,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     ArrayList<MapDataModel> mMapDataModels;
     Dialog mDialog;
 
+    private MapViewPagerAdapter mMapViewPagerAdapter;
+
     @AfterViews
     protected void init() {
         mMayoApplication.setActivity(this);
         mMapView.onCreate(null);
-        //setDataModel();
-        //setViewPager();
-        //scrollViewPager();
+        setDataModel();
+        setViewPager();
+        scrollViewPager();
         checkGoogleServiceAvailable();
         mCountButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,20 +171,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onPageSelected(int position) {
                 switch (position) {
                     case 0:
-//                        if (CommonUtility.getSoftKeyBoardState(MapActivity.this)) {
-//                            CommonUtility.showSoftKeyBoard(MapActivity.this);
-//                        }
+                        mMapViewPagerAdapter.setCardViewVisible();
                         break;
                     default:
                         CommonUtility.hideSoftKeyboard(MapActivity.this);
-
                 }
-
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
+                switch (state) {
+                    case ViewPager.SCROLL_STATE_DRAGGING:
 
+                        break;
+
+                    case ViewPager.SCROLL_STATE_IDLE:
+
+
+                        break;
+
+                    case ViewPager.SCROLL_STATE_SETTLING:
+                        break;
+                }
             }
         });
     }
@@ -197,18 +208,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mapDataModel.setGradientColor(gradientColor);
             Drawable drawable = CommonUtility.getGradientDrawable(CardColor.choices[color][0], CardColor.choices[color][1], this);
             mapDataModel.setBackgroundView(drawable);
+            switch (i) {
+                case 0:
+                    mapDataModel.setTextMessage(getResources().getString(R.string.help_message));
+                    mapDataModel.setButtonMessage(getResources().getString(R.string.post));
+                    break;
+                case 1:
+                    mapDataModel.setTextMessage(getResources().getString(R.string.helping_message));
+                    break;
+                case 2:
+                    mapDataModel.setTextMessage(getResources().getString(R.string.ai_message));
+                    break;
+                case 3:
+                    mapDataModel.setTextMessage(getResources().getString(R.string.need_help));
+                    break;
+            }
+
             mMapDataModels.add(mapDataModel);
         }
-
-        //this is for expiry card
-        MapDataModel mapDataModel = new MapDataModel();
-        Drawable drawable = CommonUtility.getGradientDrawable(CardColor.expireCard[0], CardColor.expireCard[1], this);
-        mapDataModel.setBackgroundView(drawable);
-        GradientColor gradientColor = new GradientColor();
-        gradientColor.setStartColor(CardColor.expireCard[1]);
-        gradientColor.setEndColor(CardColor.expireCard[0]);
-        mapDataModel.setGradientColor(gradientColor);
-        mMapDataModels.add(mapDataModel);
     }
 
     private void setViewPager() {
@@ -216,7 +233,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mViewPagerMap.setClipToPadding(false);
         mViewPagerMap.setPadding(64, 80, 64, 80);
         mViewPagerMap.setPageMargin(24);
-        mViewPagerMap.setAdapter(new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap));
+        mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap);
+        mViewPagerMap.setAdapter(mMapViewPagerAdapter);
         mViewPagerMap.setCurrentItem(1);
     }
 
@@ -333,6 +351,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mCurrentLat = location.getLatitude();
         mCurrentLng = location.getLongitude();
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, Constants.sKeyCameraZoom);
+        CameraPosition cameraPosition = new CameraPosition(ll, 45, 45, 45);
+        update = CameraUpdateFactory.newCameraPosition(cameraPosition);
         mGoogleMap.animateCamera(update);
         if (mCurrentLocationCircle == null) {
             drawCircle(location);
@@ -403,23 +423,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onClick(View pView, int pPosition, String pMessage) {
+    public void onClick(View pView, int pPosition) {
         switch (pPosition) {
             case 0:
                 switch (pView.getId()) {
                     case R.id.viewText:
-                        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                         CommonUtility.setSoftKeyBoardState(true, this);
+                        CommonUtility.showSoftKeyBoard(this);
                         break;
                     case R.id.textbutton:
-                        Task task = setNewTask(pPosition, pMessage);
-                        CommonUtility.getUserId(this);
-                        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
-                        firebaseDatabase.writeNewTask(task);
+//                        Task task = setNewTask(pPosition, pMessage);
+//                        CommonUtility.getUserId(this);
+//                        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+//                        firebaseDatabase.writeNewTask(task);
                         break;
                     case R.id.imagebutton:
+                        CommonUtility.hideSoftKeyboard(this);
                         break;
                 }
+                break;
+            case 1:
+                break;
+            case 2:
+                openChatMessageView();
                 break;
         }
     }
@@ -439,5 +465,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         task.setCompleteType("");
         task.setTaskDescription(pMessage);
         return task;
+    }
+
+    //this is for fake card
+    public void openChatMessageView() {
+        ChatActivity_.intent(MapActivity.this).start();
     }
 }

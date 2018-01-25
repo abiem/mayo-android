@@ -1,10 +1,13 @@
 package com.mayo.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v7.widget.CardView;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.mayo.R;
+import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.MapDataModel;
@@ -32,12 +36,12 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     private ArrayList<MapDataModel> mMapDataModelArrayList;
     private ViewClickListener mClickListener;
     private CustomViewPager mCustomViewPager;
-    private TextView mViewText;
-    private TextView mBelowViewPagerText;
-    private LinearLayout mParentImageButton;
+    private TextView mViewText, mImageTextView;
+    private LinearLayout mParentImageButton, mChatPopupLayout;
     private ImageButton mImageButton;
     private EditText mEditText;
     private Button mTextButton;
+    private CardView mCardView;
 
     public MapViewPagerAdapter(Context pContext, ArrayList<MapDataModel> pMapDataModel, ViewClickListener pClickListener, CustomViewPager pCustomViewPager) {
         mContext = pContext;
@@ -49,34 +53,49 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_one, collection, false);
+        ViewGroup layout = null;
+        switch (position) {
+            case 0:
+                layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_one, collection, false);
+                mParentImageButton = (LinearLayout) layout.findViewById(R.id.parentimagebutton);
+                mTextButton = (Button) layout.findViewById(R.id.textbutton);
+                mEditText = (EditText) layout.findViewById(R.id.postEditText);
+                mImageButton = (ImageButton) layout.findViewById(R.id.imagebutton);
+                mCardView = (CardView) layout.findViewById(R.id.mapcardView);
+                break;
+            default:
+                layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_two, collection, false);
+                mImageTextView = (TextView) layout.findViewById(R.id.imageTextView);
+                mImageButton = (ImageButton) layout.findViewById(R.id.imageButtonHelp);
+                mChatPopupLayout = (LinearLayout) layout.findViewById(R.id.chatPopupLayout);
+                break;
+        }
         LinearLayout backgroundView = (LinearLayout) layout.findViewById(R.id.backgroundmapviewpager);
         mViewText = (TextView) layout.findViewById(R.id.viewText);
-        mBelowViewPagerText = (TextView) layout.findViewById(R.id.msg);
-        mParentImageButton = (LinearLayout) layout.findViewById(R.id.parentimagebutton);
-        mImageButton = (ImageButton) layout.findViewById(R.id.imagebutton);
-        mTextButton = (Button) layout.findViewById(R.id.textbutton);
-        mEditText = (EditText) layout.findViewById(R.id.postEditText);
-        CardView mapCardView = (CardView) layout.findViewById(R.id.mapcardView);
-        if (position == 0) {
-            mViewText.setText(mContext.getResources().getString(R.string.help_message));
-            mImageButton.setAlpha(Constants.sTransparencyLevelFade);
-            mViewText.setAlpha(Constants.sTransparencyLevelFade);
-            mTextButton.setAlpha(Constants.sTransparencyLevelFade);
-            mBelowViewPagerText.setText(mContext.getResources().getString(R.string.expire_msg));
-            mViewText.setOnClickListener(this);
-            mTextButton.setOnClickListener(this);
-            mImageButton.setOnClickListener(this);
-        } else {
-            mParentImageButton.setVisibility(View.GONE);
-            mTextButton.setVisibility(View.GONE);
+        mViewText.setText(mMapDataModelArrayList.get(position).getTextMessage());
+        switch (position) {
+            case 0: //first card
+                mCardView.setVisibility(View.INVISIBLE);
+                mImageTextView.setVisibility(View.GONE);
+                mImageButton.setAlpha(Constants.sTransparencyLevelFade);
+                mViewText.setAlpha(Constants.sTransparencyLevelFade);
+                mTextButton.setAlpha(Constants.sTransparencyLevelFade);
+                mViewText.setOnClickListener(this);
+                mTextButton.setOnClickListener(this);
+                mImageButton.setOnClickListener(this);
+                break;
+            case 1: //first fake card
+                mChatPopupLayout.setVisibility(View.GONE);
+                break;
+            case 2: //second fake card
+                mChatPopupLayout.setVisibility(View.VISIBLE);
+                mChatPopupLayout.setOnClickListener(this);
+                break;
+            case 3: //third fake card
+                mChatPopupLayout.setVisibility(View.GONE);
+                break;
         }
-        if (position == 4) {
-            backgroundView.setAlpha(Constants.sTransparencyLevelBackground);
-            if (mapCardView != null) {
-                mapCardView.setBackgroundColor(Color.TRANSPARENT);
-            }
-        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             backgroundView.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
         } else {
@@ -105,10 +124,28 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     @Override
     public void onClick(View v) {
         int position = mCustomViewPager.getCurrentItem();
-        if (v.getId() == R.id.viewText) {
-            mEditText.setVisibility(View.VISIBLE);
-            mViewText.setVisibility(View.GONE);
+        switch (v.getId()) {
+            case R.id.viewText:
+                mEditText.setVisibility(View.VISIBLE);
+                mViewText.setVisibility(View.GONE);
+                mEditText.setCursorVisible(true);
+                break;
+            case R.id.imagebutton:
+                mEditText.setVisibility(View.GONE);
+                mViewText.setVisibility(View.VISIBLE);
+                break;
         }
-        mClickListener.onClick(v, position,mEditText.getText().toString());
+
+        mClickListener.onClick(v, position);
+    }
+
+    public void setCardViewVisible() {
+        if (mCardView != null)
+            mCardView.setVisibility(View.VISIBLE);
+    }
+
+    public void deleteItemFromArrayList(int pIndex) {
+        mMapDataModelArrayList.remove(pIndex);
+        notifyDataSetChanged();
     }
 }

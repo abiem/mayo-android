@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mayo.activities.ChatActivity">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/chat_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/parentMessageSend"
+        android:layout_marginBottom="4dp"
+        android:clipToPadding="false"
+        android:divider="@drawable/chat_divider"
+        android:paddingBottom="4dp"
+        android:paddingTop="8dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:stackFromBottom="false"
+        android:transcriptMode="normal" />
+
+    <LinearLayout
+        android:id="@+id/parentMessageSend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/background_chat"
+        android:orientation="horizontal"
+        android:padding="@dimen/padding_8">
+
+        <EditText
+            android:id="@+id/messageChat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="9"
+            android:background="@drawable/background_chat_edittext"
+            android:hint="@string/new_message"
+            android:inputType="text"
+            android:padding="@dimen/padding_8"
+            android:textSize="@dimen/tx_18" />
+
+        <Button
+            android:id="@+id/messageSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:text="@string/send_message"
+            android:textColor="@color/ColorBlackOpacity"
+            android:textAllCaps="false"
+            android:textSize="@dimen/tx_18" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -36,4 +36,6 @@
     <color name="colorDarkTransparent">#26000000</color>
     <color name="colorTransparentBlue">#28508fbc</color>
     <color name="colorDarkSkyBlue">#1F8AFF</color>
+    <color name="colorDefaultGrey">#128E8E93</color>
+    <color name="ColorBlackOpacity">#99000000</color>
 </resources>

@@ -37,19 +37,16 @@
             android:theme="@style/AppThemeWithNoActionBar"
             android:windowSoftInputMode="adjustResize" />
 
-
         <service android:name=".firebase.services.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
         <service android:name=".firebase.services.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-
         <service
             android:name=".backgroundservice.BackgroundLocationService"
             android:enabled="true"
@@ -65,6 +62,11 @@
         <uses-library
             android:name="com.google.android.maps"
             android:required="true" />
+
+        <activity
+            android:name=".activities.ChatActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>
