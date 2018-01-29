@@ -29,21 +29,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/transparent"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
                 android:gravity="top"
+                android:hint="@string/help_message"
                 android:inputType="textMultiLine"
                 android:maxLength="80"
                 android:textColor="@color/white"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/viewText"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textColor="@color/white"
-                android:textSize="@dimen/tx_25"
+                android:textColorHint="#99FFFFFF"
+                android:textSize="@dimen/tx_20"
                 android:visibility="visible" />
+
+            <EditText
+                android:id="@+id/editText"
+                android:layout_width="1dp"
+                android:layout_height="1dp"
+                android:focusable="true" />
         </LinearLayout>
 
         <LinearLayout
@@ -55,7 +54,7 @@
             <LinearLayout
                 android:id="@+id/parentimagebutton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:orientation="horizontal">
@@ -75,6 +74,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/transparent"
+                android:enabled="true"
+                android:gravity="center"
                 android:text="@string/post"
                 android:textAllCaps="false"
                 android:textColor="@color/white"

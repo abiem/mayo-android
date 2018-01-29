@@ -121,6 +121,38 @@ public class CommonUtility {
         return mSharedPreferences.getBoolean(Constants.sharedPreferences.sSoftKeyBoard, false);
     }
 
+    public static void setFakeCardShownOrNot(boolean psetValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sFakeCardsShown, psetValue);
+        editor.apply();
+    }
+
+    public static boolean getFakeCardShownOrNot(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeCardsShown, false);
+    }
+
+    public static void setHandsAnimationShownOnMap(boolean psetValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sAnimationShownOnMap, psetValue);
+        editor.apply();
+    }
+
+    public static boolean getHandsAnimationShownOnMap(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sAnimationShownOnMap, false);
+    }
+
 
     public static boolean askForPermissionLocation(Activity activity) {
         int permissionCheck;
@@ -247,19 +279,6 @@ public class CommonUtility {
         gradient.setGradientType(GradientDrawable.LINEAR_GRADIENT);
         gradient.setGradientCenter(70.0f, 0.0f);
         return gradient;
-    }
-
-    public static void showSoftKeyBoard(Context pContext) {
-        InputMethodManager imm = (InputMethodManager) pContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null)
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-    }
-
-    public static void hideSoftKeyboard(Activity pActivity) {
-        InputMethodManager imm = (InputMethodManager) pActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null && pActivity.getCurrentFocus() != null) {
-            imm.hideSoftInputFromWindow(pActivity.getCurrentFocus().getWindowToken(), 0);
-        }
     }
 
     public static String convertLocalTimeToUTC() {

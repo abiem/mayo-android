@@ -20,7 +20,7 @@ public class Constants {
     public static final int sKeyForMapRadius = 200;
 
     public static final float sTransparencyLevelFade = 0.5f;
-    public static final float sTransparencyLevelFull = 0.0f;
+    public static final float sNonTransparencyLevel = 1.0f;
     public static final float sTransparencyLevelBackground = 0.8f;
     public static final String sConstantString = "";
 
@@ -29,6 +29,8 @@ public class Constants {
         static final String sUserId = "firebaseUserId";
         static final String sDeviceToken = "deviceToken";
         static final String sSoftKeyBoard = "softKeyBoardShown";
+        static final String sFakeCardsShown = "isFakeCardShown";
+        static final String sAnimationShownOnMap = "isAnimationShowingOnMap";
     }
 
     public enum TutorialViewScreen {
@@ -41,5 +43,18 @@ public class Constants {
 
     public enum UserType {
         SELF, OTHER
+    }
+
+    public enum CardType {
+        POST(0), FAKECARDONE(1), FAKECARDTWO(2), FAKECARDTHREE(3), DEFAULT(4);
+        int position;
+
+        CardType(int position) {
+            this.position = position;
+        }
+
+        public int getValue() {
+            return position;
+        }
     }
 }

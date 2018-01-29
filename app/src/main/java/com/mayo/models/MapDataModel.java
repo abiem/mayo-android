@@ -11,6 +11,17 @@ public class MapDataModel {
     private GradientColor gradientColor;
     private String textMessage;
     private String buttonMessage;
+    private int fakeCardPosition;
+    private boolean isFakeCard;
+
+    public boolean isFakeCard() {
+        return isFakeCard;
+    }
+
+    public void setFakeCard(boolean fakeCard) {
+        isFakeCard = fakeCard;
+    }
+
     public Drawable getBackgroundView() {
         return backgroundView;
     }
@@ -25,6 +36,14 @@ public class MapDataModel {
 
     public void setGradientColor(GradientColor gradientColor) {
         this.gradientColor = gradientColor;
+    }
+
+    public int getFakeCardPosition() {
+        return fakeCardPosition;
+    }
+
+    public void setFakeCardPosition(int fakeCardPosition) {
+        this.fakeCardPosition = fakeCardPosition;
     }
 
     public String getTextMessage() {

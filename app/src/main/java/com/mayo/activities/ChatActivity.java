@@ -2,6 +2,7 @@ package com.mayo.activities;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -11,17 +12,22 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.adapters.ChatListAdapter;
+import com.mayo.application.MayoApplication;
 import com.mayo.models.Message;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.TextChange;
@@ -46,8 +52,14 @@ public class ChatActivity extends AppCompatActivity {
     @ViewById(R.id.messageSend)
     Button mMessageSend;
 
+    @ViewById(R.id.progressBar)
+    ProgressBar mProgressBar;
+
     @ViewById(R.id.chat_list_view)
     RecyclerView mChatRecyclerView;
+
+    @App
+    MayoApplication mMayoApplication;
 
     String mMessageText;
     Message mMessage;
@@ -111,10 +123,12 @@ public class ChatActivity extends AppCompatActivity {
     @Click(R.id.messageSend)
     protected void sendMessageFromUser() {
         if (!mMessageChatText.getText().toString().trim().isEmpty()) {
-            mMessageText = mMessageChatText.getText().toString().trim();
-            sendMessage(mMessageText, Constants.UserType.OTHER);
-            mMessageChatText.setText("");
-            execSchedular();
+            if (mProgressBar.getVisibility() == View.GONE) {
+                mMessageText = mMessageChatText.getText().toString().trim();
+                sendMessage(mMessageText, Constants.UserType.OTHER);
+                mMessageChatText.setText("");
+                execSchedular();
+            }
         }
     }
 
@@ -145,7 +159,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Message message = new Message();
-                message.setText("\uD83D\uDE31" + getResources().getString(R.string.wooho)); // 10 spaces;
+                message.setText("\uD83D\uDE31" + " " + getResources().getString(R.string.wooho)); // 10 spaces;
                 message.setMessageFromLocalDevice(false);
                 message.setDateCreated(CommonUtility.timeFormat(new Date().getTime()));
                 message.setUserType(Constants.UserType.SELF);
@@ -154,6 +168,11 @@ public class ChatActivity extends AppCompatActivity {
                 ChatActivity.this.runOnUiThread(new Runnable() {
                     public void run() {
                         mChatAdapter.notifyDataSetChanged();
+                        new CountDown(4000, 1000);
+                        mProgressBar.setVisibility(View.VISIBLE);
+                        mMessageChatText.setCursorVisible(false);
+                        mMayoApplication.hideKeyboard(getCurrentFocus());
+                        CommonUtility.setHandsAnimationShownOnMap(true, ChatActivity.this);
                     }
                 });
 
@@ -165,6 +184,23 @@ public class ChatActivity extends AppCompatActivity {
 
     public static String encode(String s) {
         return StringEscapeUtils.escapeJava(s);
+    }
+
+    private class CountDown extends CountDownTimer {
+        CountDown(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            start();
+        }
+
+        @Override
+        public void onFinish() {
+            mProgressBar.setVisibility(View.GONE);
+            finish();
+        }
+
+        @Override
+        public void onTick(long duration) {
+        }
     }
 
 }

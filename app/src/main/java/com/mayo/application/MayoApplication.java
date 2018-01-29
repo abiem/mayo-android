@@ -5,6 +5,8 @@ import android.content.Context;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -43,5 +45,20 @@ public class MayoApplication extends MultiDexApplication {
 
     public void showToast(Context mContext, String mMessage) {
         Toast.makeText(mContext, "" + mMessage, Toast.LENGTH_SHORT).show();
+    }
+
+    public void showSoftKeyBoard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null)
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+    }
+
+
+    public void hideKeyboard(View view) {
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null)
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

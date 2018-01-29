@@ -13,6 +13,8 @@
     <dimen name="margin_40">40dp</dimen>
     <dimen name="margin_50">50dp</dimen>
     <dimen name="margin_60">60dp</dimen>
+    <dimen name="margin_250">250dp</dimen>
+    <dimen name="margin_300">300dp</dimen>
 
     <!--Padding-->
     <dimen name="padding_20">20dp</dimen>
@@ -37,6 +39,7 @@
     <dimen name="height_270">270dp</dimen>
     <dimen name="height_300">300dp</dimen>
     <dimen name="height_320">320dp</dimen>
+    <dimen name="height_350">350dp</dimen>
     <dimen name="height_220">220dp</dimen>
     <dimen name="height_50">50dp</dimen>
     <dimen name="height_20">20dp</dimen>

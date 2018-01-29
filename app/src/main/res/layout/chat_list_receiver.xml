@@ -6,6 +6,7 @@
     android:layout_marginLeft="@dimen/margin_10"
     android:layout_marginRight="@dimen/margin_60"
     android:layout_marginStart="@dimen/margin_10"
+    android:layout_marginTop="@dimen/margin_5"
     android:background="@drawable/chat_bubble_grey">
 
     <TextView
@@ -13,10 +14,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/margin_20"
-        android:autoLink="web"
+        android:gravity="center"
         android:padding="@dimen/padding_8"
+        android:text="sdfhjkljskldfgjljglsjlsfjlkgjsfgsfk;gkl;sk;gk;lks;fkg;lk;"
         android:textColor="@color/white"
-        android:textSize="@dimen/tx_18" />
+        android:textSize="@dimen/tx_20" />
 
 
 </RelativeLayout>
