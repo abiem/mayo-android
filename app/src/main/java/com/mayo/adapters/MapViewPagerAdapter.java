@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 
+import android.os.Handler;
+import android.support.annotation.RequiresApi;
 import android.support.v4.view.PagerAdapter;
 import android.support.v7.widget.CardView;
 
@@ -12,6 +14,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -39,13 +43,14 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     private ArrayList<MapDataModel> mMapDataModelArrayList;
     private ViewClickListener mClickListener;
     private CustomViewPager mCustomViewPager;
-    private TextView mImageTextView, mTextView;
+    private TextView mImageTextView, mTextView, mTextViewNew;
     private LinearLayout mChatPopupLayout;
     private ImageButton mImageButton;
     private EditText mEditText, mEdiTextNew;
     private Button mTextButton;
-    private CardView mCardView;
+    private CardView mCardView, mCardViewFakeCards, mCardViewNewCards;
     private MayoApplication mMayoApplication;
+    private boolean isPostViewVisible = false;
 
     public MapViewPagerAdapter(Context pContext, ArrayList<MapDataModel> pMapDataModel, ViewClickListener pClickListener,
                                CustomViewPager pCustomViewPager, Activity pActivity, MayoApplication pMayoApplication) {
@@ -61,7 +66,11 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     public Object instantiateItem(ViewGroup collection, int position) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
         ViewGroup layout = null;
-        Constants.CardType cardType = Constants.CardType.values()[position];
+        int positionOfCardViewShown = position;
+        if (mMapDataModelArrayList.get(position).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue()) {
+            positionOfCardViewShown = Constants.CardType.DEFAULT.getValue();
+        }
+        Constants.CardType cardType = Constants.CardType.values()[positionOfCardViewShown];
         switch (cardType) {
             case POST:
                 layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_one, collection, false);
@@ -70,18 +79,23 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mEdiTextNew = (EditText) layout.findViewById(R.id.editText);
                 mImageButton = (ImageButton) layout.findViewById(R.id.imagebutton);
                 mCardView = (CardView) layout.findViewById(R.id.mapcardView);
-                mEditText.setCursorVisible(false);
+                mMapDataModelArrayList.get(position).setCardView(mCardView);
                 break;
             case FAKECARDONE:
             case FAKECARDTWO:
             case FAKECARDTHREE:
                 layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_two, collection, false);
+                mCardViewFakeCards = (CardView) layout.findViewById(R.id.mapcardViewTwo);
                 mImageTextView = (TextView) layout.findViewById(R.id.imageTextView);
                 mChatPopupLayout = (LinearLayout) layout.findViewById(R.id.chatPopupLayout);
                 mTextView = (TextView) layout.findViewById(R.id.viewText);
+                mMapDataModelArrayList.get(position).setCardView(mCardViewFakeCards);
                 break;
             case DEFAULT:
                 layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_three, collection, false);
+                mTextViewNew = (TextView) layout.findViewById(R.id.viewTextOfThree);
+                mCardViewNewCards = (CardView) layout.findViewById(R.id.mapcardViewThree);
+                mMapDataModelArrayList.get(position).setCardView(mCardViewNewCards);
                 break;
         }
         LinearLayout backgroundView = (LinearLayout) layout.findViewById(R.id.backgroundmapviewpager);
@@ -89,13 +103,22 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
         Constants.CardType cardTypeCheck = Constants.CardType.values()[Type];
         switch (cardTypeCheck) {
             case POST: //first card
-                mCardView.setVisibility(View.INVISIBLE);
-                mImageTextView.setVisibility(View.GONE);
                 mEditText.setCursorVisible(false);
+                if (mMapDataModelArrayList.size() != 1) {
+                    if (!isPostViewVisible) {
+                        mCardView.setVisibility(View.INVISIBLE);
+                        isPostViewVisible = true;
+                    }
+                } else {
+                    mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+                    mEdiTextNew.requestFocus();
+                    mEdiTextNew.setCursorVisible(false);
+                    CommonUtility.setSoftKeyBoardState(false, mContext);
+                    mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+                }
                 mTextButton.setOnClickListener(this);
                 mImageButton.setOnClickListener(this);
                 mEditText.setOnFocusChangeListener(this);
-                mEdiTextNew.setOnFocusChangeListener(this);
                 mEditText.addTextChangedListener(this);
                 mTextButton.setAlpha(Constants.sTransparencyLevelFade);
                 mImageButton.setAlpha(Constants.sTransparencyLevelFade);
@@ -113,7 +136,8 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mChatPopupLayout.setVisibility(View.GONE);
                 mTextView.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
-            default:
+            case DEFAULT: // all cards that is fetch from firebase
+                mTextViewNew.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
         }
 
@@ -125,6 +149,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
         collection.addView(layout);
         return layout;
     }
+
 
     @Override
     public void destroyItem(ViewGroup collection, int position, Object view) {
@@ -171,14 +196,39 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     public void setCardViewVisible() {
         if (mCardView != null) {
             mCardView.setVisibility(View.VISIBLE);
-            mEdiTextNew.requestFocus();
+            if (mEditText.getText().toString().isEmpty()) { //if no message is send to firebase
+                mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+                mEdiTextNew.requestFocus();
+            } else {
+                CommonUtility.setSoftKeyBoardState(true, mContext);
+                mMayoApplication.showSoftKeyBoard();
+            }
         }
     }
 
-    public void deleteItemFromArrayList(int pIndex) {
-        if (pIndex >= 0 && pIndex < mMapDataModelArrayList.size()) {
-            mMapDataModelArrayList.remove(pIndex);
-            notifyDataSetChanged();
+    public void setPostCardText() {
+        if (mEditText.getText().toString().isEmpty()) {
+            mEditText.setText("");
+            mEditText.setHint(mContext.getResources().getString(R.string.help_message));
+            mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+        }
+        mEdiTextNew.requestFocus();
+    }
+
+    public void deleteItemFromArrayList(final int pIndex) {
+        if (pIndex >= 1 && pIndex < mMapDataModelArrayList.size()) {
+//            final Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left);
+//            mMapDataModelArrayList.get(pIndex).getCardView().startAnimation(animation);
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    // TODO Auto-generated method stub
+                    mMapDataModelArrayList.remove(pIndex);
+                    notifyDataSetChanged();
+                    //animation.cancel();
+                }
+            }, 100);
         }
     }
 
@@ -189,14 +239,19 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 if (hasFocus) {
                     mEditText.setHint("");
                     mEditText.setCursorVisible(true);
+                    CommonUtility.setSoftKeyBoardState(true, mContext);
                 } else {
                     mEditText.setHint(mContext.getResources().getString(R.string.help_message));
                     mEditText.setCursorVisible(false);
+                    mEdiTextNew.requestFocus();
+                    CommonUtility.setSoftKeyBoardState(false, mContext);
                 }
                 break;
 
             case R.id.editText:
-                mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+                if (mEditText != null && mEditText.getText().toString().isEmpty()) {
+                    mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+                }
                 break;
         }
     }
@@ -208,12 +263,9 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         mEditText.setCursorVisible(false);
-        mTextButton.setSelected(false);
         mTextButton.setAlpha(Constants.sTransparencyLevelFade);
         mImageButton.setAlpha(Constants.sTransparencyLevelFade);
         if (!mEditText.getText().toString().isEmpty()) {
-            mTextButton.setEnabled(true);
-            mTextButton.setSelected(true);
             mEditText.setCursorVisible(true);
             mTextButton.setAlpha(Constants.sNonTransparencyLevel);
             mImageButton.setAlpha(Constants.sNonTransparencyLevel);

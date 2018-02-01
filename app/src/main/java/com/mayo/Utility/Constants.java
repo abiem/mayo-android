@@ -30,6 +30,10 @@ public class Constants {
         static final String sDeviceToken = "deviceToken";
         static final String sSoftKeyBoard = "softKeyBoardShown";
         static final String sFakeCardsShown = "isFakeCardShown";
+        static final String sFakeCardOne = "FakeCardOne";
+        static final String sFakeCardTwo = "FakeCardTwo";
+        static final String sFakeCardThree = "FakeCardThree";
+        static final String sCardPoints = "CardPoints";
         static final String sAnimationShownOnMap = "isAnimationShowingOnMap";
     }
 

@@ -29,7 +29,6 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.TextChange;
 import org.androidannotations.annotations.ViewById;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -179,9 +178,6 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
-    public static String encode(String s) {
-        return StringEscapeUtils.escapeJava(s);
-    }
 
     private class CountDown extends CountDownTimer {
         CountDown(long millisInFuture, long countDownInterval) {

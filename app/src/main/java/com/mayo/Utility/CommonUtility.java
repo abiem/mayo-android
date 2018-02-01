@@ -130,12 +130,79 @@ public class CommonUtility {
         editor.apply();
     }
 
+
+    //be default value is true, because installing first time build we need to set fake cards
     public static boolean getFakeCardShownOrNot(Context pContext) {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
         }
-        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeCardsShown, false);
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeCardsShown, true);
     }
+
+    public static void setFakeCardOne(boolean psetValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sFakeCardOne, psetValue);
+        editor.apply();
+    }
+
+    public static boolean getFakeCardOne(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeCardOne, false);
+    }
+
+    public static void setFakeCardTwo(boolean psetValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sFakeCardTwo, psetValue);
+        editor.apply();
+    }
+
+    public static void setPoints(int pValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putInt(Constants.sharedPreferences.sCardPoints, pValue);
+        editor.apply();
+    }
+
+    public static int getPoints(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getInt(Constants.sharedPreferences.sCardPoints, 0);
+    }
+
+    public static boolean getFakeCardTwo(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeCardTwo, false);
+    }
+
+    public static void setFakeCardThree(boolean psetValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sFakeCardThree, psetValue);
+        editor.apply();
+    }
+
+    public static boolean getFakeCardThree(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeCardThree, false);
+    }
+
 
     public static void setHandsAnimationShownOnMap(boolean psetValue, Context pContext) {
         if (mSharedPreferences == null) {

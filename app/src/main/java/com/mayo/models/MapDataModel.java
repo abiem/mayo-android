@@ -1,6 +1,7 @@
 package com.mayo.models;
 
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 
 /**
  * Created by Lakshmikodali on 15/01/18.
@@ -13,6 +14,7 @@ public class MapDataModel {
     private String buttonMessage;
     private int fakeCardPosition;
     private boolean isFakeCard;
+    private CardView cardView;
 
     public boolean isFakeCard() {
         return isFakeCard;
@@ -60,5 +62,13 @@ public class MapDataModel {
 
     public void setButtonMessage(String buttonMessage) {
         this.buttonMessage = buttonMessage;
+    }
+
+    public CardView getCardView() {
+        return cardView;
+    }
+
+    public void setCardView(CardView cardView) {
+        this.cardView = cardView;
     }
 }

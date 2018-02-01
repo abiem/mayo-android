@@ -18,6 +18,7 @@
 
     <!--Padding-->
     <dimen name="padding_20">20dp</dimen>
+    <dimen name="padding_24">24dp</dimen>
     <dimen name="padding_16">16dp</dimen>
     <dimen name="padding_8">8dp</dimen>
     <dimen name="padding_4">4dp</dimen>
@@ -56,6 +57,8 @@
     <!--Radius-->
     <dimen name="rd_4">4dp</dimen>
     <dimen name="rd_8">8dp</dimen>
+    <dimen name="rd_25">25dp</dimen>
+    <dimen name="rd_20">20dp</dimen>
 
     <!--Elevation-->
     <dimen name="el_5">5dp</dimen>

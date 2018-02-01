@@ -73,7 +73,9 @@ import com.mayo.viewclasses.CustomViewPager;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.Touch;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
@@ -83,7 +85,7 @@ import static com.mayo.Utility.CommonUtility.isLocationEnabled;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_map)
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationUpdationInterface, ViewClickListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationUpdationInterface, ViewClickListener, GoogleMap.OnMapClickListener {
 
     @App
     MayoApplication mMayoApplication;
@@ -128,14 +130,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setDataModel();
         setViewPager();
         scrollViewPager();
-        setMapViewOnTouchListener();
         checkGoogleServiceAvailable();
+        mCountButton.setText(String.valueOf(CommonUtility.getPoints(this)));
         mCountButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showPointView();
             }
         });
+        if (CommonUtility.getFakeCardOne(this) && CommonUtility.getFakeCardTwo(this) && CommonUtility.getFakeCardThree(this)) {
+            CommonUtility.setFakeCardShownOrNot(false, this);
+        }
     }
 
     private void checkGoogleServiceAvailable() {
@@ -171,7 +176,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     dialog.dismiss();
                 }
             });
-
+            score.setText(String.valueOf(CommonUtility.getPoints(MapActivity.this)));
         }
     }
 
@@ -194,27 +199,43 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onPageSelected(int position) {
                 int Type = mMapDataModels.get(position).getFakeCardPosition();
                 Constants.CardType cardType = Constants.CardType.values()[Type];
+                if (position != Constants.CardType.POST.getValue()) {
+                    if (CommonUtility.getSoftKeyBoardState(MapActivity.this)) {
+                        mMayoApplication.hideKeyboard(getCurrentFocus());
+                        CommonUtility.setSoftKeyBoardState(false, MapActivity.this);
+                    }
+                }
                 switch (cardType) {
                     case POST:
-//                        if (mMapDataModels.size() > 3) {
-//                            if (mMapDataModels.get(3).isFakeCard()) {
-//                                mMapViewPagerAdapter.deleteItemFromArrayList(3);
-//                            }
-//                        } else if (mMapDataModels.size() > 2) {
-//                            if (mMapDataModels.get(2).isFakeCard()) {
-//                                mMapViewPagerAdapter.deleteItemFromArrayList(2);
-//                            }
-//                        }
+                        if (CommonUtility.getFakeCardShownOrNot(MapActivity.this)) {
+                            for (int i = 0; i < mMapDataModels.size(); i++) {
+                                if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
+                                    mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                                    int value = CommonUtility.getPoints(MapActivity.this) + 1;
+                                    CommonUtility.setPoints(value, MapActivity.this);
+                                    mCountButton.setText(String.valueOf(value));
+                                    CommonUtility.setFakeCardThree(true, MapActivity.this);
+                                    break;
+                                }
+                            }
+                        }
                         mMapViewPagerAdapter.setCardViewVisible();
                     case FAKECARDONE:
                         break;
                     case FAKECARDTWO:
-//                        if (scrollStarted) {
-//                            if (mMapDataModels.get(position - 1).isFakeCard()) {
-//                                mMapViewPagerAdapter.deleteItemFromArrayList(1);
-//                            }
-//                            scrollStarted = false;
-//                        }
+                        if (CommonUtility.getFakeCardShownOrNot(MapActivity.this)) {
+                            for (int i = 0; i < mMapDataModels.size(); i++) {
+                                if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
+                                    mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                                    int value = CommonUtility.getPoints(MapActivity.this) + 1;
+                                    CommonUtility.setPoints(value, MapActivity.this);
+                                    mCountButton.setText(String.valueOf(value));
+                                    CommonUtility.setFakeCardOne(true, MapActivity.this);
+                                    mViewPagerMap.setCurrentItem(1);
+                                    break;
+                                }
+                            }
+                        }
                         break;
                 }
                 positionNew = position;
@@ -257,19 +278,47 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 case FAKECARDONE:
                     mapDataModel.setTextMessage(getResources().getString(R.string.helping_message));
                     mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDONE.getValue());
+                    if (CommonUtility.getFakeCardOne(MapActivity.this)) {
+                        continue;
+                    }
                     break;
                 case FAKECARDTWO:
                     mapDataModel.setTextMessage(getResources().getString(R.string.ai_message));
                     mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDTWO.getValue());
+                    if (CommonUtility.getFakeCardTwo(MapActivity.this)) {
+                        continue;
+                    }
                     break;
                 case FAKECARDTHREE:
                     mapDataModel.setTextMessage(getResources().getString(R.string.need_help));
                     mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDTHREE.getValue());
+                    if (CommonUtility.getFakeCardThree(MapActivity.this)) {
+                        continue;
+                    }
                     break;
             }
 
             mMapDataModels.add(mapDataModel);
         }
+
+//        for (int i = 0; i < 3; i++) {
+//            MapDataModel mapDataModel = new MapDataModel();
+//            GradientColor gradientColor = new GradientColor();
+//            gradientColor.setStartColor(CardColor.expireCard[0]);
+//            gradientColor.setEndColor(CardColor.expireCard[1]);
+//            mapDataModel.setGradientColor(gradientColor);
+//            mapDataModel.setFakeCard(false);
+//            mapDataModel.setFakeCardPosition(Constants.CardType.DEFAULT.getValue());
+//            Drawable drawable = CommonUtility.getGradientDrawable(CardColor.expireCard[0], CardColor.expireCard[1], this);
+//            mapDataModel.setBackgroundView(drawable);
+//            Constants.CardType cardType = Constants.CardType.values()[4];
+//            switch (cardType) {
+//                case DEFAULT:
+//                    mapDataModel.setTextMessage(getResources().getString(R.string.need_help));
+//            }
+//            mMapDataModels.add(mapDataModel);
+//        }
+
     }
 
     private void setViewPager() {
@@ -279,7 +328,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mViewPagerMap.setPageMargin(24);
         mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap, this, mMayoApplication);
         mViewPagerMap.setAdapter(mMapViewPagerAdapter);
-        mViewPagerMap.setCurrentItem(1);
+        if (mMapDataModels.size() > 1) {
+            mViewPagerMap.setCurrentItem(1);
+        }
         positionNew = mViewPagerMap.getCurrentItem();
     }
 
@@ -309,6 +360,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    @Override
+    public void onMapClick(LatLng latLng) {
+        mMayoApplication.hideKeyboard(getCurrentFocus());
+        CommonUtility.setSoftKeyBoardState(false, MapActivity.this);
+        mMapViewPagerAdapter.setPostCardText();
+    }
+
     private class CountDown extends CountDownTimer {
         CountDown(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
@@ -322,7 +380,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mImageHandsViewOnMap.pause();
             mImageHandsViewOnMap.setVisibility(View.GONE);
             if (mMapViewPagerAdapter != null) {
-                mMapViewPagerAdapter.deleteItemFromArrayList(1);
+                for (int i = 0; i < mMapDataModels.size(); i++) {
+                    if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
+                        mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                        int value = CommonUtility.getPoints(MapActivity.this) + 1;
+                        CommonUtility.setPoints(value, MapActivity.this);
+                        mCountButton.setText(String.valueOf(value));
+                        CommonUtility.setFakeCardTwo(true, MapActivity.this);
+                        break;
+                    }
+                }
             }
         }
 
@@ -337,15 +404,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMapView.onSaveInstanceState(outState);
     }
 
-    private void setMapViewOnTouchListener() {
-        mRelativeMapLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMayoApplication.hideKeyboard(getCurrentFocus());
-            }
-        });
-    }
-
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -358,6 +416,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             return;
         }
         checkPermissions();
+        mGoogleMap.setOnMapClickListener(this);
         mGoogleApiClient = new GoogleApiClient.Builder(MapActivity.this).
                 addApi(LocationServices.API)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
@@ -549,5 +608,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     //this is for fake card
     public void openChatMessageView() {
         ChatActivity_.intent(MapActivity.this).start();
+        overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }
 }

@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mapcardViewThree"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/height_270"
+    android:background="@android:drawable/dialog_holo_light_frame"
+    app:cardCornerRadius="@dimen/rd_4"
+    app:cardElevation="@dimen/el_30">
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:id="@+id/backgroundmapviewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_16">
+
+        <TextView
+            android:id="@+id/viewTextOfThree"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_25"
+            android:visibility="visible" />
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

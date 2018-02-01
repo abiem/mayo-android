@@ -1,24 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="end"
     android:layout_marginEnd="@dimen/margin_10"
-    android:layout_marginLeft="@dimen/margin_60"
     android:layout_marginRight="@dimen/margin_10"
-    android:layout_marginStart="@dimen/margin_60"
     android:layout_marginTop="@dimen/margin_5"
-    android:background="@drawable/chat_bubble_blue"
     android:padding="@dimen/margin_10">
 
-    <TextView
-        android:id="@+id/textview_message_sender"
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="@dimen/padding_8"
-        android:gravity="center"
-        android:textColor="@color/white"
-        android:textSize="@dimen/tx_20" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        tools:ignore="UselessParent">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignBottom="@+id/textParentLayout"
+            android:layout_alignEnd="@+id/textParentLayout"
+            android:layout_alignRight="@+id/textParentLayout"
+            android:layout_marginLeft="-10dp"
+            android:layout_marginStart="-10dp"
+            android:background="@drawable/bubble_slider_sender"
+            android:rotation="270" />
+
+        <LinearLayout
+            android:id="@+id/textParentLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_background_sender"
+            android:orientation="vertical"
+            tools:ignore="UselessParent">
+
+            <TextView
+                android:id="@+id/textview_message_sender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="300dp"
+                android:paddingBottom="@dimen/padding_8"
+                android:paddingLeft="@dimen/padding_16"
+                android:paddingRight="@dimen/padding_16"
+                android:paddingTop="@dimen/padding_8"
+                android:text=""
+                android:textColor="@color/white"
+                android:textSize="@dimen/tx_20" />
+        </LinearLayout>
+
+
+    </RelativeLayout>
 
 
 </RelativeLayout>
