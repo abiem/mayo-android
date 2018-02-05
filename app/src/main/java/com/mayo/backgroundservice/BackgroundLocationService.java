@@ -154,7 +154,7 @@ public class BackgroundLocationService extends Service implements
     @Override
     public void onLocationChanged(Location location) {
         if (mLocationUpdationInterface != null) {
-            mLocationUpdationInterface.updateLocation();
+            mLocationUpdationInterface.updateLocation(location);
         }
     }
 

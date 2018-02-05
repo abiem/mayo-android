@@ -17,6 +17,7 @@ public class Constants {
     //setting package
     static final String sKeyForPackage = "package:";
 
+    //Radius in meters
     public static final int sKeyForMapRadius = 200;
 
     public static final float sTransparencyLevelFade = 0.5f;
@@ -35,6 +36,15 @@ public class Constants {
         static final String sFakeCardThree = "FakeCardThree";
         static final String sCardPoints = "CardPoints";
         static final String sAnimationShownOnMap = "isAnimationShowingOnMap";
+    }
+
+    public class CardPaddingValues {
+        public static final int sTopBottomPadding = 80;
+        public static final int sLeftRightPadding = 64;;
+    }
+
+    public class CardMarginSetValues {
+        public static final int sMarginValue = 24;
     }
 
     public enum TutorialViewScreen {

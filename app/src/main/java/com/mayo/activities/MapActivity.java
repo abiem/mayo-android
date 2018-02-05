@@ -8,13 +8,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -22,9 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -34,6 +29,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cunoraz.gifview.library.GifView;
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -53,33 +52,28 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseError;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
-import com.mayo.adapters.IntroViewPagerAdapter;
 import com.mayo.adapters.MapViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
 import com.mayo.firebase.database.FirebaseDatabase;
-import com.mayo.interfaces.ClickListener;
 import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.GradientColor;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.Task;
-import com.mayo.models.TutorialModel;
 import com.mayo.viewclasses.CardColor;
 import com.mayo.viewclasses.CustomViewPager;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.Touch;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.mayo.Utility.CommonUtility.isLocationEnabled;
 
@@ -121,16 +115,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     boolean scrollStarted = true, checkDirection;
     int positionNew;
     private MapViewPagerAdapter mMapViewPagerAdapter;
+    private GeoFire mGeoFire;
+    private GeoQuery mGeoQuery;
+    private Location mCurrentLocation;
 
     @AfterViews
     protected void init() {
         mMayoApplication.setActivity(this);
         mMapView.onCreate(null);
         mImageHandsViewOnMap.setGifResource(R.drawable.thanks);
+        mRelativeMapLayout.setFitsSystemWindows(true);
         setDataModel();
         setViewPager();
         scrollViewPager();
         checkGoogleServiceAvailable();
+        setGeoFire();
         mCountButton.setText(String.valueOf(CommonUtility.getPoints(this)));
         mCountButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,6 +140,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (CommonUtility.getFakeCardOne(this) && CommonUtility.getFakeCardTwo(this) && CommonUtility.getFakeCardThree(this)) {
             CommonUtility.setFakeCardShownOrNot(false, this);
         }
+    }
+
+    private void setGeoFire() {
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+        mGeoFire = firebaseDatabase.startLocationUpdatesWithGeoFire();
     }
 
     private void checkGoogleServiceAvailable() {
@@ -314,7 +318,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 //            Constants.CardType cardType = Constants.CardType.values()[4];
 //            switch (cardType) {
 //                case DEFAULT:
-//                    mapDataModel.setTextMessage(getResources().getString(R.string.need_help));
+//                    mapDataModel.setTextMessage(getResources().getString(R.string.expired_card));
 //            }
 //            mMapDataModels.add(mapDataModel);
 //        }
@@ -324,8 +328,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void setViewPager() {
         mViewPagerMap.setPagingEnabled(true);
         mViewPagerMap.setClipToPadding(false);
-        mViewPagerMap.setPadding(64, 80, 64, 80);
-        mViewPagerMap.setPageMargin(24);
+        mViewPagerMap.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
+                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
+        mViewPagerMap.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
         mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap, this, mMayoApplication);
         mViewPagerMap.setAdapter(mMapViewPagerAdapter);
         if (mMapDataModels.size() > 1) {
@@ -346,12 +351,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
             mRotateImageOnMapView.startAnimation(animation);
             CommonUtility.setHandsAnimationShownOnMap(false, MapActivity.this);
+            mRelativeMapLayout.setFitsSystemWindows(false);
             new CountDown(4000, 1000);
         }
         if (mGoogleMap != null) {
             if (mDialog != null && checkPermissions()) {
                 mDialog.dismiss();
-                return;
+                mDialog = null;
             }
             if (!isLocationEnabled(this)) {
                 locationNotEnabled();
@@ -391,6 +397,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                 }
             }
+            mRelativeMapLayout.setFitsSystemWindows(true);
         }
 
         @Override
@@ -441,8 +448,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mGoogleApiClient.connect();
     }
 
+
     private void locationNotEnabled() {
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.0, 0.0), 14.0f));
+        if (mGoogleMap != null) {
+            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.0, 0.0), 14.0f));
+        }
     }
 
     private void startService() {
@@ -485,6 +495,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 } else {
                     if (location != null) {
                         setCurrentLocation(location);
+                        sendDataToFirebase(location);
+                        if (mGeoQuery == null) {
+                            setGeoQuery();
+                        }
                     }
                 }
             }
@@ -537,8 +551,75 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void updateLocation() {
+    public void updateLocation(Location location) {
+        sendDataToFirebase(location);
+    }
 
+    /**
+     * send current location data to firebase
+     *
+     * @param location
+     */
+    private void sendDataToFirebase(Location location) {
+        mCurrentLocation = location;
+        mGeoFire.setLocation(CommonUtility.getUserId(MapActivity.this),
+                new GeoLocation(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), new GeoFire.CompletionListener() {
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
+                        if (mCurrentLocationMarker != null) {
+                            mCurrentLocationMarker.remove();
+                        }
+                        addCurrentLocationMarker(mCurrentLocation);
+                        if (mGoogleMap != null)
+                            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(),
+                                    mCurrentLocation.getLongitude()), Constants.sKeyCameraZoom));
+                    }
+                });
+    }
+
+    /**
+     * perform GeoQuery on every 200 m radius
+     */
+    private void setGeoQuery() {
+        mGeoQuery = mGeoFire.queryAtLocation(new GeoLocation(mCurrentLocation.getLatitude(),
+                mCurrentLocation.getLongitude()), Constants.sKeyForMapRadius);
+        mGeoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+                mMayoApplication.showToast(MapActivity.this, String.valueOf(location));
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+                moveMarkerOutsideFromCurrentLocation();
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+                mMayoApplication.showToast(MapActivity.this, String.valueOf(error));
+            }
+        });
+    }
+
+    /**
+     * Perfom method when current marker going outside from current circle
+     */
+    private void moveMarkerOutsideFromCurrentLocation() {
+        if (mCurrentLocationCircle != null) {
+            mCurrentLocationCircle.remove();
+        }
+        if (mCurrentLocation != null) {
+            drawCircle(mCurrentLocation);
+        }
+        setGeoQuery();
     }
 
     private void disableLocationDialogView(final int val) {
@@ -552,6 +633,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 @Override
                 public void onClick(View v) {
                     mDialog.dismiss();
+                    mDialog = null;
                 }
             });
             SettingButton.setOnClickListener(new View.OnClickListener() {
@@ -568,17 +650,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onClick(View pView, int pPosition) {
+    public void onClick(View pView, int pPosition, String pMessage) {
         int Type = mMapDataModels.get(pPosition).getFakeCardPosition();
         Constants.CardType cardType = Constants.CardType.values()[Type];
         switch (cardType) {
             case POST:
                 switch (pView.getId()) {
                     case R.id.textbutton:
-//                        Task task = setNewTask(pPosition, pMessage);
-//                        CommonUtility.getUserId(this);
-//                        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
-//                        firebaseDatabase.writeNewTask(task);
+                        if (!pMessage.equals(Constants.sConstantString)) {
+                            Task task = setNewTask(pPosition, pMessage);
+                            FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+                            firebaseDatabase.writeNewTask(task.getTaskID(), task);
+                        }
                         break;
                 }
                 break;
@@ -595,13 +678,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         task.setHelpedBy(Constants.sConstantString);
         task.setTimeCreated(CommonUtility.getLocalTime()); //this is time when we create task
         task.setCompleted(false);
-        task.setTimeUpdated(CommonUtility.getLocalTime()); //this is updated but first time when we create task
+        task.setTaskDescription(pMessage);
+        task.setTimeUpdated(CommonUtility.getLocalTime()); //this is updating time but first time we showing create task time
         task.setUserMovedOutside(false);
         task.setRecentActivity(false);
         task.setStartColor(mMapDataModels.get(pPosition).getGradientColor().getStartColor().substring(1));
         task.setEndColor(mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1));
         task.setCompleteType("");
-        task.setTaskDescription(pMessage);
         return task;
     }
 
@@ -610,4 +693,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         ChatActivity_.intent(MapActivity.this).start();
         overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mMapView.onPause();
+    }
+
 }

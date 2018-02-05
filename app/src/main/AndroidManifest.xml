@@ -35,7 +35,7 @@
             android:name=".activities.MapActivity_"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeWithNoActionBar"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize|stateHidden" />
 
         <service android:name=".firebase.services.MyFirebaseMessagingService">
             <intent-filter>

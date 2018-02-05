@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
-    android:fitsSystemWindows="true"
     android:orientation="vertical"
     tools:context="com.mayo.activities.MapActivity">
 
@@ -15,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:apiKey="@string/google_maps_key"
-        android:enabled="true" />
+        android:enabled="true"
+        />
 
     <LinearLayout
         android:layout_width="@dimen/width_80"
@@ -59,21 +59,16 @@
         android:layout_height="@dimen/height_300"
         android:layout_alignParentBottom="true" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/height_350"
-        android:layout_alignParentBottom="true">
 
-        <com.cunoraz.gifview.library.GifView
-            android:id="@+id/imageHandsViewOnMapScreen"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:contentDescription="@string/show_gif_image"
-            android:scaleX="1.5"
-            android:scaleY="1.5"
-            android:visibility="gone" />
-    </RelativeLayout>
+    <com.cunoraz.gifview.library.GifView
+        android:id="@+id/imageHandsViewOnMapScreen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:contentDescription="@string/show_gif_image"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        android:visibility="gone" />
+
 
 </RelativeLayout>

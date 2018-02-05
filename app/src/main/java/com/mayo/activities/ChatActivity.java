@@ -1,6 +1,7 @@
 package com.mayo.activities;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -62,7 +63,6 @@ public class ChatActivity extends AppCompatActivity {
     ChatListAdapter mChatAdapter;
     LinearLayoutManager mLayoutManager;
 
-
     private ArrayList<Message> mMessageList = new ArrayList<>();
 
     @AfterViews
@@ -119,12 +119,10 @@ public class ChatActivity extends AppCompatActivity {
     @Click(R.id.messageSend)
     protected void sendMessageFromUser() {
         if (!mMessageChatText.getText().toString().trim().isEmpty()) {
-            if (mProgressBar.getVisibility() == View.GONE) {
-                mMessageText = mMessageChatText.getText().toString().trim();
-                sendMessage(mMessageText, Constants.UserType.OTHER);
-                mMessageChatText.setText("");
-                execSchedular();
-            }
+            mMessageText = mMessageChatText.getText().toString().trim();
+            sendMessage(mMessageText, Constants.UserType.OTHER);
+            mMessageChatText.setText("");
+            execSchedular();
         }
     }
 
@@ -165,7 +163,7 @@ public class ChatActivity extends AppCompatActivity {
                     public void run() {
                         mChatAdapter.notifyDataSetChanged();
                         new CountDown(4000, 1000);
-                        mProgressBar.setVisibility(View.VISIBLE);
+                        CommonUtility.progressDialogTransparent(ChatActivity.this);
                         mMessageChatText.setCursorVisible(false);
                         mMayoApplication.hideKeyboard(getCurrentFocus());
                         CommonUtility.setHandsAnimationShownOnMap(true, ChatActivity.this);
@@ -174,7 +172,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
             }
-        }, 1, TimeUnit.SECONDS);
+        }, 0, TimeUnit.SECONDS);
 
     }
 
@@ -187,7 +185,8 @@ public class ChatActivity extends AppCompatActivity {
 
         @Override
         public void onFinish() {
-            mProgressBar.setVisibility(View.GONE);
+            CommonUtility.progressDialogTransparentDismiss();
+            mMayoApplication.hideKeyboard(getCurrentFocus());
             finish();
         }
 

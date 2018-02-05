@@ -50,6 +50,7 @@
 
     <!--Widths of layouts-->
     <dimen name="width_20">20dp</dimen>
+    <dimen name="width_25">25dp</dimen>
     <dimen name="width_15">15dp</dimen>
     <dimen name="width_80">80dp</dimen>
 
@@ -75,8 +76,10 @@
     <dimen name="scale_240">-240dp</dimen>
     <dimen name="scale_270">-270dp</dimen>
     <dimen name="scale_300">-300dp</dimen>
+    <dimen name="scale_330">-330dp</dimen>
     <dimen name="scale_400">-400dp</dimen>
     <dimen name="scale_50">-50dp</dimen>
+    <dimen name="scale_70">-70dp</dimen>
     <dimen name="scale_40">-40dp</dimen>
 
 </resources>

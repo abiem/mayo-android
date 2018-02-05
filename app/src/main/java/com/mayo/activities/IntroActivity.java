@@ -2,8 +2,6 @@ package com.mayo.activities;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.pm.PackageManager;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -14,7 +12,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.cunoraz.gifview.library.GifView;
+import com.github.sahasbhop.apngview.ApngDrawable;
+import com.github.sahasbhop.apngview.ApngImageLoader;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
@@ -46,29 +45,48 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     ImageView rotateImage;
 
     @ViewById(R.id.imageHandsView)
-    GifView imageHandView;
+    ImageView imageViewOne;
 
-    @ViewById(R.id.imagePins)
-    GifView imagePins;
+    @ViewById(R.id.imageRippleNew)
+    ImageView imageViewTwo;
+
+    @ViewById(R.id.imagePinView)
+    ImageView imageViewThree;
 
 
     ArrayList<TutorialModel> tutorialModels;
     CountDown mCountDown;
     boolean isHandViewShown;
+    ApngDrawable mApngDrawable;
+
+    private ArrayList<String> mApngImages;
 
     @AfterViews
     protected void init() {
-        imageHandView.setVisibility(View.GONE);
-        imageHandView.setGifResource(R.drawable.thanks);
-        imagePins.setGifResource(R.drawable.newpin);
+        mApngImages = new ArrayList<>();
+        setApngImages();
+        imageViewOne.setVisibility(View.GONE);
+        imageViewTwo.setVisibility(View.GONE);
+        imageViewThree.setVisibility(View.GONE);
         if (!CommonUtility.getTutorialDone(this)) {
             mMayoApplication.setActivity(this);
             setTutorialArray();
             setViewPager();
-            //AnonymousAuth.signInAnonymously(this);
+            AnonymousAuth.signInAnonymously(this);
         } else {
             showMapActivity();
         }
+    }
+
+    private void setApngImages() {
+        mApngImages.add("assets://apng/fist_bump.png");
+        mApngImages.add("assets://apng/ripple_seq.png");
+        mApngImages.add("assets://apng/fatpin_seq01.png");
+        mApngImages.add("assets://apng/fatpin_seq02.png");
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(0), imageViewOne);
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(1), imageViewTwo);
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(2), imageViewThree);
+
     }
 
     private void setTutorialArray() {
@@ -98,8 +116,9 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     private void setViewPager() {
         mCustomViewPager.setPagingEnabled(false);
         mCustomViewPager.setClipToPadding(false);
-        mCustomViewPager.setPadding(64, 80, 64, 80);
-        mCustomViewPager.setPageMargin(24);
+        mCustomViewPager.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
+                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
+        mCustomViewPager.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
         mCustomViewPager.setAdapter(new IntroViewPagerAdapter(this, this, tutorialModels));
         mCustomViewPager.setCurrentItem(0);
     }
@@ -108,11 +127,8 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == Constants.sKeyPermissionCodeForLocation) {
             CommonUtility.setTutorialDone(true, this);
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED || grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                showMapActivity();
-            } else {
-                showMapActivity();
-            }
+            //grant permission result will handle in map activity
+            showMapActivity();
         }
     }
 
@@ -128,22 +144,25 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         switch (whichView) {
             case FIRST:
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
-                playGifImage();
-                mCountDown = new CountDown(3500, 1000);
+                playHandsImage();
+                mCountDown = new CountDown(3000, 1000);
                 break;
             case SECOND:
                 rotateImage.clearAnimation();
-                rotateImage.setVisibility(View.GONE);
-                pauseGifImage();
-                playGifImageSecond();
-                mCountDown.cancel();
+                pauseHandsImage();
+                playRippleImage();
+                rotateImageClearAnimation();
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
+                ApngImageLoader.getInstance().displayImage(mApngImages.get(2), imageViewOne);
                 break;
             case THIRD:
                 locationDialogView();
-                mCountDown.cancel();
+                rotateImageClearAnimation();
+                imageViewOne.setVisibility(View.GONE);
                 break;
             case FOURTH:
+                rotateImageClearAnimation();
+                imageViewOne.setVisibility(View.GONE);
                 //below API level 21
                 if (CommonUtility.askForPermissionLocation(this)) {
                     CommonUtility.setTutorialDone(true, this);
@@ -154,6 +173,12 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
+    private void rotateImageClearAnimation() {
+        mCountDown.cancel();
+        rotateImage.setVisibility(View.GONE);
+        rotateImage.clearAnimation();
+    }
+
     private void locationDialogView() {
         final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.location_dialog_view);
         if (dialog != null) {
@@ -162,9 +187,9 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
                 @Override
                 public void onClick(View v) {
                     dialog.dismiss();
-                    pauseGifImageSecond();
-                    imageHandView.setGifResource(R.drawable.thirdpin);
-                    playGifImage();
+                    pauseRippleImage();
+                    playPinImageFirst();
+                    mApngDrawable = ApngDrawable.getFromView(imageViewTwo);
                     mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 }
             });
@@ -173,7 +198,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
 
 
     private void openMapActivity() {
-        imageHandView.pause();
+        pausePinImageSecond();
         MapActivity_.intent(IntroActivity.this).start();
     }
 
@@ -186,14 +211,14 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         @Override
         public void onFinish() {
             if (isHandViewShown) {
-                imageHandView.setVisibility(View.GONE);
+                imageViewOne.setVisibility(View.GONE);
             }
             mCountDown.cancel();
             if (!isHandViewShown) {
                 rotateImage.setVisibility(View.VISIBLE);
                 Animation animation = AnimationUtils.loadAnimation(IntroActivity.this, R.anim.rotate);
                 rotateImage.startAnimation(animation);
-                mCountDown = new CountDown(2500, 1000);
+                mCountDown = new CountDown(1000, 1000);
                 isHandViewShown = true;
             }
         }
@@ -203,24 +228,91 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         }
     }
 
-    private void playGifImage() {
-        imageHandView.setVisibility(View.VISIBLE);
-        imageHandView.play();
+    private void playHandsImage() {
+        imageViewOne.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imageViewOne);
+        if (mApngDrawable == null)
+            return;
+        mApngDrawable.setNumPlays(1);
+        mApngDrawable.start();
     }
 
-    private void pauseGifImage() {
-        imageHandView.pause();
-        imageHandView.setVisibility(View.GONE);
+
+    private void playRippleImage() {
+        imageViewTwo.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imageViewTwo);
+        if (mApngDrawable == null)
+            return;
+        mApngDrawable.setNumPlays(0);
+        mApngDrawable.start();
     }
 
-    private void playGifImageSecond() {
-        imagePins.setVisibility(View.VISIBLE);
-        imagePins.play();
+    private void pauseHandsImage() {
+        if (mApngDrawable.isRunning()) {
+            mApngDrawable.stop(); // Stop animation
+        }
+        imageViewOne.setVisibility(View.GONE);
     }
 
-    private void pauseGifImageSecond() {
-        imagePins.pause();
-        imagePins.setVisibility(View.GONE);
+    private void pauseRippleImage() {
+        if (mApngDrawable.isRunning()) {
+            mApngDrawable.stop(); // Stop animation
+        }
+        imageViewTwo.setVisibility(View.GONE);
+    }
+
+    private void pausePinImageFirst() {
+        if (mApngDrawable.isRunning()) {
+            mApngDrawable.stop(); // Stop animation
+        }
+        imageViewThree.setVisibility(View.GONE);
+    }
+
+    private void playPinImageFirst() {
+        imageViewThree.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imageViewThree);
+        if (mApngDrawable == null)
+            return;
+        mApngDrawable.setNumPlays(1);
+        mApngDrawable.start();
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(3), imageViewTwo);
+        new CountDownNew(3200, 1000);
+    }
+
+
+    private void playPinImageSecond() {
+        imageViewThree.setVisibility(View.GONE);
+        imageViewTwo.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imageViewTwo);
+        if (mApngDrawable == null)
+            return;
+        mApngDrawable.setNumPlays(0);
+        mApngDrawable.start();
+    }
+
+    private void pausePinImageSecond() {
+        if (mApngDrawable == null)
+            return;
+        if (mApngDrawable.isRunning()) {
+            mApngDrawable.stop(); // Stop animation
+        }
+    }
+
+    private class CountDownNew extends CountDownTimer {
+        CountDownNew(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            start();
+        }
+
+        @Override
+        public void onFinish() {
+            pausePinImageFirst();
+            playPinImageSecond();
+        }
+
+        @Override
+        public void onTick(long duration) {
+        }
     }
 }
 

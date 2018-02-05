@@ -3,6 +3,7 @@ package com.mayo.Utility;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -49,6 +50,7 @@ import java.util.TimeZone;
 public class CommonUtility {
     private static AlertDialog mAlertDialog;
     private static Dialog mCustomDialog;
+    private static ProgressDialog mProgressDialog;
     private static SharedPreferences mSharedPreferences;
     private static SimpleDateFormat utcTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US);
 
@@ -56,7 +58,11 @@ public class CommonUtility {
         CommonUtility.mSharedPreferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
     }
 
-    // Save if user tutorial is done
+    /** Save if user tutorial is done
+     *
+     * @param pValue
+     * @param pContext
+     */
     public static void setTutorialDone(boolean pValue, Context pContext) {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
@@ -72,6 +78,12 @@ public class CommonUtility {
         }
         return mSharedPreferences.getBoolean(Constants.sharedPreferences.sTutorialDone, false);
     }
+
+    /** Save user id from firebase
+     *
+     * @param pId
+     * @param pContext
+     */
 
     public static void setUserId(String pId, Context pContext) {
         if (mSharedPreferences == null) {
@@ -89,6 +101,12 @@ public class CommonUtility {
         return mSharedPreferences.getString(Constants.sharedPreferences.sUserId, "");
     }
 
+    /** Save device token from firebase
+     *
+     * @param pToken
+     * @param pContext
+     */
+
     public static void setDeviceToken(String pToken, Context pContext) {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
@@ -104,6 +122,12 @@ public class CommonUtility {
         }
         return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, "");
     }
+
+    /** set keyboard state show or hide
+     *
+     * @param pcheckState
+     * @param pContext
+     */
 
     public static void setSoftKeyBoardState(boolean pcheckState, Context pContext) {
         if (mSharedPreferences == null) {
@@ -331,7 +355,7 @@ public class CommonUtility {
     }
 
     public static Bitmap drawableToBitmap(Drawable pDrawable) {
-        Bitmap bitmap = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(70, 70, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         pDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         pDrawable.draw(canvas);
@@ -381,6 +405,22 @@ public class CommonUtility {
         int heightDiff = rootView.getBottom() - r.bottom;
     /* Threshold size: dp to pixels, multiply with display density */
         return heightDiff > SOFT_KEYBOARD_HEIGHT_DP_THRESHOLD * dm.density;
+    }
+
+    public static void progressDialogTransparent(Activity activity) {
+        if (activity != null) {
+            mProgressDialog = new ProgressDialog(activity, R.style.StyledDialog);
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setIndeterminate(true);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.show();
+        }
+    }
+
+    public static void progressDialogTransparentDismiss() {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mProgressDialog.dismiss();
+        }
     }
 
 }

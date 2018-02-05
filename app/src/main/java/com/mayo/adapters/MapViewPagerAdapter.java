@@ -188,9 +188,22 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
                 }
                 break;
+            case R.id.textbutton:
+                if (mTextButton.getAlpha() != Constants.sTransparencyLevelFade) {
+                    mMayoApplication.hideKeyboard(mEditText);
+                    mTextButton.setAlpha(Constants.sTransparencyLevelFade);
+                    mImageButton.setAlpha(Constants.sTransparencyLevelFade);
+                    mClickListener.onClick(v, position, mEditText.getText().toString());
+                    mEditText.setText(Constants.sConstantString);
+                    mEditText.setHint(mContext.getResources().getString(R.string.help_message));
+                    mEdiTextNew.requestFocus();
+                }
+                break;
         }
-
-        mClickListener.onClick(v, position);
+        if (mEditText != null) {
+            if (mEditText.getText().toString().isEmpty())
+                mClickListener.onClick(v, position, "");
+        }
     }
 
     public void setCardViewVisible() {
@@ -217,8 +230,9 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
 
     public void deleteItemFromArrayList(final int pIndex) {
         if (pIndex >= 1 && pIndex < mMapDataModelArrayList.size()) {
-//            final Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.slide_out_left);
-//            mMapDataModelArrayList.get(pIndex).getCardView().startAnimation(animation);
+            if (mMapDataModelArrayList.get(pIndex).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
+                isPostViewVisible = false;
+            }
             new Handler().postDelayed(new Runnable() {
 
                 @Override
@@ -226,11 +240,11 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     // TODO Auto-generated method stub
                     mMapDataModelArrayList.remove(pIndex);
                     notifyDataSetChanged();
-                    //animation.cancel();
                 }
             }, 100);
         }
     }
+
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
@@ -244,6 +258,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     mEditText.setHint(mContext.getResources().getString(R.string.help_message));
                     mEditText.setCursorVisible(false);
                     mEdiTextNew.requestFocus();
+                    mMayoApplication.hideKeyboard(mEdiTextNew);
                     CommonUtility.setSoftKeyBoardState(false, mContext);
                 }
                 break;

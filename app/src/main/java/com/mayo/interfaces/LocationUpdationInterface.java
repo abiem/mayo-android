@@ -1,5 +1,7 @@
 package com.mayo.interfaces;
 
+import android.location.Location;
+
 /**
  * Created by chicmic on 5/4/17.
  */
@@ -7,5 +9,5 @@ package com.mayo.interfaces;
 interface for update locations
  */
 public interface LocationUpdationInterface {
-    void updateLocation();
+    void updateLocation(Location location);
 }

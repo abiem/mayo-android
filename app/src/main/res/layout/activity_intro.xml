@@ -12,8 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/scale_40"
-        android:layout_marginTop="@dimen/scale_400"
+        android:layout_marginBottom="@dimen/scale_70"
+        android:layout_marginTop="@dimen/scale_330"
         android:contentDescription="@string/rotateimage"
         android:fitsSystemWindows="true"
         android:scaleType="centerCrop"
@@ -22,34 +22,39 @@
         android:textSize="@dimen/tx_20"
         android:visibility="gone" />
 
-    <com.cunoraz.gifview.library.GifView
+    <ImageView
         android:id="@+id/imageHandsView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="250dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_50"
-        android:contentDescription="@string/show_gif_image"
-        android:scaleX="1.5"
-        android:scaleY="1.5"
-        android:visibility="visible" />
+        android:contentDescription="@string/show_gif_image" />
 
-    <com.cunoraz.gifview.library.GifView
-        android:id="@+id/imagePins"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/imageRippleNew"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_50"
         android:contentDescription="@string/show_gif_image"
-        android:scaleX="1.5"
-        android:scaleY="1.5"
         android:visibility="gone" />
 
+    <ImageView
+        android:id="@+id/imagePinView"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin_50"
+        android:contentDescription="@string/show_gif_image"
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
 
     <com.mayo.viewclasses.CustomViewPager
         android:id="@+id/viewPagerTutorial"
         android:layout_width="match_parent"
         android:layout_height="@dimen/height_300"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:visibility="visible" />
 
 
 </RelativeLayout>

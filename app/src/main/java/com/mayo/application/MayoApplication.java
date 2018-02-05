@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.github.sahasbhop.apngview.ApngImageLoader;
 
 import org.androidannotations.annotations.EApplication;
 
@@ -25,8 +26,16 @@ public class MayoApplication extends MultiDexApplication {
 
     @Override
     public void onCreate() {
-        Fabric.with(this, new Crashlytics());
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
+        configApng();
+    }
+
+    private void configApng() {
+        ApngImageLoader apngImageLoader = ApngImageLoader.getInstance();
+        apngImageLoader.setEnableDebugLog(false);
+        apngImageLoader.setEnableVerboseLog(false);
+        apngImageLoader.init(getApplicationContext());
     }
 
     @Override

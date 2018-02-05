@@ -5,8 +5,8 @@
         <shape android:shape="oval">
             <solid android:color="@color/white" />
             <size
-                android:width="@dimen/width_15"
-                android:height="@dimen/width_15" />
+                android:width="@dimen/width_25"
+                android:height="@dimen/width_25" />
         </shape>
     </item>
     <!-- Smaller red circle in front -->
@@ -14,12 +14,12 @@
         <shape android:shape="oval">
             <!-- transparent stroke = larger_circle_size - smaller_circle_size -->
             <stroke
-                android:width="10dp"
+                android:width="5dp"
                 android:color="@android:color/transparent" />
             <solid android:color="@color/colorDarkSkyBlue" />
             <size
-                android:width="10dp"
-                android:height="10dp" />
+                android:width="@dimen/width_25"
+                android:height="@dimen/width_25" />
         </shape>
     </item>
 </layer-list>

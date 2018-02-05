@@ -18,6 +18,7 @@
     <string name="ai_message">So our AI is a bit bored, help us by sending a message!</string>
     <string name="helping_message">Helping people around you is simple. Swipe the cards or look around the map.</string>
     <string name="need_help">Need help? Swipe to the very left to setup a help quest.</string>
+    <string name="expired_card">Expired Card</string>
     <string name="can_help">I can help</string>
     <string name="count">This is for count check.</string>
     <string name="my_location">My Location</string>
