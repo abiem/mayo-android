@@ -7,17 +7,8 @@ import java.util.ArrayList;
  */
 
 public class Channel {
-    private String channelId;
     private ArrayList<UserId> users;
     private ArrayList<Message> messages;
-
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
-    }
 
     public ArrayList<UserId> getUsers() {
         return users;

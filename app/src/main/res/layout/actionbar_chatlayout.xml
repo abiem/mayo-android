@@ -26,10 +26,12 @@
     </FrameLayout>
 
     <TextView
+        android:id="@+id/actionBarMessage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:ellipsize="end"
         android:gravity="center"
+        android:layout_gravity="center"
         android:maxLines="1"
         android:paddingBottom="@dimen/padding_8"
         android:paddingTop="@dimen/padding_8"

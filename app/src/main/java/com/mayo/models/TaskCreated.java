@@ -7,8 +7,8 @@ import java.util.ArrayList;
  */
 
 public class TaskCreated {
-    int count;
-    ArrayList<TaskId> tasks;
+    private int count;
+    private ArrayList<TaskId> tasks;
 
     public int getCount() {
         return count;

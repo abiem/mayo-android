@@ -2,6 +2,7 @@ package com.mayo.activities;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
@@ -42,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class ChatActivity extends AppCompatActivity {
 
     FrameLayout mBackChatButton;
+    TextView mActionBarMessage;
 
     @ViewById(R.id.messageChat)
     EditText mMessageChatText;
@@ -64,10 +67,16 @@ public class ChatActivity extends AppCompatActivity {
     LinearLayoutManager mLayoutManager;
 
     private ArrayList<Message> mMessageList = new ArrayList<>();
+    Bundle pBundle;
 
     @AfterViews
     protected void init() {
-        setActionBar();
+        pBundle = getIntent().getExtras();
+        if (pBundle != null) {
+            setActionBar(pBundle.getString(Constants.sPostMessage));
+        } else {
+            setActionBar(Constants.sConstantString);
+        }
         setRecyclerView();
     }
 
@@ -85,7 +94,7 @@ public class ChatActivity extends AppCompatActivity {
         mChatRecyclerView.addItemDecoration(myDivider);
     }
 
-    private void setActionBar() {
+    private void setActionBar(String pMessage) {
         if (getSupportActionBar() != null) {
             LayoutInflater inflater = (LayoutInflater) getSupportActionBar().getThemedContext().getSystemService(LAYOUT_INFLATER_SERVICE);
             if (inflater != null) {
@@ -100,12 +109,17 @@ public class ChatActivity extends AppCompatActivity {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 getSupportActionBar().setHomeButtonEnabled(false);
                 mBackChatButton = (FrameLayout) view.findViewById(R.id.parentBackChatButton);
+                mActionBarMessage = (TextView) view.findViewById(R.id.actionBarMessage);
                 mBackChatButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         finish();
                     }
                 });
+                mActionBarMessage.setText(pMessage);
+                if (pMessage.equals(Constants.sConstantString)) {
+                    mActionBarMessage.setText(getResources().getString(R.string.ai_message));
+                }
             }
         }
     }
@@ -122,7 +136,9 @@ public class ChatActivity extends AppCompatActivity {
             mMessageText = mMessageChatText.getText().toString().trim();
             sendMessage(mMessageText, Constants.UserType.OTHER);
             mMessageChatText.setText("");
-            execSchedular();
+            if (pBundle == null) {
+                execSchedular();
+            }
         }
     }
 

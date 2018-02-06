@@ -33,6 +33,9 @@ import android.widget.RelativeLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.maps.android.SphericalUtil;
 import com.mayo.R;
 import com.mayo.activities.IntroActivity;
 import com.mayo.viewclasses.CardColor;
@@ -58,7 +61,8 @@ public class CommonUtility {
         CommonUtility.mSharedPreferences = context.getSharedPreferences(null, Context.MODE_PRIVATE);
     }
 
-    /** Save if user tutorial is done
+    /**
+     * Save if user tutorial is done
      *
      * @param pValue
      * @param pContext
@@ -79,7 +83,8 @@ public class CommonUtility {
         return mSharedPreferences.getBoolean(Constants.sharedPreferences.sTutorialDone, false);
     }
 
-    /** Save user id from firebase
+    /**
+     * Save user id from firebase
      *
      * @param pId
      * @param pContext
@@ -101,7 +106,8 @@ public class CommonUtility {
         return mSharedPreferences.getString(Constants.sharedPreferences.sUserId, "");
     }
 
-    /** Save device token from firebase
+    /**
+     * Save device token from firebase
      *
      * @param pToken
      * @param pContext
@@ -123,7 +129,8 @@ public class CommonUtility {
         return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, "");
     }
 
-    /** set keyboard state show or hide
+    /**
+     * set keyboard state show or hide
      *
      * @param pcheckState
      * @param pContext
@@ -177,6 +184,22 @@ public class CommonUtility {
             initializeSharedPreference(pContext);
         }
         return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeCardOne, false);
+    }
+
+    public static void setTaskApplied(boolean psetValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sTaskApplied, psetValue);
+        editor.apply();
+    }
+
+    public static boolean getTaskApplied(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sTaskApplied, false);
     }
 
     public static void setFakeCardTwo(boolean psetValue, Context pContext) {
@@ -362,6 +385,14 @@ public class CommonUtility {
         return bitmap;
     }
 
+    public static Bitmap drawableToBitmapForCircle(Drawable pDrawable) {
+        Bitmap bitmap = Bitmap.createBitmap(250, 250, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        pDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        pDrawable.draw(canvas);
+        return bitmap;
+    }
+
     public static Drawable getGradientDrawable(String pBottomColor, String pTopColor, Context pContext) {
         int colors[] = {Color.parseColor(pBottomColor), Color.parseColor(pTopColor)};
         GradientDrawable gradient = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, colors);
@@ -421,6 +452,15 @@ public class CommonUtility {
         if (mProgressDialog != null && mProgressDialog.isShowing()) {
             mProgressDialog.dismiss();
         }
+    }
+
+    public static LatLngBounds toBounds(LatLng center, double radiusInMeters) {
+        double distanceFromCenterToCorner = radiusInMeters * Math.sqrt(2.0);
+        LatLng southwestCorner =
+                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
+        LatLng northeastCorner =
+                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);
+        return new LatLngBounds(southwestCorner, northeastCorner);
     }
 
 }

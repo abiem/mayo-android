@@ -25,6 +25,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -32,7 +33,6 @@ import com.cunoraz.gifview.library.GifView;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
-import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -67,9 +67,11 @@ import com.mayo.models.MapDataModel;
 import com.mayo.models.Task;
 import com.mayo.viewclasses.CardColor;
 import com.mayo.viewclasses.CustomViewPager;
+import com.mayo.viewclasses.GeoFireClass;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
@@ -102,6 +104,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @ViewById(R.id.rotateImageOnMapView)
     ImageView mRotateImageOnMapView;
 
+    @ViewById(R.id.parentQuestLayout)
+    LinearLayout mParentQuestLayout;
+
+    @ViewById(R.id.questButton)
+    Button questButton;
+
+    @ViewById(R.id.cancelButton)
+    Button cancelButton;
+
     GoogleMap mGoogleMap;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
@@ -115,9 +126,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     boolean scrollStarted = true, checkDirection;
     int positionNew;
     private MapViewPagerAdapter mMapViewPagerAdapter;
-    private GeoFire mGeoFire;
+    private GeoFireClass mGeoFireClass;
     private GeoQuery mGeoQuery;
-    private Location mCurrentLocation;
+    private Location mCurrentLocation, mTaskLocation;
 
     @AfterViews
     protected void init() {
@@ -143,8 +154,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void setGeoFire() {
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
-        mGeoFire = firebaseDatabase.startLocationUpdatesWithGeoFire();
+        mGeoFireClass = new GeoFireClass(this);
+        mGeoFireClass.setGeoFire();
     }
 
     private void checkGoogleServiceAvailable() {
@@ -181,6 +192,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             });
             score.setText(String.valueOf(CommonUtility.getPoints(MapActivity.this)));
+        }
+        getCurrentLocation();
+    }
+
+    private void getCurrentLocation() {
+        if (mGoogleMap != null) {
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(),
+                    mCurrentLocation.getLongitude()), Constants.sKeyCameraZoom));
         }
     }
 
@@ -495,7 +514,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 } else {
                     if (location != null) {
                         setCurrentLocation(location);
-                        sendDataToFirebase(location);
+                        sendDataToFirebaseOfUserLocation(location);
                         if (mGeoQuery == null) {
                             setGeoQuery();
                         }
@@ -505,12 +524,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
     }
 
+    /**
+     * set current location of user and add marker and circle on current location
+     *
+     * @param location
+     */
+
     private void setCurrentLocation(Location location) {
         LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
         mCurrentLat = location.getLatitude();
         mCurrentLng = location.getLongitude();
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, Constants.sKeyCameraZoom);
-        CameraPosition cameraPosition = new CameraPosition(ll, 45, 45, 45);
+        CameraPosition cameraPosition = new CameraPosition(ll, 45, 45, 60);
         update = CameraUpdateFactory.newCameraPosition(cameraPosition);
         mGoogleMap.animateCamera(update);
         if (mCurrentLocationCircle == null) {
@@ -526,7 +551,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .center(new LatLng(location.getLatitude(), location.getLongitude()))
                 .radius(Constants.sKeyForMapRadius)
                 .strokeColor(ContextCompat.getColor(MapActivity.this, R.color.transparent))
-                .fillColor(ContextCompat.getColor(MapActivity.this, R.color.colorTransparentBlue)));
+                .zIndex(3.0f)
+                .fillColor(ContextCompat.getColor(MapActivity.this, R.color.colorLightGreenTransparent)));
+//        Bitmap bitmap = CommonUtility.drawableToBitmapForCircle(ContextCompat.getDrawable(MapActivity.this, R.drawable.location_circle_radius));
+//        BitmapDescriptor currentLocationImage = BitmapDescriptorFactory.fromBitmap(bitmap);
+//        GroundOverlayOptions groundOverlayOptions = new GroundOverlayOptions();
+//        mCurrentLocation = location;
+//        groundOverlayOptions.positionFromBounds(CommonUtility.toBounds(new LatLng(mCurrentLocation.getLatitude(),
+//                        mCurrentLocation.getLongitude()),Constants.sKeyForMapRadiusInDouble));
+//        groundOverlayOptions.image(currentLocationImage);
+//        mGoogleMap.addGroundOverlay(groundOverlayOptions);
     }
 
     private void addCurrentLocationMarker(Location location) {
@@ -552,7 +586,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void updateLocation(Location location) {
-        sendDataToFirebase(location);
+        sendDataToFirebaseOfUserLocation(location);
     }
 
     /**
@@ -560,59 +594,44 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      *
      * @param location
      */
-    private void sendDataToFirebase(Location location) {
+    private void sendDataToFirebaseOfUserLocation(Location location) {
         mCurrentLocation = location;
-        mGeoFire.setLocation(CommonUtility.getUserId(MapActivity.this),
-                new GeoLocation(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), new GeoFire.CompletionListener() {
-                    @Override
-                    public void onComplete(String key, DatabaseError error) {
-                        if (mCurrentLocationMarker != null) {
-                            mCurrentLocationMarker.remove();
-                        }
-                        addCurrentLocationMarker(mCurrentLocation);
-                        if (mGoogleMap != null)
-                            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(),
-                                    mCurrentLocation.getLongitude()), Constants.sKeyCameraZoom));
-                    }
-                });
+        mGeoFireClass.sendDataToFirebaseOfUserLocation(mCurrentLocation);
+    }
+
+    public void setGeoFireCompleteListener() {
+        if (mCurrentLocationMarker != null) {
+            mCurrentLocationMarker.remove();
+        }
+        addCurrentLocationMarker(mCurrentLocation);
+        getCurrentLocation();
+    }
+
+    private void sendDataToFirebaseOfTaskLocation(Location location, String pTimeStamp) {
+        mTaskLocation = location;
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+        GeoFire geoFire = firebaseDatabase.setTaskLocationWithGeoFire();
+        if (mTaskLocation != null) {
+            geoFire.setLocation(pTimeStamp,
+                    new GeoLocation(mTaskLocation.getLatitude(), mTaskLocation.getLongitude()));
+        }
     }
 
     /**
      * perform GeoQuery on every 200 m radius
      */
     private void setGeoQuery() {
-        mGeoQuery = mGeoFire.queryAtLocation(new GeoLocation(mCurrentLocation.getLatitude(),
-                mCurrentLocation.getLongitude()), Constants.sKeyForMapRadius);
-        mGeoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
-            @Override
-            public void onKeyEntered(String key, GeoLocation location) {
-                mMayoApplication.showToast(MapActivity.this, String.valueOf(location));
-            }
+        mGeoQuery = mGeoFireClass.setGeoQuery(mCurrentLocation);
+    }
 
-            @Override
-            public void onKeyExited(String key) {
-                moveMarkerOutsideFromCurrentLocation();
-            }
-
-            @Override
-            public void onKeyMoved(String key, GeoLocation location) {
-            }
-
-            @Override
-            public void onGeoQueryReady() {
-            }
-
-            @Override
-            public void onGeoQueryError(DatabaseError error) {
-                mMayoApplication.showToast(MapActivity.this, String.valueOf(error));
-            }
-        });
+    public void onGeoQueryError(DatabaseError error) {
+        mMayoApplication.showToast(MapActivity.this, String.valueOf(error));
     }
 
     /**
      * Perfom method when current marker going outside from current circle
      */
-    private void moveMarkerOutsideFromCurrentLocation() {
+    public void moveMarkerOutsideFromCurrentLocation() {
         if (mCurrentLocationCircle != null) {
             mCurrentLocationCircle.remove();
         }
@@ -656,19 +675,64 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         switch (cardType) {
             case POST:
                 switch (pView.getId()) {
+                    case R.id.messageIcon:
+                        openChatMessageView(pMessage);
+                        break;
                     case R.id.textbutton:
                         if (!pMessage.equals(Constants.sConstantString)) {
                             Task task = setNewTask(pPosition, pMessage);
                             FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
                             firebaseDatabase.writeNewTask(task.getTaskID(), task);
+                            sendDataToFirebaseOfTaskLocation(mCurrentLocation, task.getTaskID());
                         }
+                        break;
+                    case R.id.doneIcon:
+                        setParentAnmationOfQuest(R.anim.slide_up);
+                        setParentQuestButton(View.VISIBLE);
                         break;
                 }
                 break;
             case FAKECARDTWO:
-                openChatMessageView();
+                openChatMessageView(Constants.sConstantString);
                 break;
         }
+    }
+
+    @Click(R.id.cancelButton)
+    public void onClickOfCancel() {
+        setParentQuestButton(View.GONE);
+        setParentAnmationOfQuest(R.anim.slide_down);
+    }
+
+    @Click(R.id.questButton)
+    public void onClockOfQuestButton() {
+        setParentQuestButton(View.GONE);
+        mMapViewPagerAdapter.setPostMessageView();
+        setParentAnmationOfQuest(R.anim.slide_down);
+        final Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
+        if (dialog != null) {
+            dialog.findViewById(R.id.thanks).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                }
+            });
+            dialog.findViewById(R.id.no_one_helped).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+        }
+    }
+
+    private void setParentQuestButton(int visibility) {
+        mParentQuestLayout.setVisibility(visibility);
+    }
+
+    private void setParentAnmationOfQuest(int pAnimType) {
+        Animation slide_up = AnimationUtils.loadAnimation(getApplicationContext(), pAnimType);
+        mParentQuestLayout.startAnimation(slide_up);
     }
 
     private Task setNewTask(int pPosition, String pMessage) {
@@ -689,8 +753,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     //this is for fake card
-    public void openChatMessageView() {
-        ChatActivity_.intent(MapActivity.this).start();
+    public void openChatMessageView(String pMessage) {
+        if (pMessage.equals(Constants.sConstantString)) {
+            ChatActivity_.intent(MapActivity.this).start();
+        } else {
+            ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage).start();
+        }
         overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }
 

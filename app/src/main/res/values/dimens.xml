@@ -27,7 +27,7 @@
     <dimen name="tx_18">18sp</dimen>
     <dimen name="tx_22">22sp</dimen>
     <dimen name="tx_25">25sp</dimen>
-    <dimen name="tx_20">24sp</dimen>
+    <dimen name="tx_20">20sp</dimen>
     <dimen name="tx_16">16sp</dimen>
     <dimen name="tx_14">14sp</dimen>
     <dimen name="tx_24">24sp</dimen>
@@ -53,6 +53,8 @@
     <dimen name="width_25">25dp</dimen>
     <dimen name="width_15">15dp</dimen>
     <dimen name="width_80">80dp</dimen>
+    <dimen name="width_5">5dp</dimen>
+    <dimen name="width_10">10dp</dimen>
 
 
     <!--Radius-->
@@ -60,6 +62,7 @@
     <dimen name="rd_8">8dp</dimen>
     <dimen name="rd_25">25dp</dimen>
     <dimen name="rd_20">20dp</dimen>
+    <dimen name="rd_12">12dp</dimen>
 
     <!--Elevation-->
     <dimen name="el_5">5dp</dimen>

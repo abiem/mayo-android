@@ -34,6 +34,12 @@
     <string name="wooho">Wooho thank you!</string>
     <string name="send_message">Send</string>
     <string name="new_message">New Message</string>
+    <string name="quest_done">Mark quest as done</string>
+    <string name="cancel">Cancel</string>
+    <string name="who_helped">Who helped you out?</string>
+    <string name="say_thanks">Say thanks and pay it</string>
+    <string name="thanks">Thanks!</string>
+    <string name="no_one_helped">No one helped me</string>
 
 
     <!--Tutorial Strings-->

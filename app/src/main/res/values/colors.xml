@@ -39,4 +39,6 @@
     <color name="colorDefaultGrey">#128E8E93</color>
     <color name="ColorBlackOpacity">#99000000</color>
     <color name="colorGreyNew">#C2C2C2</color>
+    <color name="colorLightGreenTransparent">#219cd72f</color>
+    <color name="colorLightGreenTransparentNew">#059cd72f</color>
 </resources>

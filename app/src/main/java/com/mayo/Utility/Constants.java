@@ -12,18 +12,22 @@ public class Constants {
     public static final int sKeyPermissionCodeForLocation = 10001;
 
     //camera zoom
-    public static final int sKeyCameraZoom = 16;
+    public static final int sKeyCameraZoom = 18;
 
     //setting package
     static final String sKeyForPackage = "package:";
 
     //Radius in meters
     public static final int sKeyForMapRadius = 200;
+    public static final double sKeyForMapRadiusInDouble = 0.2; //200 meters = 200/1000=0.2 meters
+    //stroke width of circle
+    public static final float sKeyForStrokeWidth = 50.0f;
 
     public static final float sTransparencyLevelFade = 0.5f;
     public static final float sNonTransparencyLevel = 1.0f;
     public static final float sTransparencyLevelBackground = 0.8f;
     public static final String sConstantString = "";
+    public static final String sPostMessage = "postMessage";
 
     class sharedPreferences {
         static final String sTutorialDone = "isTutorialDone";
@@ -36,11 +40,13 @@ public class Constants {
         static final String sFakeCardThree = "FakeCardThree";
         static final String sCardPoints = "CardPoints";
         static final String sAnimationShownOnMap = "isAnimationShowingOnMap";
+        static final String sTaskApplied = "isTaskApplied";
     }
 
     public class CardPaddingValues {
         public static final int sTopBottomPadding = 80;
-        public static final int sLeftRightPadding = 64;;
+        public static final int sLeftRightPadding = 64;
+        ;
     }
 
     public class CardMarginSetValues {

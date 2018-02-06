@@ -2,7 +2,9 @@ package com.mayo.firebase.database;
 
 import com.firebase.geofire.GeoFire;
 import com.google.firebase.database.DatabaseReference;
+import com.mayo.models.Channel;
 import com.mayo.models.Task;
+import com.mayo.models.TaskViews;
 import com.mayo.models.Users;
 
 
@@ -23,18 +25,28 @@ public class FirebaseDatabase {
         mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child("android");
     }
 
-    // [START basic_write]
     public void writeNewTask(String pTimeStamp, Task pTask) {
         mDatabaseReference.child("tasks").child(pTimeStamp).setValue(pTask);
     }
 
-    public GeoFire startLocationUpdatesWithGeoFire() {
+    public GeoFire setTaskLocationWithGeoFire() {
+        return new GeoFire(mDatabaseReference.child("tasks_locations"));
+    }
+
+    public void setTaskViewsByUsers(String pTimeStamp, TaskViews pTaskView) {
+        mDatabaseReference.child("task_views").child(pTimeStamp).setValue(pTaskView);
+    }
+
+    public void setNewChannel(String pTimeStamp, Channel pChannel) {
+        mDatabaseReference.child("channels").child(pTimeStamp).setValue(pChannel);
+    }
+
+    public GeoFire locationUpdatesOfUserLocationWithGeoFire() {
         if (mGeoFire == null) {
             mGeoFire = new GeoFire(mDatabaseReference.child("users_locations"));
         }
         return mGeoFire;
     }
-
 
     public void writeNewUser(Users pUser) {
         mDatabaseReference.child("users").setValue(pUser);

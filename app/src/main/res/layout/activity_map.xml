@@ -14,8 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:apiKey="@string/google_maps_key"
-        android:enabled="true"
-        />
+        android:enabled="true" />
 
     <LinearLayout
         android:layout_width="@dimen/width_80"
@@ -69,6 +68,44 @@
         android:scaleX="1.5"
         android:scaleY="1.5"
         android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/parentQuestLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="@dimen/margin_15"
+        android:layout_marginLeft="@dimen/margin_15"
+        android:layout_marginRight="@dimen/margin_15"
+        android:layout_marginStart="@dimen/margin_15"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/questButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_10"
+            android:background="@drawable/background_quest"
+            android:padding="@dimen/padding_16"
+            android:text="@string/quest_done"
+            android:textAllCaps="false"
+            android:textColor="@color/colorDarkSkyBlue"
+            android:textSize="@dimen/tx_20" />
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_10"
+            android:background="@drawable/background_quest"
+            android:padding="@dimen/padding_16"
+            android:text="@string/cancel"
+            android:textAllCaps="false"
+            android:textColor="@color/colorDarkSkyBlue"
+            android:textSize="@dimen/tx_20" />
+
+    </LinearLayout>
 
 
 </RelativeLayout>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/margin_24"
+    android:background="@drawable/background_tutorial_third"
+    android:padding="@dimen/padding_8">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_8">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/who_helped"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_24" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/say_thanks"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_24" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/margin_24"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/thanks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="@dimen/margin_5"
+            android:drawableLeft="@drawable/smile_happy"
+            android:drawablePadding="10dip"
+            android:drawableStart="@drawable/smile_happy"
+            android:text="@string/thanks"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_24" />
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:layout_marginLeft="@dimen/margin_24"
+            android:layout_marginRight="@dimen/margin_24"
+            android:background="@color/white" />
+
+        <TextView
+            android:id="@+id/no_one_helped"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/margin_5"
+            android:drawableLeft="@drawable/smile_sad"
+            android:drawablePadding="10dip"
+            android:drawableStart="@drawable/smile_sad"
+            android:text="@string/no_one_helped"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_24" />
+    </LinearLayout>
+
+</RelativeLayout>
