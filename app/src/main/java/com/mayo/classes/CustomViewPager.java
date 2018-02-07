@@ -1,4 +1,4 @@
-package com.mayo.viewclasses;
+package com.mayo.classes;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

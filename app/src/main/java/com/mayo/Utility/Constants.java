@@ -27,7 +27,9 @@ public class Constants {
     public static final float sNonTransparencyLevel = 1.0f;
     public static final float sTransparencyLevelBackground = 0.8f;
     public static final String sConstantString = "";
+    public static final String sConstantSpaceString = " ";
     public static final String sPostMessage = "postMessage";
+    public static final String sSmileCode = "\uD83D\uDE31";
 
     class sharedPreferences {
         static final String sTutorialDone = "isTutorialDone";
@@ -39,14 +41,27 @@ public class Constants {
         static final String sFakeCardTwo = "FakeCardTwo";
         static final String sFakeCardThree = "FakeCardThree";
         static final String sCardPoints = "CardPoints";
+        static final String sFakeMarkerShown = "isFakeMarkerShown";
         static final String sAnimationShownOnMap = "isAnimationShowingOnMap";
         static final String sTaskApplied = "isTaskApplied";
+        static final String sTaskData = "taskData";
+    }
+
+    public class FakeUsersValues {
+        public static final int sMinimumFakeusers = 2;
+        public static final int sMaximumFakeusers = 4;
+
+        public static final int sMaximumFakeUserTimeShown = 6;
+        public static final int sMinimumFakeUserTimeShown = 1;
+
+        public static final double sFakeUserPositionMaximum = 0.00010;
+        public static final double sFakeUserPositionMininum = -0.00010;
+        public static final double sFakeUserPositionConstant = 0.0;
     }
 
     public class CardPaddingValues {
         public static final int sTopBottomPadding = 80;
         public static final int sLeftRightPadding = 64;
-        ;
     }
 
     public class CardMarginSetValues {
@@ -59,6 +74,19 @@ public class Constants {
 
     public enum PermissionDialog {
         AppPermissionDialog, LocationDialog
+    }
+
+    public enum FakeMarkerValues {
+        FIRSTMARKER(1), SECONDMARKER(2), THIRDMARKER(3), FOURTHMARKER(4);
+        int position;
+
+        FakeMarkerValues(int position) {
+            this.position = position;
+        }
+
+        public int getValue() {
+            return position;
+        }
     }
 
     public enum UserType {

@@ -41,6 +41,11 @@ public class FirebaseDatabase {
         mDatabaseReference.child("channels").child(pTimeStamp).setValue(pChannel);
     }
 
+
+    public void updateTask(String pTimeStamp, Task pTask) {
+        mDatabaseReference.child("tasks").child(pTimeStamp).setValue(pTask);
+    }
+
     public GeoFire locationUpdatesOfUserLocationWithGeoFire() {
         if (mGeoFire == null) {
             mGeoFire = new GeoFire(mDatabaseReference.child("users_locations"));

@@ -39,6 +39,14 @@
     <color name="colorDefaultGrey">#128E8E93</color>
     <color name="ColorBlackOpacity">#99000000</color>
     <color name="colorGreyNew">#C2C2C2</color>
-    <color name="colorLightGreenTransparent">#219cd72f</color>
+    <color name="colorLightGreenTransparent">#419cd72f</color>
     <color name="colorLightGreenTransparentNew">#059cd72f</color>
+    <color name="colorDarkPinkTransparent">#75e87185</color>
+    <color name="colorDarkPinkTransparentNew">#15e87185</color>
+    <!--25% =40 transparency-->
+    <color name="colorLightBlueTransparent">#4008bbdb</color>
+    <color name="colorLightBlueTransparentNew">#7008bbdb</color>
+    <color name="colorGreenNew">#7ED321</color>
+    <!--25% transparency-->
+    <color name="colorWhiteTransparent">#4DFFFFFF</color>
 </resources>

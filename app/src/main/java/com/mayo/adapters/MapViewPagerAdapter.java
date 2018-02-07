@@ -2,10 +2,10 @@ package com.mayo.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 
 import android.os.Handler;
-import android.support.annotation.RequiresApi;
 import android.support.v4.view.PagerAdapter;
 import android.support.v7.widget.CardView;
 
@@ -14,8 +14,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -27,9 +25,11 @@ import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.application.MayoApplication;
+import com.mayo.classes.CardColor;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.MapDataModel;
-import com.mayo.viewclasses.CustomViewPager;
+import com.mayo.classes.CustomViewPager;
+import com.mayo.models.Task;
 
 import java.util.ArrayList;
 
@@ -121,6 +121,15 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     CommonUtility.setSoftKeyBoardState(false, mContext);
                     mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
                 }
+                if (CommonUtility.getTaskApplied(mContext)) {
+                    mCardView.setVisibility(View.VISIBLE);
+                    mDoneParentLayout.setVisibility(View.VISIBLE);
+                    mPostParentLayout.setVisibility(View.GONE);
+                    Task task = CommonUtility.getTaskData(mContext);
+                    Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getStartColor(), "#" + task.getEndColor(), mContext);
+                    mMapDataModelArrayList.get(position).setBackgroundView(drawable);
+                    mEditText.setText(task.getTaskDescription());
+                }
                 mTextButton.setOnClickListener(this);
                 mImageButton.setOnClickListener(this);
                 mEditText.setOnFocusChangeListener(this);
@@ -210,6 +219,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 break;
             case R.id.doneIcon:
                 mClickListener.onClick(v, position, mEditText.getText().toString());
+                CommonUtility.setTaskApplied(false, mContext);
                 break;
             case R.id.messageIcon:
                 mClickListener.onClick(v, position, mEditText.getText().toString());
@@ -236,9 +246,14 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
                 mEdiTextNew.requestFocus();
             } else {
+                if ((!mEditText.getText().toString().isEmpty()) && CommonUtility.getTaskApplied(mContext)) {
+                    mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+                    CommonUtility.setSoftKeyBoardState(false, mContext);
+                    return;
+                }
                 if ((!mEditText.getText().toString().isEmpty()) && mEditText.isEnabled()) {
-                    CommonUtility.setSoftKeyBoardState(true, mContext);
                     mMayoApplication.showSoftKeyBoard();
+                    CommonUtility.setSoftKeyBoardState(true, mContext);
                 }
             }
         }

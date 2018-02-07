@@ -1,6 +1,4 @@
-package com.mayo.viewclasses;
-
-import com.mayo.R;
+package com.mayo.classes;
 
 import java.util.Random;
 

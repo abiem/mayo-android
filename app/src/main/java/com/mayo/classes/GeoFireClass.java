@@ -1,4 +1,4 @@
-package com.mayo.viewclasses;
+package com.mayo.classes;
 
 import android.content.Context;
 import android.location.Location;
@@ -11,7 +11,6 @@ import com.google.firebase.database.DatabaseError;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
-import com.mayo.application.MayoApplication;
 import com.mayo.firebase.database.FirebaseDatabase;
 
 /**

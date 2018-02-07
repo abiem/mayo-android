@@ -16,7 +16,7 @@
             <stroke
                 android:width="@dimen/width_10"
                 android:color="@android:color/transparent" />
-            <solid android:color="@color/colorDarkSkyBlue" />
+            <solid android:color="@color/colorGreenNew" />
             <size
                 android:width="@dimen/width_25"
                 android:height="@dimen/width_25" />

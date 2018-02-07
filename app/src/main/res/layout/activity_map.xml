@@ -52,7 +52,7 @@
         android:visibility="gone" />
 
 
-    <com.mayo.viewclasses.CustomViewPager
+    <com.mayo.classes.CustomViewPager
         android:id="@+id/viewPagerMapView"
         android:layout_width="match_parent"
         android:layout_height="@dimen/height_300"

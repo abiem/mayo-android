@@ -18,7 +18,7 @@ import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.firebase.auth.AnonymousAuth;
-import com.mayo.viewclasses.CustomViewPager;
+import com.mayo.classes.CustomViewPager;
 import com.mayo.adapters.IntroViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.interfaces.ClickListener;

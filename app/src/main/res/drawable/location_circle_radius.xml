@@ -1,25 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Larger blue circle in back -->
+    <!-- Larger Light blue circle in back -->
     <item>
         <shape android:shape="oval">
             <gradient
-                android:angle="270"
-                android:centerColor="@color/colorLightGreenTransparentNew"
-                android:endColor="@color/colorLightGreenTransparent"
-                android:startColor="@color/colorLightGreenTransparent" />
+                android:angle="90"
+                android:centerColor="@color/colorLightBlueTransparent"
+                android:centerX="75%"
+                android:centerY="75%"
+                android:endColor="@color/colorLightBlueTransparent"
+                android:startColor="@color/colorLightBlueTransparent"
+                android:type="linear" />
             <size
-                android:width="@dimen/width_15"
-                android:height="@dimen/width_15" />
+                android:width="@dimen/width_25"
+                android:height="@dimen/width_25" />
         </shape>
     </item>
-    <!-- Smaller red circle in front -->
+    <!-- Smaller white circle in front -->
     <item>
         <shape android:shape="oval">
-            <stroke
-                android:width="@dimen/width_15"
-                android:color="@color/transparent" />
-            <solid android:color="@color/transparent" />
+
+            <gradient
+                android:angle="270"
+                android:centerColor="@color/colorWhiteTransparent"
+                android:centerX="75%"
+                android:centerY="75%"
+                android:endColor="@color/colorWhiteTransparent"
+                android:startColor="@color/colorWhiteTransparent" />
             <size
                 android:width="@dimen/width_25"
                 android:height="@dimen/width_25" />

@@ -49,7 +49,7 @@
         android:scaleType="fitCenter"
         android:visibility="gone" />
 
-    <com.mayo.viewclasses.CustomViewPager
+    <com.mayo.classes.CustomViewPager
         android:id="@+id/viewPagerTutorial"
         android:layout_width="match_parent"
         android:layout_height="@dimen/height_300"

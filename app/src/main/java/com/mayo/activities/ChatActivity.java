@@ -114,6 +114,7 @@ public class ChatActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         finish();
+                        mMayoApplication.hideKeyboard(getCurrentFocus());
                     }
                 });
                 mActionBarMessage.setText(pMessage);
@@ -134,12 +135,17 @@ public class ChatActivity extends AppCompatActivity {
     protected void sendMessageFromUser() {
         if (!mMessageChatText.getText().toString().trim().isEmpty()) {
             mMessageText = mMessageChatText.getText().toString().trim();
+            if (pBundle != null) {
+                mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
+                        mMessageChatText.getText().toString().trim();
+            }
             sendMessage(mMessageText, Constants.UserType.OTHER);
             mMessageChatText.setText("");
             if (pBundle == null) {
                 execSchedular();
             }
         }
+        mChatRecyclerView.scrollToPosition(mChatAdapter.getItemCount() - 1);
     }
 
 
@@ -159,7 +165,7 @@ public class ChatActivity extends AppCompatActivity {
         mMessage.setMessageFromLocalDevice(true);
         mMessage.setUserType(userType);
         mMessageList.add(mMessage);
-        mChatAdapter.notifyDataSetChanged();
+        //mChatAdapter.notifyDataSetChanged();
     }
 
     private void execSchedular() {
@@ -169,7 +175,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void run() {
                 Message message = new Message();
-                message.setText("\uD83D\uDE31" + " " + getResources().getString(R.string.wooho)); // 10 spaces;
+                message.setText(Constants.sSmileCode + Constants.sConstantSpaceString + getResources().getString(R.string.wooho)); // 10 spaces;
                 message.setMessageFromLocalDevice(false);
                 message.setDateCreated(CommonUtility.timeFormat(new Date().getTime()));
                 message.setUserType(Constants.UserType.SELF);

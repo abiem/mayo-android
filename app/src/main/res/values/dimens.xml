@@ -51,6 +51,7 @@
     <!--Widths of layouts-->
     <dimen name="width_20">20dp</dimen>
     <dimen name="width_25">25dp</dimen>
+    <dimen name="width_35">35dp</dimen>
     <dimen name="width_15">15dp</dimen>
     <dimen name="width_80">80dp</dimen>
     <dimen name="width_5">5dp</dimen>
@@ -61,6 +62,7 @@
     <dimen name="rd_4">4dp</dimen>
     <dimen name="rd_8">8dp</dimen>
     <dimen name="rd_25">25dp</dimen>
+    <dimen name="rd_50">50dp</dimen>
     <dimen name="rd_20">20dp</dimen>
     <dimen name="rd_12">12dp</dimen>
 

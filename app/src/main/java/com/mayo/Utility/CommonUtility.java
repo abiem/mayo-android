@@ -15,7 +15,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
@@ -25,23 +24,22 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.RelativeLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.gson.Gson;
 import com.google.maps.android.SphericalUtil;
 import com.mayo.R;
 import com.mayo.activities.IntroActivity;
-import com.mayo.viewclasses.CardColor;
+import com.mayo.models.Task;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -103,7 +101,7 @@ public class CommonUtility {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
         }
-        return mSharedPreferences.getString(Constants.sharedPreferences.sUserId, "");
+        return mSharedPreferences.getString(Constants.sharedPreferences.sUserId, Constants.sConstantString);
     }
 
     /**
@@ -126,7 +124,7 @@ public class CommonUtility {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
         }
-        return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, "");
+        return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, Constants.sConstantString);
     }
 
     /**
@@ -202,6 +200,27 @@ public class CommonUtility {
         return mSharedPreferences.getBoolean(Constants.sharedPreferences.sTaskApplied, false);
     }
 
+    public static void setTaskData(Task pTask, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+
+        Gson gson = new Gson();
+        String json = gson.toJson(pTask);
+        editor.putString(Constants.sharedPreferences.sTaskData, json);
+        editor.apply();
+    }
+
+    public static Task getTaskData(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        Gson gson = new Gson();
+        String json = mSharedPreferences.getString(Constants.sharedPreferences.sTaskData, Constants.sConstantString);
+        return gson.fromJson(json, Task.class);
+    }
+
     public static void setFakeCardTwo(boolean psetValue, Context pContext) {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
@@ -225,6 +244,22 @@ public class CommonUtility {
             initializeSharedPreference(pContext);
         }
         return mSharedPreferences.getInt(Constants.sharedPreferences.sCardPoints, 0);
+    }
+
+    public static void setFakeMarkerShown(boolean pValue, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putBoolean(Constants.sharedPreferences.sFakeMarkerShown, pValue);
+        editor.apply();
+    }
+
+    public static boolean getFakeMarkerShown(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        return mSharedPreferences.getBoolean(Constants.sharedPreferences.sFakeMarkerShown, false);
     }
 
     public static boolean getFakeCardTwo(Context pContext) {
@@ -378,7 +413,7 @@ public class CommonUtility {
     }
 
     public static Bitmap drawableToBitmap(Drawable pDrawable) {
-        Bitmap bitmap = Bitmap.createBitmap(70, 70, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(80, 80, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         pDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         pDrawable.draw(canvas);
@@ -413,6 +448,26 @@ public class CommonUtility {
         }
         if (date != null) {
             return String.valueOf(date.getTime());
+        }
+        return null;
+    }
+
+    public static Date getCurrentTime() {
+        try {
+            return utcTimeFormat.parse(utcTimeFormat.format(Calendar.getInstance().getTime()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Date getEndTimeOfFakeUsers(int pAddMinutes) {
+        try {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MINUTE, pAddMinutes);
+            return utcTimeFormat.parse(utcTimeFormat.format(calendar.getTime()));
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
         return null;
     }
