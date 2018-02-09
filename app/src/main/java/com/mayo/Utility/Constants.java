@@ -12,7 +12,7 @@ public class Constants {
     public static final int sKeyPermissionCodeForLocation = 10001;
 
     //camera zoom
-    public static final int sKeyCameraZoom = 18;
+    public static final int sKeyCameraZoom = 19;
 
     //setting package
     static final String sKeyForPackage = "package:";
@@ -30,6 +30,7 @@ public class Constants {
     public static final String sConstantSpaceString = " ";
     public static final String sPostMessage = "postMessage";
     public static final String sSmileCode = "\uD83D\uDE31";
+    public static final long seconds = 6 * 60; //360 = 6 seconds
 
     class sharedPreferences {
         static final String sTutorialDone = "isTutorialDone";
@@ -55,8 +56,11 @@ public class Constants {
         public static final int sMinimumFakeUserTimeShown = 1;
 
         public static final double sFakeUserPositionMaximum = 0.00010;
+        public static final double sFakeUserPositionMaximumNew = 0.00015;
         public static final double sFakeUserPositionMininum = -0.00010;
+        public static final double sFakeUserPositionMininumNew = -0.00015;
         public static final double sFakeUserPositionConstant = 0.0;
+        public static final double sFakeUserPositionConstantNew = 0.0005;
     }
 
     public class CardPaddingValues {

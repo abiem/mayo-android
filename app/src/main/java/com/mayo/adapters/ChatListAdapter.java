@@ -1,10 +1,12 @@
 package com.mayo.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -24,10 +26,12 @@ import java.util.ArrayList;
 public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private ArrayList<Message> mMessages;
     private Context mContext;
+    private Bundle mBundle;
 
-    public ChatListAdapter(ArrayList<Message> pChatMessages, Context pContext) {
+    public ChatListAdapter(ArrayList<Message> pChatMessages, Context pContext, Bundle pBundle) {
         this.mMessages = pChatMessages;
         this.mContext = pContext;
+        this.mBundle = pBundle;
     }
 
     @Override
@@ -41,6 +45,11 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
             case OTHER: {
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chat_list_sender, parent, false);
+                view.findViewById(R.id.parentBlueLayout).setVisibility(View.VISIBLE);
+                if (mBundle != null) {
+                    view.findViewById(R.id.parentGreyLayout).setVisibility(View.VISIBLE);
+                    view.findViewById(R.id.parentBlueLayout).setVisibility(View.GONE);
+                }
                 return new Sender(view);
             }
             default: {
@@ -64,6 +73,9 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             case OTHER: {
                 Sender senderViewholder = (Sender) holder;
                 senderViewholder.messageTextViewSender.setText(mMessages.get(position).getText());
+                if (mBundle != null) {
+                    senderViewholder.messageTextViewSenderGreyColor.setText(mMessages.get(position).getText());
+                }
                 break;
 
             }
@@ -81,11 +93,12 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public static class Sender extends RecyclerView.ViewHolder {
-        TextView messageTextViewSender;
+        TextView messageTextViewSender, messageTextViewSenderGreyColor;
 
         Sender(View view) {
             super(view);
             messageTextViewSender = (TextView) view.findViewById(R.id.textview_message_sender);
+            messageTextViewSenderGreyColor = (TextView) view.findViewById(R.id.textview_grey_message_sender);
         }
     }
 

@@ -2,6 +2,7 @@ package com.mayo.classes;
 
 import android.content.Context;
 import android.location.Location;
+import android.util.Log;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
@@ -12,6 +13,7 @@ import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
 import com.mayo.firebase.database.FirebaseDatabase;
+
 
 /**
  * Created by Lakshmi on 06/02/18.
@@ -27,7 +29,7 @@ public class GeoFireClass {
     }
 
     public void setGeoFire() {
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(mContext);
         mGeoFire = firebaseDatabase.locationUpdatesOfUserLocationWithGeoFire();
     }
 
@@ -47,6 +49,7 @@ public class GeoFireClass {
         mGeoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
+                ((MapActivity) mContext).getNearByUsers(key,location);
             }
 
             @Override
@@ -56,10 +59,12 @@ public class GeoFireClass {
 
             @Override
             public void onKeyMoved(String key, GeoLocation location) {
+
             }
 
             @Override
             public void onGeoQueryReady() {
+                ((MapActivity) mContext).createMarkerOfRealTimeUsers();
             }
 
             @Override

@@ -79,10 +79,10 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void setApngImages() {
-        mApngImages.add("assets://apng/fist_bump.png");
-        mApngImages.add("assets://apng/ripple_seq.png");
-        mApngImages.add("assets://apng/fatpin_seq01.png");
-        mApngImages.add("assets://apng/fatpin_seq02.png");
+        mApngImages.add("assets://apng/fist_bump_720p.png");
+        mApngImages.add("assets://apng/ripple_seq_720p.png");
+        mApngImages.add("assets://apng/fatpin_seq01_720p.png");
+        mApngImages.add("assets://apng/fatpin_seq02_720p.png");
         ApngImageLoader.getInstance().displayImage(mApngImages.get(0), imageViewOne);
         ApngImageLoader.getInstance().displayImage(mApngImages.get(1), imageViewTwo);
         ApngImageLoader.getInstance().displayImage(mApngImages.get(2), imageViewThree);
@@ -248,6 +248,8 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void pauseHandsImage() {
+        if (mApngDrawable == null)
+            return;
         if (mApngDrawable.isRunning()) {
             mApngDrawable.stop(); // Stop animation
         }
@@ -255,6 +257,8 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void pauseRippleImage() {
+        if (mApngDrawable == null)
+            return;
         if (mApngDrawable.isRunning()) {
             mApngDrawable.stop(); // Stop animation
         }
@@ -262,6 +266,8 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void pausePinImageFirst() {
+        if (mApngDrawable == null)
+            return;
         if (mApngDrawable.isRunning()) {
             mApngDrawable.stop(); // Stop animation
         }

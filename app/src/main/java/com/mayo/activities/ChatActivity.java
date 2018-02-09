@@ -1,7 +1,10 @@
 package com.mayo.activities;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
+import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.content.ContextCompat;
@@ -10,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mayo.R;
@@ -81,7 +86,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void setRecyclerView() {
-        mChatAdapter = new ChatListAdapter(mMessageList, this);
+        mChatAdapter = new ChatListAdapter(mMessageList, this, pBundle);
         mLayoutManager = new LinearLayoutManager(this);
         mChatRecyclerView.setLayoutManager(mLayoutManager);
         setDividerDecoration();
@@ -121,6 +126,7 @@ public class ChatActivity extends AppCompatActivity {
                 if (pMessage.equals(Constants.sConstantString)) {
                     mActionBarMessage.setText(getResources().getString(R.string.ai_message));
                 }
+                textAdjustment();
             }
         }
     }
@@ -165,7 +171,7 @@ public class ChatActivity extends AppCompatActivity {
         mMessage.setMessageFromLocalDevice(true);
         mMessage.setUserType(userType);
         mMessageList.add(mMessage);
-        //mChatAdapter.notifyDataSetChanged();
+
     }
 
     private void execSchedular() {
@@ -215,6 +221,22 @@ public class ChatActivity extends AppCompatActivity {
         @Override
         public void onTick(long duration) {
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    void textAdjustment() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        mActionBarMessage.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        mBackChatButton.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mActionBarMessage.getLayoutParams();
+        if (mActionBarMessage.getMeasuredWidth() > ((size.x) - mBackChatButton.getMeasuredWidth())) {
+            params.addRule(RelativeLayout.END_OF, R.id.parentBackChatButton);
+        } else {
+            params.removeRule(RelativeLayout.END_OF);
+        }
+        mActionBarMessage.setLayoutParams(params);
     }
 
 }

@@ -59,14 +59,13 @@
         android:layout_alignParentBottom="true" />
 
 
-    <com.cunoraz.gifview.library.GifView
+    <ImageView
         android:id="@+id/imageHandsViewOnMapScreen"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="250dp"
         android:layout_centerInParent="true"
         android:contentDescription="@string/show_gif_image"
-        android:scaleX="1.5"
-        android:scaleY="1.5"
+        android:scaleType="fitCenter"
         android:visibility="gone" />
 
     <LinearLayout

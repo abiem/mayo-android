@@ -116,10 +116,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     }
                 } else {
                     mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
-                    mEdiTextNew.requestFocus();
-                    mEdiTextNew.setCursorVisible(false);
-                    CommonUtility.setSoftKeyBoardState(false, mContext);
-                    mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+                    requestEditTextNew();
                 }
                 if (CommonUtility.getTaskApplied(mContext)) {
                     mCardView.setVisibility(View.VISIBLE);
@@ -129,6 +126,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getStartColor(), "#" + task.getEndColor(), mContext);
                     mMapDataModelArrayList.get(position).setBackgroundView(drawable);
                     mEditText.setText(task.getTaskDescription());
+                    requestEditTextNew();
                 }
                 mTextButton.setOnClickListener(this);
                 mImageButton.setOnClickListener(this);
@@ -219,7 +217,6 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 break;
             case R.id.doneIcon:
                 mClickListener.onClick(v, position, mEditText.getText().toString());
-                CommonUtility.setTaskApplied(false, mContext);
                 break;
             case R.id.messageIcon:
                 mClickListener.onClick(v, position, mEditText.getText().toString());
@@ -230,13 +227,20 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
         }
     }
 
+    private void requestEditTextNew() {
+        mEdiTextNew.requestFocus();
+        mEdiTextNew.setCursorVisible(false);
+        CommonUtility.setSoftKeyBoardState(false, mContext);
+        mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
+    }
+
     public void setPostMessageView() {
         mEditText.setText(Constants.sConstantString);
         mEditText.setHint(mContext.getResources().getString(R.string.help_message));
+        mEditText.setEnabled(true);
         mEdiTextNew.requestFocus();
         mPostParentLayout.setVisibility(View.VISIBLE);
         mDoneParentLayout.setVisibility(View.GONE);
-        mEditText.setEnabled(true);
     }
 
     public void setCardViewVisible() {
@@ -271,6 +275,11 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     public void deleteItemFromArrayList(final int pIndex) {
         if (pIndex >= 1 && pIndex < mMapDataModelArrayList.size()) {
             if (mMapDataModelArrayList.get(pIndex).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
+                if (mCardView.getVisibility() != View.VISIBLE) {
+                    isPostViewVisible = false;
+                }
+            }
+            if (mMapDataModelArrayList.get(pIndex).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
                 if (mCardView.getVisibility() != View.VISIBLE) {
                     isPostViewVisible = false;
                 }

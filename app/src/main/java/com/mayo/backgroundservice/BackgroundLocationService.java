@@ -90,7 +90,7 @@ public class BackgroundLocationService extends Service implements
         pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         if (pm != null) {
             mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "wakelock");
-            mWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
+            mWakeLock.acquire(10 * 60 * 1000L /*10 seconds*/);
         }
     }
 

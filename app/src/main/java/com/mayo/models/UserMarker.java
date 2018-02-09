@@ -10,11 +10,11 @@ import java.util.Date;
  * Created by Lakshmi on 07/02/18.
  */
 
-public class FakeUsersShown {
-    Marker marker;
-    LatLng latLng;
-    Date startTime;
-    Date endTime;
+public class UserMarker {
+    private Marker marker;
+    private LatLng latLng;
+    private Date startTime;
+    private Date endTime;
 
     public LatLng getLatLng() {
         return latLng;

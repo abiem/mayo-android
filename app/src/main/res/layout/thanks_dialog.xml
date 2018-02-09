@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/thanksDialogBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="@dimen/margin_24"
+    android:layout_margin="@dimen/margin_30"
     android:background="@drawable/background_tutorial_third"
     android:padding="@dimen/padding_8">
 
     <LinearLayout
+        android:id="@+id/textShow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -27,7 +29,14 @@
             android:textSize="@dimen/tx_24" />
     </LinearLayout>
 
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textShow"
+        android:layout_above="@+id/thanksParentLayout"/>
+
     <LinearLayout
+        android:id="@+id/thanksParentLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -49,6 +58,7 @@
             android:textSize="@dimen/tx_24" />
 
         <View
+            android:id="@+id/lineThanks"
             android:layout_width="wrap_content"
             android:layout_height="1dp"
             android:layout_marginLeft="@dimen/margin_24"

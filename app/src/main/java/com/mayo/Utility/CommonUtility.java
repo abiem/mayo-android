@@ -29,10 +29,7 @@ import android.view.WindowManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.gson.Gson;
-import com.google.maps.android.SphericalUtil;
 import com.mayo.R;
 import com.mayo.activities.IntroActivity;
 import com.mayo.models.Task;
@@ -461,10 +458,21 @@ public class CommonUtility {
         return null;
     }
 
+    public static Date convertStringToDateTime(String time) {
+        try {
+            return utcTimeFormat.parse(time);
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static Date getEndTimeOfFakeUsers(int pAddMinutes) {
         try {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MINUTE, pAddMinutes);
+            utcTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             return utcTimeFormat.parse(utcTimeFormat.format(calendar.getTime()));
         } catch (ParseException e) {
             e.printStackTrace();
@@ -473,6 +481,7 @@ public class CommonUtility {
     }
 
     public static String getLocalTime() {
+        utcTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return utcTimeFormat.format(new Date());
     }
 
@@ -509,13 +518,11 @@ public class CommonUtility {
         }
     }
 
-    public static LatLngBounds toBounds(LatLng center, double radiusInMeters) {
-        double distanceFromCenterToCorner = radiusInMeters * Math.sqrt(2.0);
-        LatLng southwestCorner =
-                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 225.0);
-        LatLng northeastCorner =
-                SphericalUtil.computeOffset(center, distanceFromCenterToCorner, 45.0);
-        return new LatLngBounds(southwestCorner, northeastCorner);
+    public static void drawCircle(Context pContext, int pStartColor, int pCenterColor, int pEndColor) {
+        GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{pStartColor, pCenterColor, pEndColor});
+        g.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        g.setGradientRadius(140.0f);
+        g.setGradientCenter(0.0f, 0.45f);
     }
 
 }

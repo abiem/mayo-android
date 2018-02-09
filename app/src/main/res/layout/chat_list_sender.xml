@@ -10,6 +10,7 @@
     android:padding="@dimen/margin_10">
 
     <RelativeLayout
+        android:id="@+id/parentBlueLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -24,8 +25,7 @@
             android:layout_alignRight="@+id/textParentLayout"
             android:layout_marginLeft="-10dp"
             android:layout_marginStart="-10dp"
-            android:background="@drawable/bubble_slider_sender"
-            android:rotation="270" />
+            android:background="@drawable/bubble_blue_slider_sender" />
 
         <LinearLayout
             android:id="@+id/textParentLayout"
@@ -48,8 +48,49 @@
                 android:textColor="@color/white"
                 android:textSize="@dimen/tx_20" />
         </LinearLayout>
+    </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/parentGreyLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:visibility="gone"
+        tools:ignore="UselessParent">
 
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignBottom="@+id/textGreyParentLayout"
+            android:layout_alignEnd="@+id/textGreyParentLayout"
+            android:layout_alignRight="@+id/textGreyParentLayout"
+            android:layout_marginLeft="-15dp"
+            android:layout_marginStart="-15dp"
+            android:background="@drawable/bubble_grey_slider_sender"
+            android:rotation="0" />
+
+        <LinearLayout
+            android:id="@+id/textGreyParentLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_greybackground_sender"
+            android:orientation="vertical"
+            tools:ignore="UselessParent">
+
+            <TextView
+                android:id="@+id/textview_grey_message_sender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="300dp"
+                android:paddingBottom="@dimen/padding_8"
+                android:paddingLeft="@dimen/padding_16"
+                android:paddingRight="@dimen/padding_16"
+                android:paddingTop="@dimen/padding_8"
+                android:text=""
+                android:textColor="@color/white"
+                android:textSize="@dimen/tx_20" />
+        </LinearLayout>
     </RelativeLayout>
 
 

@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -19,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -29,10 +31,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.cunoraz.gifview.library.GifView;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
+import com.github.sahasbhop.apngview.ApngDrawable;
+import com.github.sahasbhop.apngview.ApngImageLoader;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -47,7 +50,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -60,17 +62,17 @@ import com.mayo.Utility.Constants;
 import com.mayo.adapters.MapViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
+import com.mayo.classes.FakeDataModel;
 import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
-import com.mayo.models.FakeUsersShown;
-import com.mayo.models.GradientColor;
+import com.mayo.models.UserMarker;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.Task;
-import com.mayo.classes.CardColor;
 import com.mayo.classes.CustomViewPager;
 import com.mayo.classes.FakeMarker;
 import com.mayo.classes.GeoFireClass;
+import com.mayo.models.UsersLocations;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
@@ -79,6 +81,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import static com.mayo.Utility.CommonUtility.isLocationEnabled;
 
@@ -102,7 +105,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     RelativeLayout mRelativeMapLayout;
 
     @ViewById(R.id.imageHandsViewOnMapScreen)
-    GifView mImageHandsViewOnMap;
+    ImageView mImageHandsViewOnMap;
 
     @ViewById(R.id.rotateImageOnMapView)
     ImageView mRotateImageOnMapView;
@@ -120,10 +123,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
     Double mCurrentLat, mCurrentLng;
-    private Circle mCurrentLocationCircle;
     private GroundOverlay mCurrentLocationGroundOverlay;
     private Marker mCurrentLocationMarker;
-    private ArrayList<FakeUsersShown> mFakeUserMarker;
+    private ArrayList<UserMarker> mFakeUserMarker;
 
     private BackgroundLocationService mBackgroundLocationService;
     ArrayList<MapDataModel> mMapDataModels;
@@ -135,12 +137,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GeoQuery mGeoQuery;
     private Location mCurrentLocation, mTaskLocation;
     private FakeMarker mFakeMarker;
+    private ApngDrawable mApngDrawable;
+    private HashSet<UsersLocations> mNearByUsers;
 
     @AfterViews
     protected void init() {
         mMayoApplication.setActivity(this);
         mMapView.onCreate(null);
-        mImageHandsViewOnMap.setGifResource(R.drawable.thanks);
+        mNearByUsers = new HashSet<>();
+        ApngImageLoader.getInstance().displayImage("assets://apng/fist_bump_720.png", mImageHandsViewOnMap);
         mFakeUserMarker = new ArrayList<>();
         mRelativeMapLayout.setFitsSystemWindows(true);
         setDataModel();
@@ -284,71 +289,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void setDataModel() {
-        mMapDataModels = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            MapDataModel mapDataModel = new MapDataModel();
-            int color = CardColor.generateRandomColor();
-            GradientColor gradientColor = new GradientColor();
-            gradientColor.setStartColor(CardColor.choices[color][1]);
-            gradientColor.setEndColor(CardColor.choices[color][0]);
-            mapDataModel.setGradientColor(gradientColor);
-            mapDataModel.setFakeCard(false);
-            if (i > 0 & i < 4) {
-                mapDataModel.setFakeCard(true);
-            }
-            Drawable drawable = CommonUtility.getGradientDrawable(CardColor.choices[color][0], CardColor.choices[color][1], this);
-            mapDataModel.setBackgroundView(drawable);
-            Constants.CardType cardType = Constants.CardType.values()[i];
-            switch (cardType) {
-                case POST:
-                    mapDataModel.setTextMessage(getResources().getString(R.string.help_message));
-                    mapDataModel.setButtonMessage(getResources().getString(R.string.post));
-                    mapDataModel.setFakeCardPosition(Constants.CardType.POST.getValue());
-                    break;
-                case FAKECARDONE:
-                    mapDataModel.setTextMessage(getResources().getString(R.string.helping_message));
-                    mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDONE.getValue());
-                    if (CommonUtility.getFakeCardOne(MapActivity.this)) {
-                        continue;
-                    }
-                    break;
-                case FAKECARDTWO:
-                    mapDataModel.setTextMessage(getResources().getString(R.string.ai_message));
-                    mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDTWO.getValue());
-                    if (CommonUtility.getFakeCardTwo(MapActivity.this)) {
-                        continue;
-                    }
-                    break;
-                case FAKECARDTHREE:
-                    mapDataModel.setTextMessage(getResources().getString(R.string.need_help));
-                    mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDTHREE.getValue());
-                    if (CommonUtility.getFakeCardThree(MapActivity.this)) {
-                        continue;
-                    }
-                    break;
-            }
-
-            mMapDataModels.add(mapDataModel);
-        }
-
-//        for (int i = 0; i < 3; i++) {
-//            MapDataModel mapDataModel = new MapDataModel();
-//            GradientColor gradientColor = new GradientColor();
-//            gradientColor.setStartColor(CardColor.expireCard[0]);
-//            gradientColor.setEndColor(CardColor.expireCard[1]);
-//            mapDataModel.setGradientColor(gradientColor);
-//            mapDataModel.setFakeCard(false);
-//            mapDataModel.setFakeCardPosition(Constants.CardType.DEFAULT.getValue());
-//            Drawable drawable = CommonUtility.getGradientDrawable(CardColor.expireCard[0], CardColor.expireCard[1], this);
-//            mapDataModel.setBackgroundView(drawable);
-//            Constants.CardType cardType = Constants.CardType.values()[4];
-//            switch (cardType) {
-//                case DEFAULT:
-//                    mapDataModel.setTextMessage(getResources().getString(R.string.expired_card));
-//            }
-//            mMapDataModels.add(mapDataModel);
-//        }
-
+        FakeDataModel fakeDataModel = new FakeDataModel(this);
+        mMapDataModels = fakeDataModel.getDataModel();
     }
 
     private void setViewPager() {
@@ -372,7 +314,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMapView.onResume();
         if (CommonUtility.getHandsAnimationShownOnMap(MapActivity.this)) {
             mImageHandsViewOnMap.setVisibility(View.VISIBLE);
-            mImageHandsViewOnMap.play();
+            mApngDrawable = ApngDrawable.getFromView(mImageHandsViewOnMap);
+            if (mApngDrawable == null)
+                return;
+            mApngDrawable.setNumPlays(0);
+            mApngDrawable.start();
             mRotateImageOnMapView.setVisibility(View.VISIBLE);
             Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
             mRotateImageOnMapView.startAnimation(animation);
@@ -409,7 +355,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onFinish() {
             mRotateImageOnMapView.setVisibility(View.GONE);
             mRotateImageOnMapView.clearAnimation();
-            mImageHandsViewOnMap.pause();
+            if (mApngDrawable.isRunning()) {
+                mApngDrawable.stop(); // Stop animation
+            }
             mImageHandsViewOnMap.setVisibility(View.GONE);
             if (mMapViewPagerAdapter != null) {
                 for (int i = 0; i < mMapDataModels.size(); i++) {
@@ -522,9 +470,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     if (location != null) {
                         setCurrentLocation(location);
                         sendDataToFirebaseOfUserLocation(location);
-                        if (!CommonUtility.getFakeMarkerShown(MapActivity.this)) {
-                            setFakeMarker(location);
-                        }
                         if (mGeoQuery == null) {
                             setGeoQuery();
                         }
@@ -537,17 +482,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /**
      * set current location of user and add marker and circle on current location
      *
-     * @param location
+     * @param location current location of user
      */
     private void setCurrentLocation(Location location) {
+        mCurrentLocation = location;
         LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
         mCurrentLat = location.getLatitude();
         mCurrentLng = location.getLongitude();
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, Constants.sKeyCameraZoom);
-        CameraPosition cameraPosition = new CameraPosition(ll, 45, 45, 60);
+        CameraPosition cameraPosition = new CameraPosition(ll, 45, 45, 75);
         update = CameraUpdateFactory.newCameraPosition(cameraPosition);
         mGoogleMap.animateCamera(update);
-        if (mCurrentLocationCircle == null) {
+        if (mCurrentLocationGroundOverlay == null) {
             drawCircle(location);
         }
         if (mCurrentLocationMarker == null) {
@@ -556,12 +502,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void drawCircle(Location location) {
-//        mCurrentLocationCircle = mGoogleMap.addCircle(new CircleOptions()
-//                .center(new LatLng(location.getLatitude(), location.getLongitude()))
-//                .radius(Constants.sKeyForMapRadius)
-//                .strokeColor(ContextCompat.getColor(MapActivity.this, R.color.transparent))
-//                .zIndex(3.0f)
-//                .fillColor(ContextCompat.getColor(MapActivity.this, R.color.colorTransparentBlue)));
         mCurrentLocation = location;
         setGroundOverlayForShowingCircle(mCurrentLocation);
     }
@@ -594,6 +534,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             addFakeUserMaker(i + 1, location);
         }
         if (mFakeUserMarker.size() > 0) {
+            CommonUtility.setFakeMarkerShown(true, MapActivity.this);
             mFakeMarker = new FakeMarker(MapActivity.this, mFakeUserMarker);
             mFakeMarker.startTimer();
         }
@@ -602,26 +543,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void addFakeUserMaker(int count, Location location) {
         Bitmap bitmap = CommonUtility.drawableToBitmap(ContextCompat.getDrawable(MapActivity.this, R.drawable.location_fake_users_circle));
         BitmapDescriptor fakeLocationIcon = BitmapDescriptorFactory.fromBitmap(bitmap);
-        double lat = 0.0f, lng = 0.0f;
+        double lat, lng;
         Constants.FakeMarkerValues fakeUserMaker = Constants.FakeMarkerValues.values()[count];
-        switch (fakeUserMaker) {
-            case FIRSTMARKER:
-                lat = Constants.FakeUsersValues.sFakeUserPositionMaximum;
-                lng = Constants.FakeUsersValues.sFakeUserPositionConstant;
-                break;
-            case SECONDMARKER:
-                lat = Constants.FakeUsersValues.sFakeUserPositionMininum;
-                lng = Constants.FakeUsersValues.sFakeUserPositionConstant;
-                break;
-            case THIRDMARKER:
-                lat = Constants.FakeUsersValues.sFakeUserPositionConstant;
-                lng = Constants.FakeUsersValues.sFakeUserPositionMaximum;
-                break;
-            case FOURTHMARKER:
-                lat = Constants.FakeUsersValues.sFakeUserPositionConstant;
-                lng = Constants.FakeUsersValues.sFakeUserPositionMininum;
-                break;
-        }
+        int latlngContainNumber = FakeMarker.generateRandomLocationOfFakeUser();
+        lat = FakeMarker.fakeUserChoices[latlngContainNumber][0];
+        lng = FakeMarker.fakeUserChoices[latlngContainNumber][1];
         LatLng latLng = new LatLng(location.getLatitude() + lat, location.getLongitude() + lng);
         MarkerOptions fakeMarker = new MarkerOptions().position(latLng)
                 .icon(fakeLocationIcon);
@@ -640,7 +566,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void setFakeUserModel(MarkerOptions pFakeMarker, LatLng pLatlng) {
-        FakeUsersShown fakeUsersShown = new FakeUsersShown();
+        UserMarker fakeUsersShown = new UserMarker();
         fakeUsersShown.setMarker(mGoogleMap.addMarker(pFakeMarker));
         fakeUsersShown.setLatLng(pLatlng);
         fakeUsersShown.setStartTime(CommonUtility.getCurrentTime());
@@ -648,11 +574,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mFakeUserMarker.add(fakeUsersShown);
     }
 
-    private void removeFakeMarkers(ArrayList<FakeUsersShown> pFakeMarker) {
-        for (int i = 0; i < pFakeMarker.size(); i++) {
-            mFakeUserMarker.get(i).getMarker().remove();
-            mFakeUserMarker.remove(i);
+    //remove all fake markers
+    private void removeFakeMarkers(ArrayList<UserMarker> pFakeMarker) {
+        ArrayList<UserMarker> fakeMarkerLocal = new ArrayList<>();
+        fakeMarkerLocal.addAll(pFakeMarker);
+        for (int i = 0; i < fakeMarkerLocal.size(); i++) {
+            fakeMarkerLocal.get(i).getMarker().remove();
         }
+        fakeMarkerLocal.removeAll(pFakeMarker);
+        mFakeUserMarker = fakeMarkerLocal;
     }
 
     @Override
@@ -676,6 +606,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (mCurrentLocationMarker != null) {
             mCurrentLocationMarker.remove();
         }
+        mCurrentLocation = location;
         addCurrentLocationMarker(mCurrentLocation);
         sendDataToFirebaseOfUserLocation(location);
     }
@@ -683,11 +614,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     /**
      * send current location data to firebase
      *
-     * @param location
+     * @param location current location of user send to firebase using geoquery
      */
     private void sendDataToFirebaseOfUserLocation(Location location) {
-        mCurrentLocation = location;
-        mGeoFireClass.sendDataToFirebaseOfUserLocation(mCurrentLocation);
+        mGeoFireClass.sendDataToFirebaseOfUserLocation(location);
     }
 
     public void setGeoFireCompleteListener() {
@@ -700,7 +630,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void sendDataToFirebaseOfTaskLocation(Location location, String pTimeStamp) {
         mTaskLocation = location;
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
         GeoFire geoFire = firebaseDatabase.setTaskLocationWithGeoFire();
         if (mTaskLocation != null) {
             geoFire.setLocation(pTimeStamp,
@@ -712,8 +642,44 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * perform GeoQuery on every 200 m radius
      */
     private void setGeoQuery() {
+        mNearByUsers.clear();
         mGeoQuery = mGeoFireClass.setGeoQuery(mCurrentLocation);
     }
+
+    public void getNearByUsers(String pKey, GeoLocation pGeoLocation) {
+        UsersLocations usersLocations = new UsersLocations();
+        usersLocations.setKey(pKey);
+        usersLocations.setLatitude(pGeoLocation.latitude);
+        usersLocations.setLongitude(pGeoLocation.longitude);
+        if (!pKey.equals(CommonUtility.getUserId(this))) {
+            mNearByUsers.add(usersLocations);
+        }
+    }
+
+    public void createMarkerOfRealTimeUsers() {
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+        HashSet<UsersLocations> userCurrentMatker = new HashSet<>();
+        userCurrentMatker.addAll(mNearByUsers);
+        for (UsersLocations usersLocations : mNearByUsers) {
+            String key = usersLocations.getKey();
+            if (usersLocations.getKey().contains("Optional(")) {
+                key = key.substring(key.indexOf("(") + 2, key.length() - 2);
+                firebaseDatabase.getUsersTimeFromFirebase(key, userCurrentMatker, usersLocations);
+            } else {
+                firebaseDatabase.getUsersTimeFromFirebase(key, userCurrentMatker, usersLocations);
+            }
+        }
+    }
+
+    private void showFakeMarker() {
+        if (isLocationEnabled(this) && !CommonUtility.getFakeMarkerShown(MapActivity.this)
+                && mCurrentLocation != null) {
+            if (mCurrentLocation.getLatitude() != 0.0 && mCurrentLocation.getLongitude() != 0.0) {
+                setFakeMarker(mCurrentLocation);
+            }
+        }
+    }
+
 
     public void onGeoQueryError(DatabaseError error) {
         mMayoApplication.showToast(MapActivity.this, String.valueOf(error));
@@ -721,18 +687,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     /**
      * Perfom method when current marker going outside from current circle
+     * Then remove previous fake marker all and create new fake marker
      */
     public void moveMarkerOutsideFromCurrentLocation() {
-//        if (mCurrentLocationCircle != null) {
-//            mCurrentLocationCircle.remove();
-//        }
+        if (mFakeMarker != null) {
+            mFakeMarker.stoptimertask();
+        }
+        //remove previous circle
         if (mCurrentLocationGroundOverlay != null) {
             mCurrentLocationGroundOverlay.remove();
         }
         if (mCurrentLocation != null) {
             drawCircle(mCurrentLocation);
+            setFakeMarker(mCurrentLocation);
         }
         setGeoQuery();
+
     }
 
     private void disableLocationDialogView(final int val) {
@@ -774,11 +744,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         break;
                     case R.id.textbutton:
                         if (!pMessage.equals(Constants.sConstantString)) {
-                            Task task = setNewTask(pPosition, pMessage);
-                            FirebaseDatabase firebaseDatabase = new FirebaseDatabase();
+                            FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+                            String startColor = mMapDataModels.get(pPosition).getGradientColor().getStartColor().substring(1);
+                            String endColor = mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1);
+                            Task task = firebaseDatabase.setTask(pMessage, this, startColor, endColor);
                             firebaseDatabase.writeNewTask(task.getTaskID(), task);
                             sendDataToFirebaseOfTaskLocation(mCurrentLocation, task.getTaskID());
+                            // user applied for task
                             CommonUtility.setTaskApplied(true, MapActivity.this);
+                            // save task data
                             CommonUtility.setTaskData(task, MapActivity.this);
                         }
                         break;
@@ -807,6 +781,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setParentAnmationOfQuest(R.anim.slide_down);
         final Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
         if (dialog != null) {
+            if (CommonUtility.getTaskApplied(MapActivity.this)) {
+                CommonUtility.setTaskApplied(false, MapActivity.this);
+                Task task = CommonUtility.getTaskData(this);
+                Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
+                } else {
+                    dialog.findViewById(R.id.thanksDialogBackground).setBackgroundDrawable(drawable);
+                }
+            }
+            dialog.findViewById(R.id.thanks).setAlpha(Constants.sTransparencyLevelFade);
+            dialog.findViewById(R.id.lineThanks).setAlpha(Constants.sTransparencyLevelFade);
             dialog.findViewById(R.id.thanks).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -817,6 +803,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 @Override
                 public void onClick(View v) {
                     dialog.dismiss();
+                    updateTask(true, getResources().getString(R.string.STATUS_FOR_NOT_HELPED));
                 }
             });
         }
@@ -831,21 +818,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mParentQuestLayout.startAnimation(slide_up);
     }
 
-    private Task setNewTask(int pPosition, String pMessage) {
-        Task task = new Task();
-        task.setCreatedby(CommonUtility.getUserId(this));
-        task.setTaskID(CommonUtility.convertLocalTimeToUTC());
-        task.setHelpedBy(Constants.sConstantString);
-        task.setTimeCreated(CommonUtility.getLocalTime()); //this is time when we create task
-        task.setCompleted(false);
-        task.setTaskDescription(pMessage);
-        task.setTimeUpdated(CommonUtility.getLocalTime()); //this is updating time but first time we showing create task time
-        task.setUserMovedOutside(false);
-        task.setRecentActivity(false);
-        task.setStartColor(mMapDataModels.get(pPosition).getGradientColor().getStartColor().substring(1));
-        task.setEndColor(mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1));
-        task.setCompleteType("");
-        return task;
+    private void updateTask(boolean pCompleteOrNot, String pCompleteType) {
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+        Task task = firebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this);
+        firebaseDatabase.updateTask(task.getTaskID(), task);
     }
 
     //this is for fake card

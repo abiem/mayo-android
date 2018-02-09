@@ -6,11 +6,9 @@ import android.os.Handler;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
-import com.mayo.models.FakeUsersShown;
+import com.mayo.models.UserMarker;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,9 +23,22 @@ public class FakeMarker {
     private TimerTask timerTask;
     Handler handler = new Handler();
     Context mContext;
-    ArrayList<FakeUsersShown> mFakeUserShown;
+    ArrayList<UserMarker> mFakeUserShown;
 
-    public FakeMarker(Context pContext, ArrayList<FakeUsersShown> pFakeUserShown) {
+    //array of fake user location
+    public static double[][] fakeUserChoices = {
+            {Constants.FakeUsersValues.sFakeUserPositionMininum, Constants.FakeUsersValues.sFakeUserPositionConstant},
+            {Constants.FakeUsersValues.sFakeUserPositionMaximum, Constants.FakeUsersValues.sFakeUserPositionConstant},
+            {Constants.FakeUsersValues.sFakeUserPositionConstant, Constants.FakeUsersValues.sFakeUserPositionMaximum},
+            {Constants.FakeUsersValues.sFakeUserPositionConstant, Constants.FakeUsersValues.sFakeUserPositionMininum},
+            {Constants.FakeUsersValues.sFakeUserPositionConstantNew, Constants.FakeUsersValues.sFakeUserPositionMininumNew},
+            {Constants.FakeUsersValues.sFakeUserPositionConstantNew, Constants.FakeUsersValues.sFakeUserPositionMaximumNew},
+            {Constants.FakeUsersValues.sFakeUserPositionMaximumNew, Constants.FakeUsersValues.sFakeUserPositionConstantNew},
+            {Constants.FakeUsersValues.sFakeUserPositionMininumNew, Constants.FakeUsersValues.sFakeUserPositionConstantNew},
+            {Constants.FakeUsersValues.sFakeUserPositionConstant, Constants.FakeUsersValues.sFakeUserPositionMininum}
+    };
+
+    public FakeMarker(Context pContext, ArrayList<UserMarker> pFakeUserShown) {
         mContext = pContext;
         mFakeUserShown = pFakeUserShown;
     }
@@ -44,6 +55,12 @@ public class FakeMarker {
         Random r = new Random();
         return r.nextInt(Constants.FakeUsersValues.sMaximumFakeUserTimeShown - Constants.FakeUsersValues.sMinimumFakeUserTimeShown)
                 + Constants.FakeUsersValues.sMinimumFakeUserTimeShown;
+    }
+
+    public static int generateRandomLocationOfFakeUser() {
+        //generate fake user location random
+        Random random = new Random();
+        return random.nextInt(fakeUserChoices.length);
     }
 
     public void startTimer() {

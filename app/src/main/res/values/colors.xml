@@ -45,6 +45,7 @@
     <color name="colorDarkPinkTransparentNew">#15e87185</color>
     <!--25% =40 transparency-->
     <color name="colorLightBlueTransparent">#4008bbdb</color>
+    <color name="colorLightBlueFull">#4D08bbdb</color>
     <color name="colorLightBlueTransparentNew">#7008bbdb</color>
     <color name="colorGreenNew">#7ED321</color>
     <!--25% transparency-->
