@@ -114,11 +114,8 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void setViewPager() {
-        mCustomViewPager.setPagingEnabled(false);
-        mCustomViewPager.setClipToPadding(false);
-        mCustomViewPager.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
-                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
-        mCustomViewPager.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
+        CommonUtility commonUtility = new CommonUtility();
+        mCustomViewPager = commonUtility.setViewPager(mCustomViewPager,false);
         mCustomViewPager.setAdapter(new IntroViewPagerAdapter(this, this, tutorialModels));
         mCustomViewPager.setCurrentItem(0);
     }

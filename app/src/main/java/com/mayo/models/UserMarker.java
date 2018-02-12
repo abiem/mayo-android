@@ -11,6 +11,7 @@ import java.util.Date;
  */
 
 public class UserMarker {
+    private String key;
     private Marker marker;
     private LatLng latLng;
     private Date startTime;
@@ -46,5 +47,13 @@ public class UserMarker {
 
     public void setMarker(Marker marker) {
         this.marker = marker;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 }

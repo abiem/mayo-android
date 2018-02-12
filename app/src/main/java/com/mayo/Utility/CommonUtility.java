@@ -29,9 +29,12 @@ import android.view.WindowManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.gson.Gson;
 import com.mayo.R;
 import com.mayo.activities.IntroActivity;
+import com.mayo.classes.CustomViewPager;
 import com.mayo.models.Task;
 
 import java.text.ParseException;
@@ -480,6 +483,18 @@ public class CommonUtility {
         return null;
     }
 
+    public static Date getEndTimeOfRealUsers(int pAddSeconds, Date pCurrentTime) {
+        try {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(pCurrentTime);
+            calendar.add(Calendar.SECOND, pAddSeconds);
+            return utcTimeFormat.parse(utcTimeFormat.format(calendar.getTime()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static String getLocalTime() {
         utcTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return utcTimeFormat.format(new Date());
@@ -518,11 +533,13 @@ public class CommonUtility {
         }
     }
 
-    public static void drawCircle(Context pContext, int pStartColor, int pCenterColor, int pEndColor) {
-        GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{pStartColor, pCenterColor, pEndColor});
-        g.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        g.setGradientRadius(140.0f);
-        g.setGradientCenter(0.0f, 0.45f);
+    public CustomViewPager setViewPager(CustomViewPager pCustomViewPager,boolean pagingEnabled) {
+        pCustomViewPager.setPagingEnabled(pagingEnabled);
+        pCustomViewPager.setClipToPadding(false);
+        pCustomViewPager.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
+                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
+        pCustomViewPager.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
+        return pCustomViewPager;
     }
 
 }

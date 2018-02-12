@@ -63,6 +63,15 @@ public class Constants {
         public static final double sFakeUserPositionConstantNew = 0.0005;
     }
 
+    public class CardMarkerValues {
+        public static final double sCardMarkerPositionMaximum = 0.00010;
+        public static final double sCardMarkerPositionMaximumNew = 0.00015;
+        public static final double sCardMarkerPositionMininum = -0.00010;
+        public static final double sCardMarkerPositionMininumNew = -0.00015;
+        public static final double sCardMarkerPositionConstant = 0.0;
+        public static final double sCardMarkerPositionConstantNew = 0.0005;
+    }
+
     public class CardPaddingValues {
         public static final int sTopBottomPadding = 80;
         public static final int sLeftRightPadding = 64;

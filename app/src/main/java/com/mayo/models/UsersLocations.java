@@ -7,9 +7,9 @@ import com.firebase.geofire.GeoLocation;
  */
 
 public class UsersLocations {
-    String key;
-    double latitude;
-    double longitude;
+    private String key;
+    private double latitude;
+    private double longitude;
 
     public String getKey() {
         return key;

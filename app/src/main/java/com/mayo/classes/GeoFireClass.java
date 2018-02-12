@@ -49,12 +49,12 @@ public class GeoFireClass {
         mGeoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                ((MapActivity) mContext).getNearByUsers(key,location);
+                ((MapActivity) mContext).getNearByUsers(key, location);
             }
 
             @Override
             public void onKeyExited(String key) {
-                ((MapActivity) mContext).moveMarkerOutsideFromCurrentLocation();
+                ((MapActivity) mContext).moveMarkerOutsideFromCurrentLocation(key);
             }
 
             @Override
@@ -64,7 +64,6 @@ public class GeoFireClass {
 
             @Override
             public void onGeoQueryReady() {
-                ((MapActivity) mContext).createMarkerOfRealTimeUsers();
             }
 
             @Override

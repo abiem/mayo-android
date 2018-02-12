@@ -20,7 +20,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -63,9 +62,12 @@ import com.mayo.adapters.MapViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
 import com.mayo.classes.FakeDataModel;
+import com.mayo.classes.ShownCardMarker;
+import com.mayo.classes.UserLiveMarker;
 import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
+import com.mayo.models.CardLatlng;
 import com.mayo.models.UserMarker;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.Task;
@@ -130,22 +132,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private BackgroundLocationService mBackgroundLocationService;
     ArrayList<MapDataModel> mMapDataModels;
     Dialog mDialog;
-    boolean scrollStarted = true, checkDirection;
     int positionNew;
     private MapViewPagerAdapter mMapViewPagerAdapter;
     private GeoFireClass mGeoFireClass;
     private GeoQuery mGeoQuery;
     private Location mCurrentLocation, mTaskLocation;
     private FakeMarker mFakeMarker;
+    private UserLiveMarker mUserLiveMarker;
     private ApngDrawable mApngDrawable;
-    private HashSet<UsersLocations> mNearByUsers;
+    private HashSet<UserMarker> mNearByUsers;
+    private ShownCardMarker mShownCardMarker;
 
     @AfterViews
     protected void init() {
         mMayoApplication.setActivity(this);
         mMapView.onCreate(null);
         mNearByUsers = new HashSet<>();
-        ApngImageLoader.getInstance().displayImage("assets://apng/fist_bump_720.png", mImageHandsViewOnMap);
+        ApngImageLoader.getInstance().displayImage("assets://apng/fist_bump_720p.png", mImageHandsViewOnMap);
         mFakeUserMarker = new ArrayList<>();
         mRelativeMapLayout.setFitsSystemWindows(true);
         setDataModel();
@@ -219,15 +222,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mViewPagerMap.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                boolean isGoingToRightPage = position == positionNew;
-                if (checkDirection) {
-                    if (isGoingToRightPage) {
-                        // user is going to the right page
-                    } else {
-                        // user is going to the left page
-                    }
-                    checkDirection = false;
-                }
+
             }
 
             @Override
@@ -246,6 +241,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             for (int i = 0; i < mMapDataModels.size(); i++) {
                                 if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
                                     mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                                    mMapDataModels.get(i).getCardLatlng().getMarker().remove();
                                     int value = CommonUtility.getPoints(MapActivity.this) + 1;
                                     CommonUtility.setPoints(value, MapActivity.this);
                                     mCountButton.setText(String.valueOf(value));
@@ -262,28 +258,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             for (int i = 0; i < mMapDataModels.size(); i++) {
                                 if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
                                     mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                                    CardLatlng cardLatlng = mMapDataModels.get(i + 1).getCardLatlng();
+                                    mMapDataModels.get(i).getCardLatlng().getMarker().remove();
                                     int value = CommonUtility.getPoints(MapActivity.this) + 1;
                                     CommonUtility.setPoints(value, MapActivity.this);
                                     mCountButton.setText(String.valueOf(value));
                                     CommonUtility.setFakeCardOne(true, MapActivity.this);
                                     mViewPagerMap.setCurrentItem(1);
+                                    if (mShownCardMarker != null) {
+                                        cardLatlng.getMarker().setIcon(mShownCardMarker.getIconLarge());
+                                    }
                                     break;
                                 }
                             }
                         }
-                        break;
                 }
                 positionNew = position;
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
-//                if (!scrollStarted && state == ViewPager.SCROLL_STATE_DRAGGING) {
-//                    scrollStarted = true;
-//                    checkDirection = true;
-//                } else {
-//                    scrollStarted = false;
-//                }
+
             }
         });
     }
@@ -294,11 +289,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void setViewPager() {
-        mViewPagerMap.setPagingEnabled(true);
-        mViewPagerMap.setClipToPadding(false);
-        mViewPagerMap.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
-                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
-        mViewPagerMap.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
+        CommonUtility commonUtility = new CommonUtility();
+        mViewPagerMap = commonUtility.setViewPager(mViewPagerMap, true);
         mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap, this, mMayoApplication);
         mViewPagerMap.setAdapter(mMapViewPagerAdapter);
         if (mMapDataModels.size() > 1) {
@@ -307,6 +299,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         positionNew = mViewPagerMap.getCurrentItem();
     }
 
+    private void setCardMarkers(Location pLocation) {
+        mShownCardMarker = new ShownCardMarker(this, mMapDataModels, pLocation, mGoogleMap);
+        mShownCardMarker.getCardMarkers();
+    }
 
     @Override
     protected void onResume() {
@@ -315,16 +311,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (CommonUtility.getHandsAnimationShownOnMap(MapActivity.this)) {
             mImageHandsViewOnMap.setVisibility(View.VISIBLE);
             mApngDrawable = ApngDrawable.getFromView(mImageHandsViewOnMap);
-            if (mApngDrawable == null)
-                return;
-            mApngDrawable.setNumPlays(0);
-            mApngDrawable.start();
             mRotateImageOnMapView.setVisibility(View.VISIBLE);
             Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
             mRotateImageOnMapView.startAnimation(animation);
             CommonUtility.setHandsAnimationShownOnMap(false, MapActivity.this);
             mRelativeMapLayout.setFitsSystemWindows(false);
             new CountDown(4000, 1000);
+            if (mApngDrawable == null)
+                return;
+            mApngDrawable.setNumPlays(0);
+            mApngDrawable.start();
         }
         if (mGoogleMap != null) {
             if (mDialog != null && checkPermissions()) {
@@ -363,10 +359,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 for (int i = 0; i < mMapDataModels.size(); i++) {
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
                         mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                        mMapDataModels.get(i).getCardLatlng().getMarker().remove();
                         int value = CommonUtility.getPoints(MapActivity.this) + 1;
                         CommonUtility.setPoints(value, MapActivity.this);
                         mCountButton.setText(String.valueOf(value));
                         CommonUtility.setFakeCardTwo(true, MapActivity.this);
+                        break;
+                    }
+                }
+                for (int i = 0; i < mMapDataModels.size(); i++) {
+                    if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
+                        CardLatlng cardLatlng = mMapDataModels.get(i).getCardLatlng();
+                        cardLatlng.getMarker().setIcon(mShownCardMarker.getIconLarge());
                         break;
                     }
                 }
@@ -470,6 +474,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     if (location != null) {
                         setCurrentLocation(location);
                         sendDataToFirebaseOfUserLocation(location);
+                        if (mShownCardMarker == null) {
+                            setCardMarkers(location);
+                        }
                         if (mGeoQuery == null) {
                             setGeoQuery();
                         }
@@ -531,7 +538,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         int numOfFakeUsers = FakeMarker.generateRandomMarkerOfFakeUsers();
         for (int i = 0; i < numOfFakeUsers; i++) {
-            addFakeUserMaker(i + 1, location);
+            addFakeUserMaker(location);
         }
         if (mFakeUserMarker.size() > 0) {
             CommonUtility.setFakeMarkerShown(true, MapActivity.this);
@@ -540,11 +547,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    private void addFakeUserMaker(int count, Location location) {
+    private void addFakeUserMaker(Location location) {
         Bitmap bitmap = CommonUtility.drawableToBitmap(ContextCompat.getDrawable(MapActivity.this, R.drawable.location_fake_users_circle));
         BitmapDescriptor fakeLocationIcon = BitmapDescriptorFactory.fromBitmap(bitmap);
         double lat, lng;
-        Constants.FakeMarkerValues fakeUserMaker = Constants.FakeMarkerValues.values()[count];
         int latlngContainNumber = FakeMarker.generateRandomLocationOfFakeUser();
         lat = FakeMarker.fakeUserChoices[latlngContainNumber][0];
         lng = FakeMarker.fakeUserChoices[latlngContainNumber][1];
@@ -561,6 +567,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             CommonUtility.setFakeMarkerShown(true, MapActivity.this);
             if (mFakeMarker != null) {
                 mFakeMarker.stoptimertask();
+            }
+        }
+    }
+
+    public void removeUserMarkerAccordingToTime(UserMarker pUserMarker) {
+        pUserMarker.getMarker().remove();
+        mNearByUsers.remove(pUserMarker);
+        if (mNearByUsers.size() == 0) {
+            if (mUserLiveMarker != null) {
+                mUserLiveMarker.stoptimertask();
+                mUserLiveMarker = null;
             }
         }
     }
@@ -592,6 +609,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (mFakeMarker != null) {
             mFakeMarker.stoptimertask();
             CommonUtility.setFakeMarkerShown(false, MapActivity.this);
+        }
+        if (mUserLiveMarker != null) {
+            mUserLiveMarker.stoptimertask();
         }
     }
 
@@ -651,29 +671,41 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         usersLocations.setKey(pKey);
         usersLocations.setLatitude(pGeoLocation.latitude);
         usersLocations.setLongitude(pGeoLocation.longitude);
-        if (!pKey.equals(CommonUtility.getUserId(this))) {
-            mNearByUsers.add(usersLocations);
+        setRealTimeUsers(usersLocations);
+    }
+
+    public void setRealTimeUsers(UsersLocations usersLocations) {
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+        String key = usersLocations.getKey();
+        if (usersLocations.getKey().contains("Optional(")) {
+            key = key.substring(key.indexOf("(") + 2, key.length() - 2);
+            firebaseDatabase.getUsersCurrentTimeFromFirebase(key, usersLocations, mGoogleMap);
+        } else {
+            firebaseDatabase.getUsersCurrentTimeFromFirebase(key, usersLocations, mGoogleMap);
         }
     }
 
-    public void createMarkerOfRealTimeUsers() {
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
-        HashSet<UsersLocations> userCurrentMatker = new HashSet<>();
-        userCurrentMatker.addAll(mNearByUsers);
-        for (UsersLocations usersLocations : mNearByUsers) {
-            String key = usersLocations.getKey();
-            if (usersLocations.getKey().contains("Optional(")) {
-                key = key.substring(key.indexOf("(") + 2, key.length() - 2);
-                firebaseDatabase.getUsersTimeFromFirebase(key, userCurrentMatker, usersLocations);
-            } else {
-                firebaseDatabase.getUsersTimeFromFirebase(key, userCurrentMatker, usersLocations);
+    public void setUsersIntoList(String pKey, UserMarker pUserMarker) {
+        if (!pKey.equals(CommonUtility.getUserId(this))) {
+            if (pUserMarker != null) {
+                mNearByUsers.add(pUserMarker);
+            }
+            if (mNearByUsers.size() > 0) {
+                if (mUserLiveMarker == null) {
+                    mUserLiveMarker = new UserLiveMarker(this, mNearByUsers);
+                    mUserLiveMarker.startTimer();
+                }
+            }
+            if (mNearByUsers.size() <= 3) {
+                if (!CommonUtility.getFakeMarkerShown(this)) {
+                    showFakeMarker();
+                }
             }
         }
     }
 
     private void showFakeMarker() {
-        if (isLocationEnabled(this) && !CommonUtility.getFakeMarkerShown(MapActivity.this)
-                && mCurrentLocation != null) {
+        if (isLocationEnabled(this) && mCurrentLocation != null) {
             if (mCurrentLocation.getLatitude() != 0.0 && mCurrentLocation.getLongitude() != 0.0) {
                 setFakeMarker(mCurrentLocation);
             }
@@ -689,20 +721,35 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      * Perfom method when current marker going outside from current circle
      * Then remove previous fake marker all and create new fake marker
      */
-    public void moveMarkerOutsideFromCurrentLocation() {
-        if (mFakeMarker != null) {
-            mFakeMarker.stoptimertask();
+    public void moveMarkerOutsideFromCurrentLocation(String pkey) {
+        if (pkey.equals(CommonUtility.getUserId(this))) {
+            if (mFakeMarker != null) {
+                mFakeMarker.stoptimertask();
+            }
+            //remove previous circle
+            if (mCurrentLocationGroundOverlay != null) {
+                mCurrentLocationGroundOverlay.remove();
+            }
+            if (mCurrentLocation != null) {
+                drawCircle(mCurrentLocation);
+                setFakeMarker(mCurrentLocation);
+            }
+            setGeoQuery();
+        } else {
+            removeUserMarker(pkey);
         }
-        //remove previous circle
-        if (mCurrentLocationGroundOverlay != null) {
-            mCurrentLocationGroundOverlay.remove();
-        }
-        if (mCurrentLocation != null) {
-            drawCircle(mCurrentLocation);
-            setFakeMarker(mCurrentLocation);
-        }
-        setGeoQuery();
+    }
 
+    private void removeUserMarker(String pKey) {
+        HashSet<UserMarker> hashSetUserMarker = new HashSet<>();
+        hashSetUserMarker.addAll(mNearByUsers);
+        for (UserMarker userMarker : hashSetUserMarker) {
+            if (userMarker.getKey().equals(pKey)) {
+                userMarker.getMarker().remove();
+                break;
+            }
+        }
+        mNearByUsers = hashSetUserMarker;
     }
 
     private void disableLocationDialogView(final int val) {

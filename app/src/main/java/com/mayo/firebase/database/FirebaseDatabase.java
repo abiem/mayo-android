@@ -1,23 +1,32 @@
 package com.mayo.firebase.database;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import com.firebase.geofire.GeoFire;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
+import com.mayo.activities.MapActivity;
 import com.mayo.models.Channel;
 import com.mayo.models.Task;
 import com.mayo.models.TaskViews;
 import com.mayo.models.UserMarker;
 import com.mayo.models.Users;
 import com.mayo.models.UsersLocations;
-import com.mayo.models.UsersTime;
 
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -38,7 +47,7 @@ public class FirebaseDatabase {
     }
 
     private void initDatabase() {
-        mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
+        mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child("android");
     }
 
     public void writeNewTask(String pTimeStamp, Task pTask) {
@@ -108,24 +117,29 @@ public class FirebaseDatabase {
         return updateTaskData;
     }
 
-    public void getUsersTimeFromFirebase(String pKey, final HashSet<UsersLocations> pUserLocationsArray, final UsersLocations pUserLocations) {
-        mDatabaseReference.child("users").child(pKey).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getUsersCurrentTimeFromFirebase(final String pKey, final UsersLocations pUserLocations, final GoogleMap pGoogleMap) {
+        mDatabaseReference.child("users").child(pKey).child("UpdatedAt").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
+                UserMarker userMarker = null;
                 if (snapshot.getValue() != null) {
-                    UsersTime usersTime = snapshot.getValue(UsersTime.class);
-                    if (usersTime != null) {
-                        Date taskUpdateTime = CommonUtility.convertStringToDateTime(usersTime.getUpdatedAt());
-                        Date currentTime = CommonUtility.getCurrentTime();
-                        if (taskUpdateTime != null && currentTime != null) {
-                            long diffTime = (currentTime.getTime() - taskUpdateTime.getTime()) / 1000;
-                            if (diffTime > Constants.seconds) {
-                                pUserLocationsArray.remove(pUserLocations);
-                            }
+                    String updateTime = snapshot.getValue().toString();
+                    Date taskUpdateTime = CommonUtility.convertStringToDateTime(updateTime);
+                    Date currentTime = CommonUtility.getCurrentTime();
+                    if (taskUpdateTime != null && currentTime != null) {
+                        long diffTime = (currentTime.getTime() - taskUpdateTime.getTime()) / 1000;
+                        if (diffTime < Constants.seconds) {
+                            int timeToDisplayMarker = (int) (Constants.seconds - diffTime);
+                            userMarker = new UserMarker();
+                            userMarker.setStartTime(currentTime);
+                            userMarker.setEndTime(CommonUtility.getEndTimeOfRealUsers(timeToDisplayMarker, currentTime));
+                            userMarker.setLatLng(new LatLng(pUserLocations.getLatitude(), pUserLocations.getLongitude()));
+                            userMarker.setMarker(pGoogleMap.addMarker(setUserMarker(userMarker)));
+                            userMarker.setKey(pKey);
                         }
                     }
                 }
-
+                ((MapActivity) mContext).setUsersIntoList(pKey, userMarker);
             }
 
             @Override
@@ -134,6 +148,14 @@ public class FirebaseDatabase {
             }
         });
     }
+
+    private MarkerOptions setUserMarker(UserMarker pUserMarker) {
+        Bitmap bitmap = CommonUtility.drawableToBitmap(ContextCompat.getDrawable(mContext, R.drawable.location_fake_users_circle));
+        BitmapDescriptor fakeLocationIcon = BitmapDescriptorFactory.fromBitmap(bitmap);
+        LatLng latLng = pUserMarker.getLatLng();
+        return new MarkerOptions().position(latLng).icon(fakeLocationIcon);
+    }
+
 
     public void getTaskFromFirebase() {
         mDatabaseReference.addValueEventListener(new ValueEventListener() {

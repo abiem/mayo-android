@@ -15,6 +15,7 @@ public class MapDataModel {
     private int fakeCardPosition;
     private boolean isFakeCard;
     private CardView cardView;
+    private CardLatlng cardLatlng;
 
     public boolean isFakeCard() {
         return isFakeCard;
@@ -70,5 +71,13 @@ public class MapDataModel {
 
     public void setCardView(CardView cardView) {
         this.cardView = cardView;
+    }
+
+    public CardLatlng getCardLatlng() {
+        return cardLatlng;
+    }
+
+    public void setCardLatlng(CardLatlng cardLatlng) {
+        this.cardLatlng = cardLatlng;
     }
 }
