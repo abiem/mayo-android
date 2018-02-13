@@ -533,7 +533,7 @@ public class CommonUtility {
         }
     }
 
-    public CustomViewPager setViewPager(CustomViewPager pCustomViewPager,boolean pagingEnabled) {
+    public CustomViewPager setViewPager(CustomViewPager pCustomViewPager, boolean pagingEnabled) {
         pCustomViewPager.setPagingEnabled(pagingEnabled);
         pCustomViewPager.setClipToPadding(false);
         pCustomViewPager.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,

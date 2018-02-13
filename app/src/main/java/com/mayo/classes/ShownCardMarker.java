@@ -3,15 +3,19 @@ package com.mayo.classes;
 import android.content.Context;
 import android.location.Location;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 
+import com.mayo.activities.MapActivity;
 import com.mayo.models.CardLatlng;
 import com.mayo.models.MapDataModel;
 
@@ -64,6 +68,7 @@ public class ShownCardMarker {
                         CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
                         LatLng latLng = new LatLng(mLocation.getLatitude() + cardLatlng.getLatLng().latitude,
                                 mLocation.getLongitude() + cardLatlng.getLatLng().longitude);
+                        setGoogleMapPosition(mLocation, cardLatlng);
                         return new MarkerOptions().position(latLng).icon(iconLarge);
                     }
                 }
@@ -80,6 +85,7 @@ public class ShownCardMarker {
                         CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
                         LatLng latLng = new LatLng(mLocation.getLatitude() + cardLatlng.getLatLng().latitude,
                                 mLocation.getLongitude() + cardLatlng.getLatLng().longitude);
+                        setGoogleMapPosition(mLocation, cardLatlng);
                         if (isFirstMarkerVisible) {
                             return new MarkerOptions().position(latLng).icon(iconLarge);
                         } else {
@@ -100,6 +106,7 @@ public class ShownCardMarker {
                         CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
                         LatLng latLng = new LatLng(mLocation.getLatitude() + cardLatlng.getLatLng().latitude,
                                 mLocation.getLongitude() + cardLatlng.getLatLng().longitude);
+                        setGoogleMapPosition(mLocation, cardLatlng);
                         if (isSecondMarkerVisible) {
                             return new MarkerOptions().position(latLng).icon(iconLarge);
                         } else {
@@ -127,7 +134,10 @@ public class ShownCardMarker {
             for (int i = 0; i < mMapDataModel.size(); i++) {
                 if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
                     CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
-                    cardLatlng.setMarker(mGoogleMap.addMarker(firstFakeCardMarkerOptions));
+                    Marker marker = mGoogleMap.addMarker(firstFakeCardMarkerOptions);
+                    marker.setTag(Constants.CardType.FAKECARDONE.getValue());
+                    marker.setZIndex(1.0f);
+                    cardLatlng.setMarker(marker);
                     setStateOfFirstMarker = false;
                 }
             }
@@ -137,7 +147,9 @@ public class ShownCardMarker {
             for (int i = 0; i < mMapDataModel.size(); i++) {
                 if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
                     CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
-                    cardLatlng.setMarker(mGoogleMap.addMarker(secondFakeCardMarkerOptions));
+                    Marker marker = mGoogleMap.addMarker(secondFakeCardMarkerOptions);
+                    marker.setTag(Constants.CardType.FAKECARDTWO.getValue());
+                    cardLatlng.setMarker(marker);
                     setStateOfSecondMarker = false;
                 }
             }
@@ -147,9 +159,19 @@ public class ShownCardMarker {
             for (int i = 0; i < mMapDataModel.size(); i++) {
                 if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
                     CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
-                    cardLatlng.setMarker(mGoogleMap.addMarker(thirdFakeCardMarkerOptions));
+                    Marker marker = mGoogleMap.addMarker(thirdFakeCardMarkerOptions);
+                    marker.setTag(Constants.CardType.FAKECARDTHREE.getValue());
+                    cardLatlng.setMarker(marker);
                 }
             }
         }
+    }
+
+    public void setGoogleMapPosition(Location pCurrentLocationCardMarker, CardLatlng pCardLatlng) {
+        LatLng latLng = new LatLng(pCurrentLocationCardMarker.getLatitude() + pCardLatlng.getLatLng().latitude,
+                pCurrentLocationCardMarker.getLongitude() + pCardLatlng.getLatLng().longitude);
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(latLng).zoom(Constants.sKeyCameraZoom).build();
+        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 }

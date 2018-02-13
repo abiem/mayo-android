@@ -142,7 +142,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
             case FIRST:
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 playHandsImage();
-                mCountDown = new CountDown(3000, 1000);
+                mCountDown = new CountDown(2600, 1000);
                 break;
             case SECOND:
                 rotateImage.clearAnimation();
@@ -279,7 +279,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         mApngDrawable.setNumPlays(1);
         mApngDrawable.start();
         ApngImageLoader.getInstance().displayImage(mApngImages.get(3), imageViewTwo);
-        new CountDownNew(3200, 1000);
+        new CountDownNew(2300, 1000);
     }
 
 

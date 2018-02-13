@@ -20,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -62,8 +63,10 @@ import com.mayo.adapters.MapViewPagerAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
 import com.mayo.classes.FakeDataModel;
+import com.mayo.classes.MarkerClick;
 import com.mayo.classes.ShownCardMarker;
 import com.mayo.classes.UserLiveMarker;
+import com.mayo.classes.ViewPagerScroller;
 import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
@@ -128,7 +131,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GroundOverlay mCurrentLocationGroundOverlay;
     private Marker mCurrentLocationMarker;
     private ArrayList<UserMarker> mFakeUserMarker;
-
+    private boolean isMarkerClick = false;
     private BackgroundLocationService mBackgroundLocationService;
     ArrayList<MapDataModel> mMapDataModels;
     Dialog mDialog;
@@ -136,12 +139,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private MapViewPagerAdapter mMapViewPagerAdapter;
     private GeoFireClass mGeoFireClass;
     private GeoQuery mGeoQuery;
-    private Location mCurrentLocation, mTaskLocation;
+    private Location mCurrentLocation, mTaskLocation, mCurrentLocationForCardMarker;
     private FakeMarker mFakeMarker;
     private UserLiveMarker mUserLiveMarker;
     private ApngDrawable mApngDrawable;
     private HashSet<UserMarker> mNearByUsers;
     private ShownCardMarker mShownCardMarker;
+    private ViewPagerScroller mViewPagerScroller;
+    private MarkerClick mMarkerClick;
 
     @AfterViews
     protected void init() {
@@ -153,7 +158,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mRelativeMapLayout.setFitsSystemWindows(true);
         setDataModel();
         setViewPager();
-        scrollViewPager();
+        setTouchListenerOfViewPager();
         checkGoogleServiceAvailable();
         setGeoFire();
         mCountButton.setText(String.valueOf(CommonUtility.getPoints(this)));
@@ -213,12 +218,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void getCurrentLocation() {
         if (mGoogleMap != null) {
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mCurrentLocation.getLatitude(),
-                    mCurrentLocation.getLongitude()), Constants.sKeyCameraZoom));
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
+                    .zoom(Constants.sKeyCameraZoom).build();
+            mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
     }
 
+    private void setTouchListenerOfViewPager() {
+        mViewPagerMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                isMarkerClick = false;
+                return false;
+            }
+        });
+    }
+
     private void scrollViewPager() {
+        mViewPagerScroller = new ViewPagerScroller(this, mViewPagerMap, mMapDataModels,
+                mMapViewPagerAdapter, mShownCardMarker, mCurrentLocationForCardMarker, mGoogleMap);
+
         mViewPagerMap.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -228,6 +248,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onPageSelected(int position) {
                 int Type = mMapDataModels.get(position).getFakeCardPosition();
+                int value;
                 Constants.CardType cardType = Constants.CardType.values()[Type];
                 if (position != Constants.CardType.POST.getValue()) {
                     if (CommonUtility.getSoftKeyBoardState(MapActivity.this)) {
@@ -235,45 +256,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         CommonUtility.setSoftKeyBoardState(false, MapActivity.this);
                     }
                 }
-                switch (cardType) {
-                    case POST:
-                        if (CommonUtility.getFakeCardShownOrNot(MapActivity.this)) {
-                            for (int i = 0; i < mMapDataModels.size(); i++) {
-                                if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
-                                    mMapViewPagerAdapter.deleteItemFromArrayList(i);
-                                    mMapDataModels.get(i).getCardLatlng().getMarker().remove();
-                                    int value = CommonUtility.getPoints(MapActivity.this) + 1;
-                                    CommonUtility.setPoints(value, MapActivity.this);
-                                    mCountButton.setText(String.valueOf(value));
-                                    CommonUtility.setFakeCardThree(true, MapActivity.this);
-                                    break;
-                                }
+                if (!isMarkerClick) {
+                    switch (cardType) {
+                        case POST:
+                            value = mViewPagerScroller.getPostCard();
+                            if (value != -1) {
+                                mCountButton.setText(String.valueOf(value));
                             }
-                        }
-                        mMapViewPagerAdapter.setCardViewVisible();
-                    case FAKECARDONE:
-                        break;
-                    case FAKECARDTWO:
-                        if (CommonUtility.getFakeCardShownOrNot(MapActivity.this)) {
-                            for (int i = 0; i < mMapDataModels.size(); i++) {
-                                if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
-                                    mMapViewPagerAdapter.deleteItemFromArrayList(i);
-                                    CardLatlng cardLatlng = mMapDataModels.get(i + 1).getCardLatlng();
-                                    mMapDataModels.get(i).getCardLatlng().getMarker().remove();
-                                    int value = CommonUtility.getPoints(MapActivity.this) + 1;
-                                    CommonUtility.setPoints(value, MapActivity.this);
-                                    mCountButton.setText(String.valueOf(value));
-                                    CommonUtility.setFakeCardOne(true, MapActivity.this);
-                                    mViewPagerMap.setCurrentItem(1);
-                                    if (mShownCardMarker != null) {
-                                        cardLatlng.getMarker().setIcon(mShownCardMarker.getIconLarge());
-                                    }
-                                    break;
-                                }
+                            mMapViewPagerAdapter.setCardViewVisible();
+                            break;
+                        case FAKECARDONE:
+                            mViewPagerScroller.getFakeCardOne();
+                            break;
+                        case FAKECARDTWO:
+                            value = mViewPagerScroller.getFakeCardTwo();
+                            if (value != -1) {
+                                mCountButton.setText(String.valueOf(value));
                             }
-                        }
+                            break;
+                        case FAKECARDTHREE:
+                            mViewPagerScroller.getFakeCardThree();
+                            break;
+                    }
+                    positionNew = position;
                 }
-                positionNew = position;
             }
 
             @Override
@@ -302,6 +308,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void setCardMarkers(Location pLocation) {
         mShownCardMarker = new ShownCardMarker(this, mMapDataModels, pLocation, mGoogleMap);
         mShownCardMarker.getCardMarkers();
+        scrollViewPager();
+        setOnMarkerClickListener();
     }
 
     @Override
@@ -371,6 +379,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
                         CardLatlng cardLatlng = mMapDataModels.get(i).getCardLatlng();
                         cardLatlng.getMarker().setIcon(mShownCardMarker.getIconLarge());
+                        cardLatlng.getMarker().setZIndex(1.0f);
+                        mShownCardMarker.setGoogleMapPosition(mCurrentLocationForCardMarker, cardLatlng);
                         break;
                     }
                 }
@@ -429,7 +439,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void locationNotEnabled() {
         if (mGoogleMap != null) {
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.0, 0.0), 14.0f));
+            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.0, 0.0), Constants.sKeyCameraZoom));
         }
     }
 
@@ -472,6 +482,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     mMayoApplication.showToast(getApplicationContext(), getResources().getString(R.string.cantgetlocation));
                 } else {
                     if (location != null) {
+                        if (mCurrentLocationForCardMarker == null) {
+                            mCurrentLocationForCardMarker = location;
+                        }
                         setCurrentLocation(location);
                         sendDataToFirebaseOfUserLocation(location);
                         if (mShownCardMarker == null) {
@@ -511,6 +524,36 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void drawCircle(Location location) {
         mCurrentLocation = location;
         setGroundOverlayForShowingCircle(mCurrentLocation);
+    }
+
+    private void setOnMarkerClickListener() {
+        mMarkerClick = new MarkerClick(this, mViewPagerMap, mMapDataModels);
+        mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if (marker.getTag() != null) {
+                    isMarkerClick = true;
+                    int markerGet = Integer.parseInt(marker.getTag().toString());
+                    Constants.CardType cardType = Constants.CardType.values()[markerGet];
+                    switch (cardType) {
+                        case FAKECARDONE:
+                            mMarkerClick.getFirstFakeCard();
+                            mViewPagerScroller.getFakeIconLargeCard(Constants.CardType.FAKECARDONE.getValue());
+                            break;
+                        case FAKECARDTWO:
+                            mMarkerClick.getSecondFakeCard();
+                            mViewPagerScroller.getFakeIconLargeCard(Constants.CardType.FAKECARDTWO.getValue());
+                            break;
+                        case FAKECARDTHREE:
+                            mMarkerClick.getThirdFakeCard();
+                            mViewPagerScroller.getFakeIconLargeCard(Constants.CardType.FAKECARDTHREE.getValue());
+                            break;
+
+                    }
+                }
+                return true;
+            }
+        });
     }
 
     private void setGroundOverlayForShowingCircle(Location location) {
