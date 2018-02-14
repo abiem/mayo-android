@@ -23,6 +23,15 @@ public class MarkerClick {
         mMapDataModels = pMapDataModels;
     }
 
+    public void getPostCardMarker() {
+        for (int i = 0; i < mMapDataModels.size(); i++) {
+            if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
+                mCustomMapView.setCurrentItem(i);
+                break;
+            }
+        }
+    }
+
     public void getFirstFakeCard() {
         if (CommonUtility.getFakeCardShownOrNot(mContext)) {
             if (!CommonUtility.getFakeCardOne(mContext)) {

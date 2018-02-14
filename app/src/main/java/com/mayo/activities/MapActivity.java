@@ -295,8 +295,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void setViewPager() {
-        CommonUtility commonUtility = new CommonUtility();
-        mViewPagerMap = commonUtility.setViewPager(mViewPagerMap, true);
+        mViewPagerMap.setPagingEnabled(true);
+        mViewPagerMap.setClipToPadding(false);
+        mViewPagerMap.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
+                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
+        mViewPagerMap.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
         mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap, this, mMayoApplication);
         mViewPagerMap.setAdapter(mMapViewPagerAdapter);
         if (mMapDataModels.size() > 1) {
@@ -310,6 +313,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mShownCardMarker.getCardMarkers();
         scrollViewPager();
         setOnMarkerClickListener();
+        setTaskMarker();
+    }
+
+    private void setTaskMarker() {
+        if (CommonUtility.getTaskApplied(this)) {
+            mShownCardMarker.setTaskMarker(CommonUtility.getTaskLocation(this));
+        }
     }
 
     @Override
@@ -359,10 +369,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onFinish() {
             mRotateImageOnMapView.setVisibility(View.GONE);
             mRotateImageOnMapView.clearAnimation();
-            if (mApngDrawable.isRunning()) {
-                mApngDrawable.stop(); // Stop animation
-            }
-            mImageHandsViewOnMap.setVisibility(View.GONE);
             if (mMapViewPagerAdapter != null) {
                 for (int i = 0; i < mMapDataModels.size(); i++) {
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
@@ -372,20 +378,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         CommonUtility.setPoints(value, MapActivity.this);
                         mCountButton.setText(String.valueOf(value));
                         CommonUtility.setFakeCardTwo(true, MapActivity.this);
-                        break;
                     }
-                }
-                for (int i = 0; i < mMapDataModels.size(); i++) {
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
                         CardLatlng cardLatlng = mMapDataModels.get(i).getCardLatlng();
                         cardLatlng.getMarker().setIcon(mShownCardMarker.getIconLarge());
-                        cardLatlng.getMarker().setZIndex(1.0f);
+                        cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMaximum);
                         mShownCardMarker.setGoogleMapPosition(mCurrentLocationForCardMarker, cardLatlng);
                         break;
                     }
                 }
             }
             mRelativeMapLayout.setFitsSystemWindows(true);
+            if (mApngDrawable == null)
+                return;
+            if (mApngDrawable.isRunning()) {
+                mApngDrawable.stop(); // Stop animation
+            }
+            mImageHandsViewOnMap.setVisibility(View.GONE);
         }
 
         @Override
@@ -510,7 +519,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mCurrentLat = location.getLatitude();
         mCurrentLng = location.getLongitude();
         CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, Constants.sKeyCameraZoom);
-        CameraPosition cameraPosition = new CameraPosition(ll, 45, 45, 75);
+        CameraPosition cameraPosition = new CameraPosition(ll, 45, 45, 45);
         update = CameraUpdateFactory.newCameraPosition(cameraPosition);
         mGoogleMap.animateCamera(update);
         if (mCurrentLocationGroundOverlay == null) {
@@ -536,17 +545,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     int markerGet = Integer.parseInt(marker.getTag().toString());
                     Constants.CardType cardType = Constants.CardType.values()[markerGet];
                     switch (cardType) {
+                        case POST:
+                            mMarkerClick.getPostCardMarker();
+                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.POST.getValue());
+                            break;
                         case FAKECARDONE:
                             mMarkerClick.getFirstFakeCard();
-                            mViewPagerScroller.getFakeIconLargeCard(Constants.CardType.FAKECARDONE.getValue());
+                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDONE.getValue());
                             break;
                         case FAKECARDTWO:
                             mMarkerClick.getSecondFakeCard();
-                            mViewPagerScroller.getFakeIconLargeCard(Constants.CardType.FAKECARDTWO.getValue());
+                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDTWO.getValue());
                             break;
                         case FAKECARDTHREE:
                             mMarkerClick.getThirdFakeCard();
-                            mViewPagerScroller.getFakeIconLargeCard(Constants.CardType.FAKECARDTHREE.getValue());
+                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDTHREE.getValue());
                             break;
 
                     }
@@ -698,6 +711,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (mTaskLocation != null) {
             geoFire.setLocation(pTimeStamp,
                     new GeoLocation(mTaskLocation.getLatitude(), mTaskLocation.getLongitude()));
+            mShownCardMarker.setTaskMarker(mTaskLocation);
         }
     }
 
@@ -833,15 +847,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         openChatMessageView(pMessage);
                         break;
                     case R.id.textbutton:
-                        if (!pMessage.equals(Constants.sConstantString)) {
+                        if (!pMessage.equals(Constants.sConstantEmptyString)) {
                             FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
                             String startColor = mMapDataModels.get(pPosition).getGradientColor().getStartColor().substring(1);
                             String endColor = mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1);
                             Task task = firebaseDatabase.setTask(pMessage, this, startColor, endColor);
                             firebaseDatabase.writeNewTask(task.getTaskID(), task);
-                            sendDataToFirebaseOfTaskLocation(mCurrentLocation, task.getTaskID());
+                            Location location = mCurrentLocation;
+                            sendDataToFirebaseOfTaskLocation(location, task.getTaskID());
                             // user applied for task
                             CommonUtility.setTaskApplied(true, MapActivity.this);
+                            //save Task location
+                            CommonUtility.setTaskLocation(location, MapActivity.this);
                             // save task data
                             CommonUtility.setTaskData(task, MapActivity.this);
                         }
@@ -853,7 +870,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
                 break;
             case FAKECARDTWO:
-                openChatMessageView(Constants.sConstantString);
+                openChatMessageView(Constants.sConstantEmptyString);
                 break;
         }
     }
@@ -874,6 +891,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (CommonUtility.getTaskApplied(MapActivity.this)) {
                 CommonUtility.setTaskApplied(false, MapActivity.this);
                 Task task = CommonUtility.getTaskData(this);
+                if (mMapDataModels.size() > 0 && mMapDataModels.get(0).getCardLatlng() != null) {
+                    mMapDataModels.get(0).getCardLatlng().getMarker().remove();
+                    mMapDataModels.get(0).getCardLatlng().setMarker(null);
+                }
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
@@ -916,7 +937,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     //this is for fake card
     public void openChatMessageView(String pMessage) {
-        if (pMessage.equals(Constants.sConstantString)) {
+        if (pMessage.equals(Constants.sConstantEmptyString)) {
             ChatActivity_.intent(MapActivity.this).start();
         } else {
             ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage).start();

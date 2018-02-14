@@ -22,7 +22,6 @@
             android:theme="@style/AppThemeWithNoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -37,12 +36,13 @@
             android:theme="@style/AppThemeWithNoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
-        <service android:name=".firebase.services.MyFirebaseMessagingService">
+        <service android:name=".firebase.services.MyFirebaseMessagingService" android:exported="false">
             <intent-filter>
+
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".firebase.services.MyFirebaseInstanceIDService">
+        <service android:name=".firebase.services.MyFirebaseInstanceIDService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>

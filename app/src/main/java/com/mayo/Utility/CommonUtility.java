@@ -15,6 +15,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
@@ -29,12 +30,10 @@ import android.view.WindowManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.mayo.R;
 import com.mayo.activities.IntroActivity;
-import com.mayo.classes.CustomViewPager;
 import com.mayo.models.Task;
 
 import java.text.ParseException;
@@ -101,7 +100,7 @@ public class CommonUtility {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
         }
-        return mSharedPreferences.getString(Constants.sharedPreferences.sUserId, Constants.sConstantString);
+        return mSharedPreferences.getString(Constants.sharedPreferences.sUserId, Constants.sConstantEmptyString);
     }
 
     /**
@@ -124,7 +123,7 @@ public class CommonUtility {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
         }
-        return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, Constants.sConstantString);
+        return mSharedPreferences.getString(Constants.sharedPreferences.sDeviceToken, Constants.sConstantEmptyString);
     }
 
     /**
@@ -200,6 +199,25 @@ public class CommonUtility {
         return mSharedPreferences.getBoolean(Constants.sharedPreferences.sTaskApplied, false);
     }
 
+    public static void setTaskLocation(Location pLocation, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putFloat(Constants.sharedPreferences.sTaskPosition_lat, (float) pLocation.getLatitude());
+        editor.putFloat(Constants.sharedPreferences.sTaskPosition_lng, (float) pLocation.getLongitude());
+        editor.apply();
+    }
+
+    public static LatLng getTaskLocation(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        float lat = mSharedPreferences.getFloat(Constants.sharedPreferences.sTaskPosition_lat, 0.0f);
+        float lng = mSharedPreferences.getFloat(Constants.sharedPreferences.sTaskPosition_lng, 0.0f);
+        return new LatLng(lat, lng);
+    }
+
     public static void setTaskData(Task pTask, Context pContext) {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);
@@ -217,7 +235,7 @@ public class CommonUtility {
             initializeSharedPreference(pContext);
         }
         Gson gson = new Gson();
-        String json = mSharedPreferences.getString(Constants.sharedPreferences.sTaskData, Constants.sConstantString);
+        String json = mSharedPreferences.getString(Constants.sharedPreferences.sTaskData, Constants.sConstantEmptyString);
         return gson.fromJson(json, Task.class);
     }
 
@@ -532,14 +550,4 @@ public class CommonUtility {
             mProgressDialog.dismiss();
         }
     }
-
-    public CustomViewPager setViewPager(CustomViewPager pCustomViewPager, boolean pagingEnabled) {
-        pCustomViewPager.setPagingEnabled(pagingEnabled);
-        pCustomViewPager.setClipToPadding(false);
-        pCustomViewPager.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
-                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
-        pCustomViewPager.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
-        return pCustomViewPager;
-    }
-
 }

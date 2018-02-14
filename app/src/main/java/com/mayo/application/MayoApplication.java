@@ -62,7 +62,6 @@ public class MayoApplication extends MultiDexApplication {
             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
     }
 
-
     public void hideKeyboard(View view) {
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);

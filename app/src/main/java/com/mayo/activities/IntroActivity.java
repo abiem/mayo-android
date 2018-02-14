@@ -45,29 +45,24 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     ImageView rotateImage;
 
     @ViewById(R.id.imageHandsView)
-    ImageView imageViewOne;
+    ImageView imageHands;
 
     @ViewById(R.id.imageRippleNew)
-    ImageView imageViewTwo;
+    ImageView imageRipple;
 
     @ViewById(R.id.imagePinView)
-    ImageView imageViewThree;
-
+    ImageView imagePin;
 
     ArrayList<TutorialModel> tutorialModels;
     CountDown mCountDown;
     boolean isHandViewShown;
     ApngDrawable mApngDrawable;
-
     private ArrayList<String> mApngImages;
 
     @AfterViews
     protected void init() {
         mApngImages = new ArrayList<>();
         setApngImages();
-        imageViewOne.setVisibility(View.GONE);
-        imageViewTwo.setVisibility(View.GONE);
-        imageViewThree.setVisibility(View.GONE);
         if (!CommonUtility.getTutorialDone(this)) {
             mMayoApplication.setActivity(this);
             setTutorialArray();
@@ -83,9 +78,9 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         mApngImages.add("assets://apng/ripple_seq_720p.png");
         mApngImages.add("assets://apng/fatpin_seq01_720p.png");
         mApngImages.add("assets://apng/fatpin_seq02_720p.png");
-        ApngImageLoader.getInstance().displayImage(mApngImages.get(0), imageViewOne);
-        ApngImageLoader.getInstance().displayImage(mApngImages.get(1), imageViewTwo);
-        ApngImageLoader.getInstance().displayImage(mApngImages.get(2), imageViewThree);
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(0), imageHands);
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(1), imageRipple);
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(2), imagePin);
 
     }
 
@@ -96,16 +91,19 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         tutorialModelOne.setButtonMessage(getResources().getString(R.string.button_text_tutorial_one));
         tutorialModelOne.setBackgroundView(ContextCompat.getDrawable(this, R.drawable.background_tutorial_one));
         tutorialModels.add(tutorialModelOne);
+
         TutorialModel tutorialModelTwo = new TutorialModel();
         tutorialModelTwo.setTextMessage(getResources().getString(R.string.tutorial2));
         tutorialModelTwo.setButtonMessage(getResources().getString(R.string.button_text_tutorial_second));
         tutorialModelTwo.setBackgroundView(ContextCompat.getDrawable(this, R.drawable.background_tutorial_second));
         tutorialModels.add(tutorialModelTwo);
+
         TutorialModel tutorialModelThree = new TutorialModel();
         tutorialModelThree.setTextMessage(getResources().getString(R.string.tutorial3));
         tutorialModelThree.setButtonMessage(getResources().getString(R.string.button_text_tutorial_third));
         tutorialModelThree.setBackgroundView(ContextCompat.getDrawable(this, R.drawable.background_tutorial_third));
         tutorialModels.add(tutorialModelThree);
+
         TutorialModel tutorialModelFour = new TutorialModel();
         tutorialModelFour.setTextMessage(getResources().getString(R.string.tutorial4));
         tutorialModelFour.setButtonMessage(getResources().getString(R.string.button_text_tutorial_fourth));
@@ -114,8 +112,11 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void setViewPager() {
-        CommonUtility commonUtility = new CommonUtility();
-        mCustomViewPager = commonUtility.setViewPager(mCustomViewPager,false);
+        mCustomViewPager.setPagingEnabled(false);
+        mCustomViewPager.setClipToPadding(false);
+        mCustomViewPager.setPadding(Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding,
+                Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
+        mCustomViewPager.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
         mCustomViewPager.setAdapter(new IntroViewPagerAdapter(this, this, tutorialModels));
         mCustomViewPager.setCurrentItem(0);
     }
@@ -150,16 +151,16 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
                 playRippleImage();
                 rotateImageClearAnimation();
                 mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
-                ApngImageLoader.getInstance().displayImage(mApngImages.get(2), imageViewOne);
+                ApngImageLoader.getInstance().displayImage(mApngImages.get(2), imageHands);
                 break;
             case THIRD:
                 locationDialogView();
                 rotateImageClearAnimation();
-                imageViewOne.setVisibility(View.GONE);
+                imageHands.setVisibility(View.GONE);
                 break;
             case FOURTH:
                 rotateImageClearAnimation();
-                imageViewOne.setVisibility(View.GONE);
+                imageHands.setVisibility(View.GONE);
                 //below API level 21
                 if (CommonUtility.askForPermissionLocation(this)) {
                     CommonUtility.setTutorialDone(true, this);
@@ -186,7 +187,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
                     dialog.dismiss();
                     pauseRippleImage();
                     playPinImageFirst();
-                    mApngDrawable = ApngDrawable.getFromView(imageViewTwo);
+                    mApngDrawable = ApngDrawable.getFromView(imageRipple);
                     mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
                 }
             });
@@ -208,7 +209,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         @Override
         public void onFinish() {
             if (isHandViewShown) {
-                imageViewOne.setVisibility(View.GONE);
+                imageHands.setVisibility(View.GONE);
             }
             mCountDown.cancel();
             if (!isHandViewShown) {
@@ -226,8 +227,8 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void playHandsImage() {
-        imageViewOne.setVisibility(View.VISIBLE);
-        mApngDrawable = ApngDrawable.getFromView(imageViewOne);
+        imageHands.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imageHands);
         if (mApngDrawable == null)
             return;
         mApngDrawable.setNumPlays(1);
@@ -236,8 +237,8 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
 
 
     private void playRippleImage() {
-        imageViewTwo.setVisibility(View.VISIBLE);
-        mApngDrawable = ApngDrawable.getFromView(imageViewTwo);
+        imageRipple.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imageRipple);
         if (mApngDrawable == null)
             return;
         mApngDrawable.setNumPlays(0);
@@ -250,7 +251,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         if (mApngDrawable.isRunning()) {
             mApngDrawable.stop(); // Stop animation
         }
-        imageViewOne.setVisibility(View.GONE);
+        imageHands.setVisibility(View.GONE);
     }
 
     private void pauseRippleImage() {
@@ -259,7 +260,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         if (mApngDrawable.isRunning()) {
             mApngDrawable.stop(); // Stop animation
         }
-        imageViewTwo.setVisibility(View.GONE);
+        imageRipple.setVisibility(View.GONE);
     }
 
     private void pausePinImageFirst() {
@@ -268,25 +269,25 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
         if (mApngDrawable.isRunning()) {
             mApngDrawable.stop(); // Stop animation
         }
-        imageViewThree.setVisibility(View.GONE);
+        imagePin.setVisibility(View.GONE);
     }
 
     private void playPinImageFirst() {
-        imageViewThree.setVisibility(View.VISIBLE);
-        mApngDrawable = ApngDrawable.getFromView(imageViewThree);
+        imagePin.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imagePin);
         if (mApngDrawable == null)
             return;
         mApngDrawable.setNumPlays(1);
         mApngDrawable.start();
-        ApngImageLoader.getInstance().displayImage(mApngImages.get(3), imageViewTwo);
+        ApngImageLoader.getInstance().displayImage(mApngImages.get(3), imageRipple);
         new CountDownNew(2300, 1000);
     }
 
 
     private void playPinImageSecond() {
-        imageViewThree.setVisibility(View.GONE);
-        imageViewTwo.setVisibility(View.VISIBLE);
-        mApngDrawable = ApngDrawable.getFromView(imageViewTwo);
+        imagePin.setVisibility(View.GONE);
+        imageRipple.setVisibility(View.VISIBLE);
+        mApngDrawable = ApngDrawable.getFromView(imageRipple);
         if (mApngDrawable == null)
             return;
         mApngDrawable.setNumPlays(0);

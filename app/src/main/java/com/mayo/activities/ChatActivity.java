@@ -2,7 +2,6 @@ package com.mayo.activities;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
@@ -80,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
         if (pBundle != null) {
             setActionBar(pBundle.getString(Constants.sPostMessage));
         } else {
-            setActionBar(Constants.sConstantString);
+            setActionBar(Constants.sConstantEmptyString);
         }
         setRecyclerView();
     }
@@ -89,14 +88,7 @@ public class ChatActivity extends AppCompatActivity {
         mChatAdapter = new ChatListAdapter(mMessageList, this, pBundle);
         mLayoutManager = new LinearLayoutManager(this);
         mChatRecyclerView.setLayoutManager(mLayoutManager);
-        setDividerDecoration();
         mChatRecyclerView.setAdapter(mChatAdapter);
-    }
-
-    private void setDividerDecoration() {
-        DividerItemDecoration myDivider = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
-        myDivider.setDrawable(ContextCompat.getDrawable(this, R.drawable.chat_divider));
-        mChatRecyclerView.addItemDecoration(myDivider);
     }
 
     private void setActionBar(String pMessage) {
@@ -123,7 +115,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
                 mActionBarMessage.setText(pMessage);
-                if (pMessage.equals(Constants.sConstantString)) {
+                if (pMessage.equals(Constants.sConstantEmptyString)) {
                     mActionBarMessage.setText(getResources().getString(R.string.ai_message));
                 }
                 textAdjustment();
@@ -140,10 +132,12 @@ public class ChatActivity extends AppCompatActivity {
     @Click(R.id.messageSend)
     protected void sendMessageFromUser() {
         if (!mMessageChatText.getText().toString().trim().isEmpty()) {
-            mMessageText = mMessageChatText.getText().toString().trim();
+            // If we post a message in our created task then we need to add smily to it else post a message
             if (pBundle != null) {
                 mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
                         mMessageChatText.getText().toString().trim();
+            }else{
+                mMessageText = mMessageChatText.getText().toString().trim();
             }
             sendMessage(mMessageText, Constants.UserType.OTHER);
             mMessageChatText.setText("");
@@ -176,7 +170,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private void execSchedular() {
         final ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
-
         exec.schedule(new Runnable() {
             @Override
             public void run() {

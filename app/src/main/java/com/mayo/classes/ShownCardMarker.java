@@ -27,12 +27,14 @@ import java.util.Random;
  */
 
 public class ShownCardMarker {
-    Context mContext;
-    ArrayList<MapDataModel> mMapDataModel;
-    Location mLocation;
-    GoogleMap mGoogleMap;
-    private BitmapDescriptor iconLarge = BitmapDescriptorFactory.fromResource(R.drawable.task_large_icons);
+    private Context mContext;
+    private ArrayList<MapDataModel> mMapDataModel;
+    private Location mLocation;
+    private GoogleMap mGoogleMap;
+    private BitmapDescriptor iconLarge = BitmapDescriptorFactory.fromResource(R.drawable.green_task_icon_large);
     private BitmapDescriptor iconSmall = BitmapDescriptorFactory.fromResource(R.drawable.task_small_icons);
+    private BitmapDescriptor blueIconLarge = BitmapDescriptorFactory.fromResource(R.drawable.blue_task_icon_large);
+    private BitmapDescriptor blueIconSmall = BitmapDescriptorFactory.fromResource(R.drawable.blue_task_icon_small);
 
     public ShownCardMarker(Context pContext, ArrayList<MapDataModel> pMapDataModel, Location pLocation, GoogleMap pGoogleMap) {
         mContext = pContext;
@@ -119,8 +121,33 @@ public class ShownCardMarker {
         return null;
     }
 
+    private MarkerOptions getTaskCardMarker(boolean psetStateOfFakeMarker) {
+        for (int i = 0; i < mMapDataModel.size(); i++) {
+            if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
+                CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
+                if (cardLatlng != null) {
+                    if (psetStateOfFakeMarker) {
+                        return new MarkerOptions().position(CommonUtility.getTaskLocation(mContext)).icon(blueIconSmall);
+                    } else {
+                        return new MarkerOptions().position(CommonUtility.getTaskLocation(mContext)).icon(blueIconLarge);
+                    }
+                }
+
+            }
+        }
+        return null;
+    }
+
     public BitmapDescriptor getIconLarge() {
         return iconLarge;
+    }
+
+    public BitmapDescriptor getBlueIconLarge() {
+        return blueIconLarge;
+    }
+
+    public BitmapDescriptor getBlueIconSmall() {
+        return blueIconSmall;
     }
 
     public BitmapDescriptor getIconSmall() {
@@ -129,16 +156,18 @@ public class ShownCardMarker {
 
     public void getCardMarkers() {
         MarkerOptions firstFakeCardMarkerOptions = getFirstFakeCardMarkers();
-        boolean setStateOfFirstMarker = true, setStateOfSecondMarker = true;
+        boolean setStateOfFirstMarker = true, setStateOfSecondMarker = true, setStateOfFakeMarker = false;
         if (firstFakeCardMarkerOptions != null) {
             for (int i = 0; i < mMapDataModel.size(); i++) {
                 if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
                     CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
                     Marker marker = mGoogleMap.addMarker(firstFakeCardMarkerOptions);
                     marker.setTag(Constants.CardType.FAKECARDONE.getValue());
-                    marker.setZIndex(1.0f);
+                    marker.setZIndex(Constants.sMarkerZIndexMaximum);
                     cardLatlng.setMarker(marker);
                     setStateOfFirstMarker = false;
+                    setStateOfFakeMarker = true;
+                    break;
                 }
             }
         }
@@ -151,6 +180,8 @@ public class ShownCardMarker {
                     marker.setTag(Constants.CardType.FAKECARDTWO.getValue());
                     cardLatlng.setMarker(marker);
                     setStateOfSecondMarker = false;
+                    setStateOfFakeMarker = true;
+                    break;
                 }
             }
         }
@@ -162,6 +193,19 @@ public class ShownCardMarker {
                     Marker marker = mGoogleMap.addMarker(thirdFakeCardMarkerOptions);
                     marker.setTag(Constants.CardType.FAKECARDTHREE.getValue());
                     cardLatlng.setMarker(marker);
+                    setStateOfFakeMarker = true;
+                    break;
+                }
+            }
+        }
+        MarkerOptions taskCardMarker = getTaskCardMarker(setStateOfFakeMarker);
+        if (taskCardMarker != null) {
+            if (CommonUtility.getTaskApplied(mContext)) {
+                for (int i = 0; i < mMapDataModel.size(); i++) {
+                    if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
+                        Marker marker = mGoogleMap.addMarker(taskCardMarker);
+                        marker.setTag(Constants.CardType.FAKECARDTHREE.getValue());
+                    }
                 }
             }
         }
@@ -173,5 +217,38 @@ public class ShownCardMarker {
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(latLng).zoom(Constants.sKeyCameraZoom).build();
         mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    public void setTaskMarker(Location pLocation) {
+        LatLng latLng = new LatLng(pLocation.getLatitude(), pLocation.getLongitude());
+        MarkerOptions markerOptions = new MarkerOptions().position(latLng).icon(blueIconLarge)
+                .zIndex(Constants.sMarkerZIndexMaximum);
+        Marker marker = mGoogleMap.addMarker(markerOptions);
+        if (marker != null) {
+            CardLatlng cardLatlng = new CardLatlng();
+            cardLatlng.setLatLng(latLng);
+            mMapDataModel.get(0).setCardLatlng(cardLatlng);
+            mMapDataModel.get(0).getCardLatlng().setMarker(marker);
+            marker.setTag(Constants.CardType.POST.getValue());
+        }
+    }
+
+    public void setTaskMarker(LatLng pLatlng) {
+        MarkerOptions markerOptions;
+        if (CommonUtility.getFakeCardShownOrNot(mContext)) {
+            markerOptions = new MarkerOptions().position(pLatlng).icon(blueIconSmall)
+                    .zIndex(Constants.sMarkerZIndexMinimum);
+        } else {
+            markerOptions = new MarkerOptions().position(pLatlng).icon(blueIconLarge)
+                    .zIndex(Constants.sMarkerZIndexMaximum);
+        }
+        Marker marker = mGoogleMap.addMarker(markerOptions);
+        if (marker != null) {
+            CardLatlng cardLatlng = new CardLatlng();
+            cardLatlng.setLatLng(pLatlng);
+            mMapDataModel.get(0).setCardLatlng(cardLatlng);
+            mMapDataModel.get(0).getCardLatlng().setMarker(marker);
+            marker.setTag(Constants.CardType.POST.getValue());
+        }
     }
 }

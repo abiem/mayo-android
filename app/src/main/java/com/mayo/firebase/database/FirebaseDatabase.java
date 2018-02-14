@@ -3,7 +3,6 @@ package com.mayo.firebase.database;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import com.firebase.geofire.GeoFire;
 import com.google.android.gms.maps.GoogleMap;
@@ -26,9 +25,7 @@ import com.mayo.models.UserMarker;
 import com.mayo.models.Users;
 import com.mayo.models.UsersLocations;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
 
 
 /**
@@ -86,7 +83,7 @@ public class FirebaseDatabase {
         Task task = new Task();
         task.setCreatedby(CommonUtility.getUserId(pContext));
         task.setTaskID(CommonUtility.convertLocalTimeToUTC());
-        task.setHelpedBy(Constants.sConstantString);
+        task.setHelpedBy(Constants.sConstantEmptyString);
         task.setTimeCreated(CommonUtility.getLocalTime()); //this is time when we create task
         task.setCompleted(false);
         task.setTaskDescription(pMessage);
@@ -104,7 +101,7 @@ public class FirebaseDatabase {
         Task updateTaskData = new Task();
         updateTaskData.setCreatedby(CommonUtility.getUserId(pContext));
         updateTaskData.setTaskID(task.getTaskID());
-        updateTaskData.setHelpedBy(Constants.sConstantString);
+        updateTaskData.setHelpedBy(Constants.sConstantEmptyString);
         updateTaskData.setTimeCreated(task.getTimeCreated()); //this is time when we create task
         updateTaskData.setCompleted(pCompleteOrNot);
         updateTaskData.setTaskDescription(task.getTaskDescription());

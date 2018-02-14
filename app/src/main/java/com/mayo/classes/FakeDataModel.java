@@ -18,8 +18,8 @@ import java.util.ArrayList;
  */
 
 public class FakeDataModel {
-    Context mContext;
-    ArrayList<MapDataModel> mMapDataModels;
+    private Context mContext;
+    private ArrayList<MapDataModel> mMapDataModels;
 
     public FakeDataModel(Context pContext) {
         mContext = pContext;
@@ -76,7 +76,6 @@ public class FakeDataModel {
                     }
                     break;
             }
-
             mMapDataModels.add(mapDataModel);
         }
         return mMapDataModels;

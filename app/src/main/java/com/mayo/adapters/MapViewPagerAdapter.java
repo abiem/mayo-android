@@ -25,7 +25,6 @@ import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.application.MayoApplication;
-import com.mayo.classes.CardColor;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.MapDataModel;
 import com.mayo.classes.CustomViewPager;
@@ -120,6 +119,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 }
                 if (CommonUtility.getTaskApplied(mContext)) {
                     mCardView.setVisibility(View.VISIBLE);
+                    mEditText.setEnabled(false);
                     mDoneParentLayout.setVisibility(View.VISIBLE);
                     mPostParentLayout.setVisibility(View.GONE);
                     Task task = CommonUtility.getTaskData(mContext);
@@ -195,7 +195,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
         switch (v.getId()) {
             case R.id.imagebutton:
                 if (!mEditText.getText().toString().isEmpty()) {
-                    mEditText.setText(Constants.sConstantString);
+                    mEditText.setText(Constants.sConstantEmptyString);
                     mEditText.setHint(mContext.getResources().getString(R.string.help_message));
                     mEditText.setCursorVisible(false);
                     mEdiTextNew.requestFocus();
@@ -222,7 +222,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mClickListener.onClick(v, position, mEditText.getText().toString());
                 break;
             case R.id.chatPopupLayout:
-                mClickListener.onClick(v, position, Constants.sConstantString);
+                mClickListener.onClick(v, position, Constants.sConstantEmptyString);
                 break;
         }
     }
@@ -235,7 +235,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     }
 
     public void setPostMessageView() {
-        mEditText.setText(Constants.sConstantString);
+        mEditText.setText(Constants.sConstantEmptyString);
         mEditText.setHint(mContext.getResources().getString(R.string.help_message));
         mEditText.setEnabled(true);
         mEdiTextNew.requestFocus();

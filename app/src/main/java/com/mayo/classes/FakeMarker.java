@@ -22,8 +22,8 @@ public class FakeMarker {
     private Timer timer;
     private TimerTask timerTask;
     Handler handler = new Handler();
-    Context mContext;
-    ArrayList<UserMarker> mFakeUserShown;
+    private Context mContext;
+    private ArrayList<UserMarker> mFakeUserShown;
 
     //array of fake user location
     public static double[][] fakeUserChoices = {

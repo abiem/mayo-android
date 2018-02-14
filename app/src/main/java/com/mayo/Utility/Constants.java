@@ -26,11 +26,13 @@ public class Constants {
     public static final float sTransparencyLevelFade = 0.5f;
     public static final float sNonTransparencyLevel = 1.0f;
     public static final float sTransparencyLevelBackground = 0.8f;
-    public static final String sConstantString = "";
+    public static final String sConstantEmptyString = "";
     public static final String sConstantSpaceString = " ";
     public static final String sPostMessage = "postMessage";
     public static final String sSmileCode = "\uD83D\uDE31";
     public static final long seconds = 6 * 60; //360 = 6 seconds
+    public static final float sMarkerZIndexMaximum = 1.0f;
+    public static final float sMarkerZIndexMinimum = 0.1f;
 
     class sharedPreferences {
         static final String sTutorialDone = "isTutorialDone";
@@ -46,6 +48,8 @@ public class Constants {
         static final String sAnimationShownOnMap = "isAnimationShowingOnMap";
         static final String sTaskApplied = "isTaskApplied";
         static final String sTaskData = "taskData";
+        static final String sTaskPosition_lat = "taskPosition_lat";
+        static final String sTaskPosition_lng = "taskPosition_lng";
     }
 
     public class FakeUsersValues {
