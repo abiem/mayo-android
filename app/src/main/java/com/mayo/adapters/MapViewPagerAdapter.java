@@ -109,7 +109,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
             case POST: //first card
                 mEditText.setCursorVisible(false);
                 if (mMapDataModelArrayList.size() != 1) {
-                    if (!isPostViewVisible) {
+                    if (!isPostViewVisible && CommonUtility.getFakeCardShownOrNot(mContext)) {
                         mCardView.setVisibility(View.INVISIBLE);
                         isPostViewVisible = true;
                     }
@@ -151,6 +151,11 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mTextView.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
             case DEFAULT: // all cards that is fetch from firebase
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    mCardViewNewCards.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
+                } else {
+                    mCardViewNewCards.setBackgroundDrawable(mMapDataModelArrayList.get(position).getBackgroundView());
+                }
                 mTextViewNew.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
         }
@@ -212,6 +217,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     mPostParentLayout.setVisibility(View.GONE);
                     mEditText.setCursorVisible(false);
                     mEditText.setEnabled(false);
+                    mEditText.setText(mEditText.getText().toString());
                     mClickListener.onClick(v, position, mEditText.getText().toString());
                 }
                 break;
@@ -243,7 +249,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
         mDoneParentLayout.setVisibility(View.GONE);
     }
 
-    public void setCardViewVisible() {
+    public void setTaskCardViewVisible() {
         if (mCardView != null) {
             mCardView.setVisibility(View.VISIBLE);
             if (mEditText.getText().toString().isEmpty()) { //if no message is send to firebase
@@ -265,7 +271,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
 
     public void setPostCardText() {
         if (mEditText.getText().toString().isEmpty()) {
-            mEditText.setText("");
+            mEditText.setText(Constants.sConstantEmptyString);
             mEditText.setHint(mContext.getResources().getString(R.string.help_message));
             mMayoApplication.hideKeyboard(mActivity.getCurrentFocus());
         }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/margin_8"
+    android:background="@drawable/background_white_transparent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/help_messages_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_16"
+        android:text="@string/no_one_helped"
+        android:textColor="@color/colorDarkGrey"
+        android:textSize="@dimen/tx_18" />
+
+    <View
+        android:id="@+id/backgroundChatColor"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_6"
+        android:background="@drawable/background_help_messages_color" />
+</LinearLayout>

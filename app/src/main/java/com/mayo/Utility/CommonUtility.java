@@ -1,8 +1,11 @@
 package com.mayo.Utility;
 
 import android.Manifest;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,6 +24,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
@@ -34,6 +38,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.mayo.R;
 import com.mayo.activities.IntroActivity;
+import com.mayo.activities.MapActivity;
 import com.mayo.models.Task;
 
 import java.text.ParseException;
@@ -42,6 +47,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
  * Created by Lakshmikodali on 02/01/18.
@@ -456,6 +463,16 @@ public class CommonUtility {
         return gradient;
     }
 
+    public static AnimatorSet fadeInOutAnimation(View pView) {
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(pView, "alpha", 1f, .3f);
+        fadeOut.setDuration(2000);
+        ObjectAnimator fadeIn = ObjectAnimator.ofFloat(pView, "alpha", .3f, 1f);
+        fadeIn.setDuration(2000);
+        AnimatorSet animationSet = new AnimatorSet();
+        animationSet.play(fadeIn).after(fadeOut);
+        return animationSet;
+    }
+
     public static String convertLocalTimeToUTC() {
         Date date = null;
         utcTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -523,16 +540,14 @@ public class CommonUtility {
         return SIMPLE_DATE_FORMAT.format(pMessage);
     }
 
-    private boolean isKeyboardShown(View rootView) {
-    /* 128dp = 32dp * 4, minimum button height 32dp and generic 4 rows soft keyboard */
-        final int SOFT_KEYBOARD_HEIGHT_DP_THRESHOLD = 128;
-        Rect r = new Rect();
-        rootView.getWindowVisibleDisplayFrame(r);
-        DisplayMetrics dm = rootView.getResources().getDisplayMetrics();
-    /* heightDiff = rootView height - status bar height (r.top) - visible frame height (r.bottom - r.top) */
-        int heightDiff = rootView.getBottom() - r.bottom;
-    /* Threshold size: dp to pixels, multiply with display density */
-        return heightDiff > SOFT_KEYBOARD_HEIGHT_DP_THRESHOLD * dm.density;
+    public static NotificationCompat.Builder notificationBuilder(Context pContext, String pMessage) {
+        return new NotificationCompat.Builder(pContext)
+                .setSmallIcon(R.drawable.notification_mayo)
+                .setLargeIcon(drawableToBitmap(pContext.getResources().getDrawable(R.mipmap.mayo_icon)))
+                .setContentTitle(pContext.getResources().getString(R.string.app_name))
+                .setContentText(pMessage)
+                .setColor(ContextCompat.getColor(pContext, R.color.transparent))
+                .setAutoCancel(true);
     }
 
     public static void progressDialogTransparent(Activity activity) {

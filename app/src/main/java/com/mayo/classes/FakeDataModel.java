@@ -41,9 +41,6 @@ public class FakeDataModel {
             Drawable drawable = CommonUtility.getGradientDrawable(CardColor.choices[color][0], CardColor.choices[color][1], mContext);
             mapDataModel.setBackgroundView(drawable);
             CardLatlng cardLatlng = new CardLatlng();
-            int generaetRandomPostionOfLatlng = ShownCardMarker.generateRandomLocationOfCard();
-            cardLatlng.setLatLng(new LatLng(ShownCardMarker.CardMarkerChoices[generaetRandomPostionOfLatlng][0],
-                    ShownCardMarker.CardMarkerChoices[generaetRandomPostionOfLatlng][1]));
             Constants.CardType cardType = Constants.CardType.values()[i];
             switch (cardType) {
                 case POST:
@@ -54,6 +51,8 @@ public class FakeDataModel {
                 case FAKECARDONE:
                     mapDataModel.setTextMessage(mContext.getResources().getString(R.string.helping_message));
                     mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDONE.getValue());
+                    cardLatlng.setLatLng(new LatLng(Constants.CardMarkerValues.sCardMarkerPositionMininum,
+                            Constants.CardMarkerValues.sCardMarkerPositionConstant));
                     mapDataModel.setCardLatlng(cardLatlng);
                     if (CommonUtility.getFakeCardOne(mContext)) {
                         continue;
@@ -62,6 +61,8 @@ public class FakeDataModel {
                 case FAKECARDTWO:
                     mapDataModel.setTextMessage(mContext.getResources().getString(R.string.ai_message));
                     mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDTWO.getValue());
+                    cardLatlng.setLatLng(new LatLng(Constants.CardMarkerValues.sCardMarkerPositionConstantNew,
+                            Constants.CardMarkerValues.sCardMarkerPositionMaximumNew));
                     mapDataModel.setCardLatlng(cardLatlng);
                     if (CommonUtility.getFakeCardTwo(mContext)) {
                         continue;
@@ -70,6 +71,8 @@ public class FakeDataModel {
                 case FAKECARDTHREE:
                     mapDataModel.setTextMessage(mContext.getResources().getString(R.string.need_help));
                     mapDataModel.setFakeCardPosition(Constants.CardType.FAKECARDTHREE.getValue());
+                    cardLatlng.setLatLng(new LatLng(Constants.CardMarkerValues.sCardMarkerPositionMininumNew,
+                            Constants.CardMarkerValues.sCardMarkerPositionConstantNew));
                     mapDataModel.setCardLatlng(cardLatlng);
                     if (CommonUtility.getFakeCardThree(mContext)) {
                         continue;

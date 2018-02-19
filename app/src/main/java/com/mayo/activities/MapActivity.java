@@ -1,7 +1,9 @@
 package com.mayo.activities;
 
+import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -16,10 +18,14 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -60,8 +66,10 @@ import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.adapters.MapViewPagerAdapter;
+import com.mayo.adapters.ThanksChatAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
+import com.mayo.classes.AnimateCard;
 import com.mayo.classes.FakeDataModel;
 import com.mayo.classes.MarkerClick;
 import com.mayo.classes.ShownCardMarker;
@@ -71,6 +79,7 @@ import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.CardLatlng;
+import com.mayo.models.Message;
 import com.mayo.models.UserMarker;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.Task;
@@ -124,6 +133,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @ViewById(R.id.cancelButton)
     Button cancelButton;
 
+    @ViewById(R.id.fadeInoutCard)
+    CardView mFadeInOutCardView;
+
     GoogleMap mGoogleMap;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
@@ -131,7 +143,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GroundOverlay mCurrentLocationGroundOverlay;
     private Marker mCurrentLocationMarker;
     private ArrayList<UserMarker> mFakeUserMarker;
-    private boolean isMarkerClick = false;
+    private boolean isMarkerClick = false, isScrollingRight = false;
     private BackgroundLocationService mBackgroundLocationService;
     ArrayList<MapDataModel> mMapDataModels;
     Dialog mDialog;
@@ -147,6 +159,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private ShownCardMarker mShownCardMarker;
     private ViewPagerScroller mViewPagerScroller;
     private MarkerClick mMarkerClick;
+    private float sumPositionAndPositionOffset = 0;
+    private RecyclerView mHelpRecyclerView;
+    private AnimatorSet mAnimatorSet;
 
     @AfterViews
     protected void init() {
@@ -157,7 +172,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mFakeUserMarker = new ArrayList<>();
         mRelativeMapLayout.setFitsSystemWindows(true);
         setDataModel();
-        setViewPager();
         setTouchListenerOfViewPager();
         checkGoogleServiceAvailable();
         setGeoFire();
@@ -170,7 +184,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
         if (CommonUtility.getFakeCardOne(this) && CommonUtility.getFakeCardTwo(this) && CommonUtility.getFakeCardThree(this)) {
             CommonUtility.setFakeCardShownOrNot(false, this);
+            AnimateCard animateCard = new AnimateCard(this, mFadeInOutCardView);
+            animateCard.playFadeInOutAnimation();
+        } else {
+            setViewPager();
         }
+    }
+
+    public void setViewPagerDataAfterAnimation() {
+        setViewPager();
     }
 
     private void setGeoFire() {
@@ -200,6 +222,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return isPermission;
     }
 
+
     private void showPointView() {
         final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.score_screen);
         if (dialog != null) {
@@ -216,7 +239,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         getCurrentLocation();
     }
 
-    private void getCurrentLocation() {
+    public void getCurrentLocation() {
         if (mGoogleMap != null) {
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()))
@@ -242,7 +265,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mViewPagerMap.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+                if (position + positionOffset > sumPositionAndPositionOffset) {
+                    //swipe from right to left
+                    isScrollingRight = false;
+                } else {
+                    //swipe from left to right
+                    isScrollingRight = true;
+                }
+                sumPositionAndPositionOffset = position + positionOffset;
             }
 
             @Override
@@ -263,19 +293,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                             }
-                            mMapViewPagerAdapter.setCardViewVisible();
+                            mMapViewPagerAdapter.setTaskCardViewVisible();
                             break;
                         case FAKECARDONE:
                             mViewPagerScroller.getFakeCardOne();
                             break;
                         case FAKECARDTWO:
-                            value = mViewPagerScroller.getFakeCardTwo();
+                            value = mViewPagerScroller.getFakeCardTwo(isScrollingRight);
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                             }
                             break;
                         case FAKECARDTHREE:
-                            mViewPagerScroller.getFakeCardThree();
+                            value = mViewPagerScroller.getFakeCardThree(isScrollingRight);
+                            if (value != -1) {
+                                mCountButton.setText(String.valueOf(value));
+                            }
                             break;
                     }
                     positionNew = position;
@@ -302,7 +335,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mViewPagerMap.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
         mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap, this, mMayoApplication);
         mViewPagerMap.setAdapter(mMapViewPagerAdapter);
-        if (mMapDataModels.size() > 1) {
+        if (!CommonUtility.getFakeCardShownOrNot(this)) {
+            mViewPagerMap.setCurrentItem(0);
+            new com.mayo.Utility.CountDown(this, 500, 100, mViewPagerMap, mMapDataModels);
+        } else if (mMapDataModels.size() > 1) {
             mViewPagerMap.setCurrentItem(1);
         }
         positionNew = mViewPagerMap.getCurrentItem();
@@ -902,22 +938,42 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     dialog.findViewById(R.id.thanksDialogBackground).setBackgroundDrawable(drawable);
                 }
             }
-            dialog.findViewById(R.id.thanks).setAlpha(Constants.sTransparencyLevelFade);
-            dialog.findViewById(R.id.lineThanks).setAlpha(Constants.sTransparencyLevelFade);
-            dialog.findViewById(R.id.thanks).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                }
-            });
-            dialog.findViewById(R.id.no_one_helped).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    updateTask(true, getResources().getString(R.string.STATUS_FOR_NOT_HELPED));
-                }
-            });
+            mHelpRecyclerView = (RecyclerView) dialog.findViewById(R.id.helpPersonsRecyclerView);
+            setThanksDialog(dialog);
         }
+    }
+
+    private void setThanksDialog(final Dialog pDialog) {
+        ArrayList<Message> messageList = new ArrayList<>();
+        TextView thanksTextView = (TextView) pDialog.findViewById(R.id.thanks);
+        TextView noThanksTextView = (TextView) pDialog.findViewById(R.id.no_one_helped);
+        pDialog.findViewById(R.id.lineThanks).setAlpha(Constants.sTransparencyLevelFade);
+        if (mHelpRecyclerView != null) {
+            ThanksChatAdapter helpChatAdapter = new ThanksChatAdapter(messageList, this);
+            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+            mHelpRecyclerView.setLayoutManager(layoutManager);
+            mHelpRecyclerView.setAdapter(helpChatAdapter);
+        }
+        if (messageList.size() == 0) {
+            thanksTextView.setAlpha(Constants.sTransparencyLevelFade);
+            noThanksTextView.setAlpha(Constants.sNonTransparencyLevel);
+        } else {
+            thanksTextView.setAlpha(Constants.sNonTransparencyLevel);
+            noThanksTextView.setAlpha(Constants.sTransparencyLevelFade);
+        }
+        thanksTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        noThanksTextView.findViewById(R.id.no_one_helped).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pDialog.dismiss();
+                updateTask(true, getResources().getString(R.string.STATUS_FOR_NOT_HELPED));
+            }
+        });
     }
 
     private void setParentQuestButton(int visibility) {

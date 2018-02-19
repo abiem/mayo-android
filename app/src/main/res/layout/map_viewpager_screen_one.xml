@@ -13,7 +13,7 @@
         android:id="@+id/backgroundmapviewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorDarkBlue"
+        android:background="@drawable/background_tutorial_one"
         android:orientation="vertical"
         android:padding="@dimen/padding_16">
 
@@ -35,8 +35,7 @@
                 android:maxLength="80"
                 android:textColor="@color/white"
                 android:textColorHint="#99FFFFFF"
-                android:textSize="@dimen/tx_20"
-                android:visibility="visible" />
+                android:textSize="@dimen/tx_20" />
 
             <EditText
                 android:id="@+id/editText"
@@ -91,10 +90,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:baselineAligned="false"
             android:gravity="center"
             android:orientation="horizontal"
-            android:visibility="gone"
-            android:baselineAligned="false">
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="0dp"

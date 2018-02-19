@@ -45,6 +45,7 @@
     <dimen name="height_50">50dp</dimen>
     <dimen name="height_20">20dp</dimen>
     <dimen name="height_4">4dp</dimen>
+    <dimen name="height_6">6dp</dimen>
     <dimen name="height_8">8dp</dimen>
     <dimen name="height_80">80dp</dimen>
 

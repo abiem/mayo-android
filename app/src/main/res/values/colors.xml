@@ -50,4 +50,7 @@
     <color name="colorGreenNew">#7ED321</color>
     <!--25% transparency-->
     <color name="colorWhiteTransparent">#4DFFFFFF</color>
+    <color name="colorDarkGrey">#4A4A4A</color>
+    <!--60% tranparency-->
+    <color name="colorWhiteTransparentNew">#99FFFFFF</color>
 </resources>

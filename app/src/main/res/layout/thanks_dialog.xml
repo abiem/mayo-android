@@ -30,10 +30,13 @@
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView
+        android:id="@+id/helpPersonsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/textShow"
-        android:layout_above="@+id/thanksParentLayout"/>
+        android:padding="@dimen/padding_8" />
 
     <LinearLayout
         android:id="@+id/thanksParentLayout"
