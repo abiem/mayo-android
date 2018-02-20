@@ -1,9 +1,7 @@
 package com.mayo.activities;
 
-import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +16,6 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -70,7 +67,7 @@ import com.mayo.adapters.ThanksChatAdapter;
 import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
 import com.mayo.classes.AnimateCard;
-import com.mayo.classes.FakeDataModel;
+import com.mayo.classes.CardsDataModel;
 import com.mayo.classes.MarkerClick;
 import com.mayo.classes.ShownCardMarker;
 import com.mayo.classes.UserLiveMarker;
@@ -80,6 +77,7 @@ import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.CardLatlng;
 import com.mayo.models.Message;
+import com.mayo.models.TaskLocations;
 import com.mayo.models.UserMarker;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.Task;
@@ -150,24 +148,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     int positionNew;
     private MapViewPagerAdapter mMapViewPagerAdapter;
     private GeoFireClass mGeoFireClass;
-    private GeoQuery mGeoQuery;
+    private GeoQuery mGeoQuery, mTaskGeoQuery;
     private Location mCurrentLocation, mTaskLocation, mCurrentLocationForCardMarker;
     private FakeMarker mFakeMarker;
     private UserLiveMarker mUserLiveMarker;
     private ApngDrawable mApngDrawable;
     private HashSet<UserMarker> mNearByUsers;
+    private ArrayList<TaskLocations> mTaskLocationsArray;
+    private ArrayList<Task> mTasksArray;
     private ShownCardMarker mShownCardMarker;
     private ViewPagerScroller mViewPagerScroller;
     private MarkerClick mMarkerClick;
     private float sumPositionAndPositionOffset = 0;
     private RecyclerView mHelpRecyclerView;
-    private AnimatorSet mAnimatorSet;
+    private CardsDataModel mCardsDataModel;
 
     @AfterViews
     protected void init() {
         mMayoApplication.setActivity(this);
         mMapView.onCreate(null);
         mNearByUsers = new HashSet<>();
+        mTaskLocationsArray = new ArrayList<>();
+        mTasksArray = new ArrayList<>();
         ApngImageLoader.getInstance().displayImage("assets://apng/fist_bump_720p.png", mImageHandsViewOnMap);
         mFakeUserMarker = new ArrayList<>();
         mRelativeMapLayout.setFitsSystemWindows(true);
@@ -184,15 +186,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
         if (CommonUtility.getFakeCardOne(this) && CommonUtility.getFakeCardTwo(this) && CommonUtility.getFakeCardThree(this)) {
             CommonUtility.setFakeCardShownOrNot(false, this);
-            AnimateCard animateCard = new AnimateCard(this, mFadeInOutCardView);
+            AnimateCard animateCard = new AnimateCard(this, mFadeInOutCardView, mViewPagerMap);
             animateCard.playFadeInOutAnimation();
-        } else {
-            setViewPager();
         }
     }
 
-    public void setViewPagerDataAfterAnimation() {
+    public void setViewPagerData() {
         setViewPager();
+        if (mViewPagerScroller == null) {
+            scrollViewPager();
+        }
     }
 
     private void setGeoFire() {
@@ -323,8 +326,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void setDataModel() {
-        FakeDataModel fakeDataModel = new FakeDataModel(this);
-        mMapDataModels = fakeDataModel.getDataModel();
+        mCardsDataModel = new CardsDataModel(this, mTasksArray);
+        mMapDataModels = mCardsDataModel.getDataModel();
     }
 
     private void setViewPager() {
@@ -347,7 +350,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void setCardMarkers(Location pLocation) {
         mShownCardMarker = new ShownCardMarker(this, mMapDataModels, pLocation, mGoogleMap);
         mShownCardMarker.getCardMarkers();
-        scrollViewPager();
         setOnMarkerClickListener();
         setTaskMarker();
     }
@@ -757,6 +759,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void setGeoQuery() {
         mNearByUsers.clear();
         mGeoQuery = mGeoFireClass.setGeoQuery(mCurrentLocation);
+        mTaskGeoQuery = mGeoFireClass.setGeoQueryForTaskFetch(mCurrentLocation);
+        mCardsDataModel.waitingTimeToFetchArrayList(6000, 1000);
     }
 
     public void getNearByUsers(String pKey, GeoLocation pGeoLocation) {
@@ -778,6 +782,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    public void getNearByTask(String pKey, GeoLocation pGeoLocation) {
+        TaskLocations taskLocations = new TaskLocations();
+        taskLocations.setKey(pKey);
+        taskLocations.setLatitude(pGeoLocation.latitude);
+        taskLocations.setLongitude(pGeoLocation.longitude);
+        mTaskLocationsArray.add(taskLocations);
+    }
+
+    public void fetchAfterNearByTask() {
+        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+        if (mTaskLocationsArray.size() > 0) {
+            for (int i = 0; i < mTaskLocationsArray.size(); i++) {
+                firebaseDatabase.getTaskFromFirebase(mTaskLocationsArray.get(i).getKey());
+            }
+        }
+    }
+
     public void setUsersIntoList(String pKey, UserMarker pUserMarker) {
         if (!pKey.equals(CommonUtility.getUserId(this))) {
             if (pUserMarker != null) {
@@ -795,6 +816,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
         }
+    }
+
+    public void setListsOfFetchingTask(Task task) {
+        mTasksArray.add(task);
     }
 
     private void showFakeMarker() {
@@ -880,7 +905,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             case POST:
                 switch (pView.getId()) {
                     case R.id.messageIcon:
-                        openChatMessageView(pMessage);
+                        openChatMessageView(pMessage, false);
                         break;
                     case R.id.textbutton:
                         if (!pMessage.equals(Constants.sConstantEmptyString)) {
@@ -906,7 +931,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
                 break;
             case FAKECARDTWO:
-                openChatMessageView(Constants.sConstantEmptyString);
+                openChatMessageView(Constants.sConstantEmptyString, false);
+                break;
+            case DEFAULT:
+                openChatMessageView(pMessage, true);
                 break;
         }
     }
@@ -923,10 +951,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMapViewPagerAdapter.setPostMessageView();
         setParentAnmationOfQuest(R.anim.slide_down);
         final Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
+        Task task = null;
         if (dialog != null) {
             if (CommonUtility.getTaskApplied(MapActivity.this)) {
                 CommonUtility.setTaskApplied(false, MapActivity.this);
-                Task task = CommonUtility.getTaskData(this);
+                task = CommonUtility.getTaskData(this);
                 if (mMapDataModels.size() > 0 && mMapDataModels.get(0).getCardLatlng() != null) {
                     mMapDataModels.get(0).getCardLatlng().getMarker().remove();
                     mMapDataModels.get(0).getCardLatlng().setMarker(null);
@@ -939,11 +968,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
             mHelpRecyclerView = (RecyclerView) dialog.findViewById(R.id.helpPersonsRecyclerView);
-            setThanksDialog(dialog);
+            setThanksDialog(dialog, task);
         }
     }
 
-    private void setThanksDialog(final Dialog pDialog) {
+    private void setThanksDialog(final Dialog pDialog, final Task task) {
         ArrayList<Message> messageList = new ArrayList<>();
         TextView thanksTextView = (TextView) pDialog.findViewById(R.id.thanks);
         TextView noThanksTextView = (TextView) pDialog.findViewById(R.id.no_one_helped);
@@ -972,6 +1001,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View v) {
                 pDialog.dismiss();
                 updateTask(true, getResources().getString(R.string.STATUS_FOR_NOT_HELPED));
+                task.setCompleted(true);
+                MapDataModel mapDataModel = mCardsDataModel.getMapModelData(task);
+                ArrayList<MapDataModel> mapDataModelArrayList = mCardsDataModel.getExpiredArrayList();
+                mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
+                mapDataModelArrayList.add(mapDataModel);
+                mCardsDataModel.sortArray(mapDataModelArrayList);
+                mCardsDataModel.mergeArray(mCardsDataModel.getLiveArrayList(), mapDataModelArrayList, true);
             }
         });
     }
@@ -992,11 +1028,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     //this is for fake card
-    public void openChatMessageView(String pMessage) {
+    public void openChatMessageView(String pMessage, boolean pExpiredCard) {
         if (pMessage.equals(Constants.sConstantEmptyString)) {
             ChatActivity_.intent(MapActivity.this).start();
         } else {
-            ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage).start();
+            ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage)
+                    .extra(Constants.sQuestMessageShow, pExpiredCard).start();
         }
         overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }

@@ -29,6 +29,7 @@ public class Constants {
     public static final String sConstantEmptyString = "";
     public static final String sConstantSpaceString = " ";
     public static final String sPostMessage = "postMessage";
+    public static final String sQuestMessageShow = "isQuestMessageShow";
     public static final String sSmileCode = "\uD83D\uDE31";
     public static final long seconds = 6 * 60; //360 = 6 seconds
     public static final float sMarkerZIndexMaximum = 1.0f;

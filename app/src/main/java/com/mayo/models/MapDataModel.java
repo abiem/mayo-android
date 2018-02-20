@@ -16,6 +16,16 @@ public class MapDataModel {
     private boolean isFakeCard;
     private CardView cardView;
     private CardLatlng cardLatlng;
+    private boolean completed;
+    private String timeCreated;
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
 
     public boolean isFakeCard() {
         return isFakeCard;
@@ -79,5 +89,13 @@ public class MapDataModel {
 
     public void setCardLatlng(CardLatlng cardLatlng) {
         this.cardLatlng = cardLatlng;
+    }
+
+    public String getTimeCreated() {
+        return timeCreated;
+    }
+
+    public void setTimeCreated(String timeCreated) {
+        this.timeCreated = timeCreated;
     }
 }

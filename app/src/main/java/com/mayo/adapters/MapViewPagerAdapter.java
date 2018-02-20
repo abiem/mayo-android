@@ -45,7 +45,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     private CustomViewPager mCustomViewPager;
     private TextView mImageTextView, mTextView, mTextViewNew;
     private LinearLayout mChatPopupLayout, mDoneParentLayout, mPostParentLayout;
-    private ImageButton mImageButton, mMessageButton, mDoneButton;
+    private ImageButton mImageButton, mMessageButton, mDoneButton, mExpiredImageButton;
     private EditText mEditText, mEdiTextNew;
     private Button mTextButton;
     private CardView mCardView, mCardViewFakeCards, mCardViewNewCards;
@@ -99,6 +99,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_three, collection, false);
                 mTextViewNew = (TextView) layout.findViewById(R.id.viewTextOfThree);
                 mCardViewNewCards = (CardView) layout.findViewById(R.id.mapcardViewThree);
+                mExpiredImageButton = (ImageButton) layout.findViewById(R.id.expiryImageView);
                 mMapDataModelArrayList.get(position).setCardView(mCardViewNewCards);
                 break;
         }
@@ -155,6 +156,12 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     mCardViewNewCards.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
                 } else {
                     mCardViewNewCards.setBackgroundDrawable(mMapDataModelArrayList.get(position).getBackgroundView());
+                }
+                if (mMapDataModelArrayList.get(position).isCompleted()) {
+                    mExpiredImageButton.setVisibility(View.VISIBLE);
+                    mExpiredImageButton.setOnClickListener(this);
+                } else {
+                    mExpiredImageButton.setVisibility(View.GONE);
                 }
                 mTextViewNew.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
@@ -229,6 +236,9 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 break;
             case R.id.chatPopupLayout:
                 mClickListener.onClick(v, position, Constants.sConstantEmptyString);
+                break;
+            case R.id.expiryImageView:
+                mClickListener.onClick(v, position, mMapDataModelArrayList.get(position).getTextMessage());
                 break;
         }
     }

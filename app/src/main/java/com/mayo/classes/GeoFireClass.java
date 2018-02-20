@@ -20,7 +20,7 @@ import com.mayo.firebase.database.FirebaseDatabase;
  */
 
 public class GeoFireClass {
-    private GeoFire mGeoFire;
+    private GeoFire mGeoFire, mTaskGeoFire;
     private GeoQuery mGeoQuery;
     private Context mContext;
 
@@ -31,6 +31,7 @@ public class GeoFireClass {
     public void setGeoFire() {
         FirebaseDatabase firebaseDatabase = new FirebaseDatabase(mContext);
         mGeoFire = firebaseDatabase.locationUpdatesOfUserLocationWithGeoFire();
+        mTaskGeoFire = firebaseDatabase.getTaskLocationWithGeoFire();
     }
 
     public void sendDataToFirebaseOfUserLocation(Location plocation) {
@@ -43,6 +44,7 @@ public class GeoFireClass {
                 });
     }
 
+    // this method will return user id
     public GeoQuery setGeoQuery(Location pLocation) {
         mGeoQuery = mGeoFire.queryAtLocation(new GeoLocation(pLocation.getLatitude(),
                 pLocation.getLongitude()), Constants.sKeyForMapRadiusInDouble);
@@ -72,5 +74,38 @@ public class GeoFireClass {
             }
         });
         return mGeoQuery;
+    }
+
+    //this method will return task id
+    public GeoQuery setGeoQueryForTaskFetch(Location pLocation) {
+        GeoQuery geoQuery = mTaskGeoFire.queryAtLocation(new GeoLocation(pLocation.getLatitude(),
+                pLocation.getLongitude()), Constants.sKeyForMapRadiusInDouble);
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+                ((MapActivity) mContext).getNearByTask(key, location);
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                ((MapActivity) mContext).fetchAfterNearByTask();
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
+        return geoQuery;
     }
 }

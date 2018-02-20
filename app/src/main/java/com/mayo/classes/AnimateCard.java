@@ -19,10 +19,12 @@ public class AnimateCard {
     private Context mContext;
     private CardView mCardView;
     private AnimatorSet mAnimatorSet;
+    private CustomViewPager mCustomViewPager;
 
-    public AnimateCard(Context pContext, CardView pCardView) {
+    public AnimateCard(Context pContext, CardView pCardView,CustomViewPager pCustomViewPagerMap) {
         mContext = pContext;
         mCardView = pCardView;
+        mCustomViewPager=pCustomViewPagerMap;
     }
 
     public void playFadeInOutAnimation() {
@@ -52,7 +54,7 @@ public class AnimateCard {
                 mAnimatorSet = null;
             }
             mCardView.setVisibility(View.GONE);
-            ((MapActivity) mContext).setViewPagerDataAfterAnimation();
+            ((MapActivity) mContext).setViewPagerData();
         }
 
         @Override

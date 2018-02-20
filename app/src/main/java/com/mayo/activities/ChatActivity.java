@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -62,6 +63,12 @@ public class ChatActivity extends AppCompatActivity {
     @ViewById(R.id.chat_list_view)
     RecyclerView mChatRecyclerView;
 
+    @ViewById(R.id.parentQuestCompleted)
+    TextView mQuestCompletedTextView;
+
+    @ViewById(R.id.parentMessageSend)
+    LinearLayout mParentLayoutOfMessageSend;
+
     @App
     MayoApplication mMayoApplication;
 
@@ -78,6 +85,10 @@ public class ChatActivity extends AppCompatActivity {
         pBundle = getIntent().getExtras();
         if (pBundle != null) {
             setActionBar(pBundle.getString(Constants.sPostMessage));
+            if (pBundle.getBoolean(Constants.sQuestMessageShow)) {
+                mQuestCompletedTextView.setVisibility(View.VISIBLE);
+                mParentLayoutOfMessageSend.setVisibility(View.GONE);
+            }
         } else {
             setActionBar(Constants.sConstantEmptyString);
         }
@@ -136,7 +147,7 @@ public class ChatActivity extends AppCompatActivity {
             if (pBundle != null) {
                 mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
                         mMessageChatText.getText().toString().trim();
-            }else{
+            } else {
                 mMessageText = mMessageChatText.getText().toString().trim();
             }
             sendMessage(mMessageText, Constants.UserType.OTHER);

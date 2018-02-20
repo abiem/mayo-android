@@ -40,6 +40,7 @@
     <string name="say_thanks">Say thanks and pay it</string>
     <string name="thanks">Thanks!</string>
     <string name="no_one_helped">No one helped me</string>
+    <string name="quest_completed">Quest has Completed</string>
 
 
     <!--Tutorial Strings-->

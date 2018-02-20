@@ -23,7 +23,8 @@
             android:textSize="@dimen/tx_25"
             android:visibility="visible" />
 
-        <ImageView
+        <ImageButton
+            android:id="@+id/expiryImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

@@ -51,7 +51,8 @@ public class ViewPagerScroller {
                 CommonUtility.setPoints(value, mContext);
                 CommonUtility.setFakeCardThree(true, mContext);
             } else {
-                setFakeCardSmallIcon(mMapDataModel.get(i).getCardLatlng());
+                if (mMapDataModel.get(i).getCardLatlng() != null)
+                    setFakeCardSmallIcon(mMapDataModel.get(i).getCardLatlng());
             }
 
             if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {

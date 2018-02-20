@@ -34,8 +34,15 @@ import java.util.Date;
 
 public class FirebaseDatabase {
     private DatabaseReference mDatabaseReference;
-    private GeoFire mGeoFire;
+    private GeoFire mGeoFire, mTaskGeoFire;
     private Context mContext;
+
+    private static final String sInitDatabaseChild = "android";
+    private static final String swriteNew_UpdateTask = "tasks";
+    private static final String sTask_location = "tasks_locations";
+    private static final String sTask_Views = "task_views";
+    private static final String sChannel = "channels";
+    private static final String sUserLocations = "users_locations";
 
     public FirebaseDatabase(Context pContext) {
         mContext = pContext;
@@ -44,35 +51,43 @@ public class FirebaseDatabase {
     }
 
     private void initDatabase() {
-        mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child("android");
+        mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
+       // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
     }
 
     public void writeNewTask(String pTimeStamp, Task pTask) {
-        mDatabaseReference.child("tasks").child(pTimeStamp).setValue(pTask);
+        mDatabaseReference.child(swriteNew_UpdateTask).child(pTimeStamp).setValue(pTask);
     }
 
     public GeoFire setTaskLocationWithGeoFire() {
-        return new GeoFire(mDatabaseReference.child("tasks_locations"));
+        return new GeoFire(mDatabaseReference.child(sTask_location));
     }
 
     public void setTaskViewsByUsers(String pTimeStamp, TaskViews pTaskView) {
-        mDatabaseReference.child("task_views").child(pTimeStamp).setValue(pTaskView);
+        mDatabaseReference.child(sTask_Views).child(pTimeStamp).setValue(pTaskView);
     }
 
     public void setNewChannel(String pTimeStamp, Channel pChannel) {
-        mDatabaseReference.child("channels").child(pTimeStamp).setValue(pChannel);
+        mDatabaseReference.child(sChannel).child(pTimeStamp).setValue(pChannel);
     }
 
 
     public void updateTask(String pTimeStamp, Task pTask) {
-        mDatabaseReference.child("tasks").child(pTimeStamp).setValue(pTask);
+        mDatabaseReference.child(swriteNew_UpdateTask).child(pTimeStamp).setValue(pTask);
     }
 
     public GeoFire locationUpdatesOfUserLocationWithGeoFire() {
         if (mGeoFire == null) {
-            mGeoFire = new GeoFire(mDatabaseReference.child("users_locations"));
+            mGeoFire = new GeoFire(mDatabaseReference.child(sUserLocations));
         }
         return mGeoFire;
+    }
+
+    public GeoFire getTaskLocationWithGeoFire() {
+        if (mTaskGeoFire == null) {
+            mTaskGeoFire = new GeoFire(mDatabaseReference.child(sTask_location));
+        }
+        return mTaskGeoFire;
     }
 
     public void writeNewUser(Users pUser) {
@@ -114,6 +129,9 @@ public class FirebaseDatabase {
         return updateTaskData;
     }
 
+    /**
+     * fetch live users from firebase and show only that users which is less than 6 minutes
+     */
     public void getUsersCurrentTimeFromFirebase(final String pKey, final UsersLocations pUserLocations, final GoogleMap pGoogleMap) {
         mDatabaseReference.child("users").child(pKey).child("UpdatedAt").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -154,11 +172,16 @@ public class FirebaseDatabase {
     }
 
 
-    public void getTaskFromFirebase() {
-        mDatabaseReference.addValueEventListener(new ValueEventListener() {
+    public void getTaskFromFirebase(String pKey) {
+        mDatabaseReference.child("tasks").child(pKey).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
+                if (dataSnapshot.getValue() != null) {
+                    Task task = dataSnapshot.getValue(Task.class);
+                    if (task != null) {
+                        ((MapActivity) mContext).setListsOfFetchingTask(task);
+                    }
+                }
             }
 
             @Override

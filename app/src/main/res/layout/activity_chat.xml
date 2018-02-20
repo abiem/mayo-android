@@ -56,4 +56,18 @@
             android:textSize="@dimen/tx_18" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/parentQuestCompleted"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorDefaultGrey"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/padding_16"
+        android:text="@string/quest_completed"
+        android:textColor="@color/black"
+        android:textSize="@dimen/tx_18"
+        android:visibility="gone" />
+
 </RelativeLayout>
