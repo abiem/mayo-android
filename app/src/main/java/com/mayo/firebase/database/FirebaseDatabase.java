@@ -20,6 +20,7 @@ import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
 import com.mayo.models.Channel;
 import com.mayo.models.Task;
+import com.mayo.models.TaskLocations;
 import com.mayo.models.TaskViews;
 import com.mayo.models.UserMarker;
 import com.mayo.models.Users;
@@ -52,7 +53,7 @@ public class FirebaseDatabase {
 
     private void initDatabase() {
         mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
-       // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
+        // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
     }
 
     public void writeNewTask(String pTimeStamp, Task pTask) {
@@ -172,14 +173,14 @@ public class FirebaseDatabase {
     }
 
 
-    public void getTaskFromFirebase(String pKey) {
-        mDatabaseReference.child("tasks").child(pKey).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getTaskFromFirebase(final TaskLocations pTaskLocations) {
+        mDatabaseReference.child("tasks").child(pTaskLocations.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
                     Task task = dataSnapshot.getValue(Task.class);
                     if (task != null) {
-                        ((MapActivity) mContext).setListsOfFetchingTask(task);
+                        ((MapActivity) mContext).setListsOfFetchingTask(task,pTaskLocations);
                     }
                 }
             }

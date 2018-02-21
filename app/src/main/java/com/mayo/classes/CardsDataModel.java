@@ -15,6 +15,8 @@ import com.mayo.models.CardLatlng;
 import com.mayo.models.GradientColor;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.Task;
+import com.mayo.models.TaskLatLng;
+import com.mayo.models.TaskLocations;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,11 +30,11 @@ import java.util.Date;
 public class CardsDataModel {
     private Context mContext;
     private ArrayList<MapDataModel> mMapDataModels;
-    private ArrayList<Task> mTasksArray;
+    private ArrayList<TaskLatLng> mTasksArray;
     private MapViewPagerAdapter mMapViewPagerAdapter;
     private ArrayList<MapDataModel> mLocalExpiredCardArrayModel;
 
-    public CardsDataModel(Context pContext, ArrayList<Task> pTaskArray) {
+    public CardsDataModel(Context pContext, ArrayList<TaskLatLng> pTaskArray) {
         mContext = pContext;
         mTasksArray = pTaskArray;
     }
@@ -103,7 +105,7 @@ public class CardsDataModel {
         return mMapDataModels;
     }
 
-    public void waitingTimeToFetchArrayList(long pMillisInFuture, long pCountDownInterval) {
+    public void waitingTimeToFetchTaskArrayList(long pMillisInFuture, long pCountDownInterval) {
         mLocalExpiredCardArrayModel = new ArrayList<>();
         new WaitForFetchingNearByTask(pMillisInFuture, pCountDownInterval);
     }
@@ -126,12 +128,12 @@ public class CardsDataModel {
             }
             sortArray(mMapDataModels);
             sortArray(mLocalExpiredCardArrayModel);
-            mergeArray(mMapDataModels, mLocalExpiredCardArrayModel, false);
+            mergeArray(mMapDataModels, mLocalExpiredCardArrayModel);
             ((MapActivity) mContext).setViewPagerData();
         }
     }
 
-    public void sortArray(ArrayList<MapDataModel> pArray) {
+    private void sortArray(ArrayList<MapDataModel> pArray) {
         Collections.sort(pArray, new Comparator<MapDataModel>() {
             public int compare(MapDataModel o1, MapDataModel o2) {
                 if (o1.getTimeCreated() != null && o2.getTimeCreated() != null) {
@@ -146,7 +148,7 @@ public class CardsDataModel {
         });
     }
 
-    public void mergeArray(ArrayList<MapDataModel> pOriginalArray, ArrayList<MapDataModel> pTempArray, boolean pCheckNotify) {
+    private void mergeArray(ArrayList<MapDataModel> pOriginalArray, ArrayList<MapDataModel> pTempArray) {
         int secondArray = pTempArray.size();
         int tempValue = 0;
         while (tempValue < secondArray) {
@@ -154,22 +156,39 @@ public class CardsDataModel {
             tempValue++;
         }
         pTempArray.clear();
-        if (pCheckNotify) {
-            mMapViewPagerAdapter.notifyDataSetChanged();
-        }
     }
 
-    private void setMapModelData(Task pTask) {
+    public void sortCardViewList(ArrayList<MapDataModel> pArray) {
+        Collections.sort(pArray, new Comparator<MapDataModel>() {
+            public int compare(MapDataModel o1, MapDataModel o2) {
+                if (o1.getTimeCreated() != null && o2.getTimeCreated() != null && o1.isCompleted() && o2.isCompleted()) {
+                    Date date1 = CommonUtility.convertStringToDateTime(o1.getTimeCreated());
+                    Date date2 = CommonUtility.convertStringToDateTime(o2.getTimeCreated());
+                    if (date1 != null) {
+                        return (-1) * date1.compareTo(date2);
+                    }
+                }
+                return 0;
+            }
+        });
+        mMapViewPagerAdapter.notifyDataSetChanged();
+    }
+
+    private void setMapModelData(TaskLatLng pTaskLatlng) {
         MapDataModel mapDataModel = new MapDataModel();
         GradientColor gradientColor = new GradientColor();
         mapDataModel.setGradientColor(gradientColor);
         mapDataModel.setFakeCard(false);
-        mapDataModel.setTextMessage(pTask.getTaskDescription());
+        mapDataModel.setTextMessage(pTaskLatlng.getTask().getTaskDescription());
         mapDataModel.setFakeCardPosition(Constants.CardType.DEFAULT.getValue());
-        mapDataModel.setCompleted(pTask.isCompleted());
-        mapDataModel.setTimeCreated(pTask.getTimeCreated());
+        mapDataModel.setCompleted(pTaskLatlng.getTask().isCompleted());
+        mapDataModel.setTimeCreated(pTaskLatlng.getTask().getTimeCreated());
+        CardLatlng cardLatlng = new CardLatlng();
+        cardLatlng.setLatLng(new LatLng(pTaskLatlng.getTaskLocations().getLatitude(),
+                pTaskLatlng.getTaskLocations().getLongitude()));
+        mapDataModel.setCardLatlng(cardLatlng);
         Drawable drawable;
-        if (pTask.isCompleted()) {
+        if (pTaskLatlng.getTask().isCompleted()) {
             gradientColor.setStartColor(CardColor.expireCard[0]);
             gradientColor.setEndColor(CardColor.expireCard[1]);
             drawable = CommonUtility.getGradientDrawable("#" + CardColor.expireCard[0],
@@ -177,88 +196,53 @@ public class CardsDataModel {
             mapDataModel.setBackgroundView(drawable);
             mLocalExpiredCardArrayModel.add(mapDataModel);
         } else {
-            gradientColor.setStartColor(pTask.getStartColor());
-            gradientColor.setEndColor(pTask.getEndColor());
-            drawable = CommonUtility.getGradientDrawable("#" + pTask.getEndColor(),
-                    "#" + pTask.getStartColor(), mContext);
+            gradientColor.setStartColor(pTaskLatlng.getTask().getStartColor());
+            gradientColor.setEndColor(pTaskLatlng.getTask().getEndColor());
+            drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getEndColor(),
+                    "#" + pTaskLatlng.getTask().getStartColor(), mContext);
             mapDataModel.setBackgroundView(drawable);
             mMapDataModels.add(mapDataModel);
         }
     }
 
-    public MapDataModel getMapModelData(Task pTask) {
+    public MapDataModel getMapModelData(TaskLatLng pTaskLatlng) {
         MapDataModel mapDataModel = new MapDataModel();
         GradientColor gradientColor = new GradientColor();
         mapDataModel.setGradientColor(gradientColor);
         mapDataModel.setFakeCard(false);
-        mapDataModel.setTextMessage(pTask.getTaskDescription());
+        mapDataModel.setTextMessage(pTaskLatlng.getTask().getTaskDescription());
         mapDataModel.setFakeCardPosition(Constants.CardType.DEFAULT.getValue());
-        mapDataModel.setCompleted(pTask.isCompleted());
-        mapDataModel.setTimeCreated(pTask.getTimeCreated());
+        mapDataModel.setCompleted(pTaskLatlng.getTask().isCompleted());
+        mapDataModel.setTimeCreated(pTaskLatlng.getTask().getTimeCreated());
+        CardLatlng cardLatlng = new CardLatlng();
+        cardLatlng.setLatLng(new LatLng(pTaskLatlng.getTaskLocations().getLatitude(),
+                pTaskLatlng.getTaskLocations().getLongitude()));
+        mapDataModel.setCardLatlng(cardLatlng);
         Drawable drawable;
-        if (pTask.isCompleted()) {
+        if (pTaskLatlng.getTask().isCompleted()) {
             gradientColor.setStartColor(CardColor.expireCard[0]);
             gradientColor.setEndColor(CardColor.expireCard[1]);
             drawable = CommonUtility.getGradientDrawable("#" + CardColor.expireCard[0],
                     "#" + CardColor.expireCard[1], mContext);
             mapDataModel.setBackgroundView(drawable);
         } else {
-            gradientColor.setStartColor(pTask.getStartColor());
-            gradientColor.setEndColor(pTask.getEndColor());
-            drawable = CommonUtility.getGradientDrawable("#" + pTask.getEndColor(),
-                    "#" + pTask.getStartColor(), mContext);
+            gradientColor.setStartColor(pTaskLatlng.getTask().getStartColor());
+            gradientColor.setEndColor(pTaskLatlng.getTask().getEndColor());
+            drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getEndColor(),
+                    "#" + pTaskLatlng.getTask().getStartColor(), mContext);
             mapDataModel.setBackgroundView(drawable);
         }
         return mapDataModel;
     }
 
-    public ArrayList<MapDataModel> getExpiredArrayList() {
-        ArrayList<MapDataModel> arrayList = new ArrayList<>();
-        for (int count = 0; count < mTasksArray.size(); count++) {
-            MapDataModel mapDataModel = new MapDataModel();
-            GradientColor gradientColor = new GradientColor();
-            mapDataModel.setGradientColor(gradientColor);
-            mapDataModel.setFakeCard(false);
-            mapDataModel.setTextMessage(mTasksArray.get(count).getTaskDescription());
-            mapDataModel.setFakeCardPosition(Constants.CardType.DEFAULT.getValue());
-            mapDataModel.setCompleted(mTasksArray.get(count).isCompleted());
-            mapDataModel.setTimeCreated(mTasksArray.get(count).getTimeCreated());
-            Drawable drawable;
-            if (mTasksArray.get(count).isCompleted()) {
-                gradientColor.setStartColor(CardColor.expireCard[0]);
-                gradientColor.setEndColor(CardColor.expireCard[1]);
-                drawable = CommonUtility.getGradientDrawable("#" + CardColor.expireCard[0],
-                        "#" + CardColor.expireCard[1], mContext);
-                mapDataModel.setBackgroundView(drawable);
-                arrayList.add(mapDataModel);
-            }
-        }
-        return arrayList;
+    public TaskLatLng setTaskLatlngModel(Task pTask, LatLng pLatlng) {
+        TaskLatLng taskLatLng = new TaskLatLng();
+        taskLatLng.setTask(pTask);
+        TaskLocations taskLocations = new TaskLocations();
+        taskLocations.setKey(Constants.sConstantEmptyString);
+        taskLocations.setLatitude(pLatlng.latitude);
+        taskLocations.setLongitude(pLatlng.longitude);
+        taskLatLng.setTaskLocations(taskLocations);
+        return taskLatLng;
     }
-
-    public ArrayList<MapDataModel> getLiveArrayList() {
-        ArrayList<MapDataModel> arrayList = new ArrayList<>();
-        for (int count = 0; count < mTasksArray.size(); count++) {
-            MapDataModel mapDataModel = new MapDataModel();
-            GradientColor gradientColor = new GradientColor();
-            mapDataModel.setGradientColor(gradientColor);
-            mapDataModel.setFakeCard(false);
-            mapDataModel.setTextMessage(mTasksArray.get(count).getTaskDescription());
-            mapDataModel.setFakeCardPosition(Constants.CardType.DEFAULT.getValue());
-            mapDataModel.setCompleted(mTasksArray.get(count).isCompleted());
-            mapDataModel.setTimeCreated(mTasksArray.get(count).getTimeCreated());
-            Drawable drawable;
-            if (!mTasksArray.get(count).isCompleted()) {
-                gradientColor.setStartColor(mTasksArray.get(count).getStartColor());
-                gradientColor.setEndColor(mTasksArray.get(count).getEndColor());
-                drawable = CommonUtility.getGradientDrawable("#" + mTasksArray.get(count).getEndColor(),
-                        "#" + mTasksArray.get(count).getStartColor(), mContext);
-                mapDataModel.setBackgroundView(drawable);
-                arrayList.add(mapDataModel);
-            }
-        }
-        sortArray(arrayList);
-        return arrayList;
-    }
-
 }

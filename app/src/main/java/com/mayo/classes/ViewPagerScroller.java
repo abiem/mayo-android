@@ -8,6 +8,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
@@ -29,6 +31,7 @@ public class ViewPagerScroller {
     private ShownCardMarker mShownCardMarker;
     private Location mCurrentLocationForCardMarker;
     private GoogleMap mGoogleMap;
+    private Marker mMarker = null;
 
     public ViewPagerScroller(Context pContext, CustomViewPager pCustomViewPager, ArrayList<MapDataModel> pMapDataModel,
                              MapViewPagerAdapter pViewPagerAdapter, ShownCardMarker pShownCardMarker, Location pLocation, GoogleMap pGoogleMap) {
@@ -42,6 +45,7 @@ public class ViewPagerScroller {
     }
 
     public int getPostCard() {
+        clearExpireCardMarker();
         int value = -1;
         for (int i = 0; i < mMapDataModel.size(); i++) {
             if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
@@ -72,6 +76,7 @@ public class ViewPagerScroller {
     }
 
     public void getFakeCardOne() {
+        clearExpireCardMarker();
         if (CommonUtility.getFakeCardShownOrNot(mContext)) {
             if (!CommonUtility.getFakeCardOne(mContext)) {
                 for (int i = 0; i < mMapDataModel.size(); i++) {
@@ -98,6 +103,7 @@ public class ViewPagerScroller {
     }
 
     public int getFakeCardTwo(boolean pScrollingCheck) {
+        clearExpireCardMarker();
         int value = -1;
         if (CommonUtility.getFakeCardShownOrNot(mContext)) {
             for (int i = 0; i < mMapDataModel.size(); i++) {
@@ -145,6 +151,7 @@ public class ViewPagerScroller {
     }
 
     public int getFakeCardThree(boolean pScrollCheck) {
+        clearExpireCardMarker();
         int value = -1;
         if (CommonUtility.getFakeCardShownOrNot(mContext)) {
             for (int i = 0; i < mMapDataModel.size(); i++) {
@@ -184,6 +191,24 @@ public class ViewPagerScroller {
             }
         }
         return value;
+    }
+
+    /**
+     * set live cards marker
+     *
+     * @param pPosition
+     */
+    public void setLiveCardViewMarker(int pPosition) {
+        for (int count = 0; count < mMapDataModel.size(); count++) {
+            if (mMarker != null) {
+                mMarker.remove();
+                mMarker = null;
+            }
+            if (mMapDataModel.get(count).isCompleted() && count == pPosition) {
+                mMarker = mShownCardMarker.setExpiryCardMarker(mMapDataModel.get(count).getCardLatlng().getLatLng());
+                break;
+            }
+        }
     }
 
     private void setCardLatlngMarker(CardLatlng pCardLatlng, BitmapDescriptor pBitmapDescriptior) {
@@ -249,6 +274,13 @@ public class ViewPagerScroller {
                 pCardLatLng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
                 setCardLatlngMarker(pCardLatLng, mShownCardMarker.getBlueIconSmall());
             }
+        }
+    }
+
+    public void clearExpireCardMarker() {
+        if (mMarker != null) {
+            mMarker.remove();
+            mMarker = null;
         }
     }
 }

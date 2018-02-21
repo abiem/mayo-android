@@ -1,7 +1,9 @@
 package com.mayo.classes;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.location.Location;
+import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -250,5 +252,18 @@ public class ShownCardMarker {
             mMapDataModel.get(0).getCardLatlng().setMarker(marker);
             marker.setTag(Constants.CardType.POST.getValue());
         }
+    }
+
+    Marker setExpiryCardMarker(LatLng latLng) {
+        Bitmap bitmap = CommonUtility.drawableToBitmap(ContextCompat.getDrawable(mContext, R.drawable.location_expired_card));
+        BitmapDescriptor currentLocationIcon = BitmapDescriptorFactory.fromBitmap(bitmap);
+        MarkerOptions markerOptions = new MarkerOptions().position(latLng)
+                .icon(currentLocationIcon).zIndex(Constants.sMarkerZIndexMaximum);
+        Marker marker = mGoogleMap.addMarker(markerOptions);
+        marker.setTag(Constants.CardType.DEFAULT.getValue());
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(latLng).zoom(Constants.sKeyCameraZoom).build();
+        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        return marker;
     }
 }
