@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
+import com.mayo.activities.MapActivity;
 import com.mayo.application.MayoApplication;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.MapDataModel;
@@ -218,14 +219,18 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 if (mTextButton.getAlpha() != Constants.sTransparencyLevelFade) {
                     mMayoApplication.hideKeyboard(mEditText);
                     CommonUtility.setSoftKeyBoardState(false, mContext);
-                    mTextButton.setAlpha(Constants.sTransparencyLevelFade);
-                    mImageButton.setAlpha(Constants.sTransparencyLevelFade);
-                    mDoneParentLayout.setVisibility(View.VISIBLE);
-                    mPostParentLayout.setVisibility(View.GONE);
-                    mEditText.setCursorVisible(false);
-                    mEditText.setEnabled(false);
-                    mEditText.setText(mEditText.getText().toString());
-                    mClickListener.onClick(v, position, mEditText.getText().toString());
+                    if (mMayoApplication.isConnected()) {
+                        mTextButton.setAlpha(Constants.sTransparencyLevelFade);
+                        mImageButton.setAlpha(Constants.sTransparencyLevelFade);
+                        mDoneParentLayout.setVisibility(View.VISIBLE);
+                        mPostParentLayout.setVisibility(View.GONE);
+                        mEditText.setCursorVisible(false);
+                        mEditText.setEnabled(false);
+                        mEditText.setText(mEditText.getText().toString());
+                        mClickListener.onClick(v, position, mEditText.getText().toString());
+                    } else {
+                        ((MapActivity) mContext).showInternetConnectionDialog();
+                    }
                 }
                 break;
             case R.id.doneIcon:

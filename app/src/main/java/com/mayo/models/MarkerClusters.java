@@ -1,6 +1,7 @@
 package com.mayo.models;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterItem;
 
 /**
@@ -8,8 +9,10 @@ import com.google.maps.android.clustering.ClusterItem;
  */
 
 public class MarkerClusters implements ClusterItem {
+    Marker marker;
+    LatLng latLng;
     @Override
     public LatLng getPosition() {
-        return null;
+        return latLng;
     }
 }

@@ -68,7 +68,7 @@ public class FakeMarker {
         timer = new Timer();
         //initialize the TimerTask's job
         initializeTimerTask();
-        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
+        //schedule the timer, after the first 0ms the TimerTask will run every 1000ms
         timer.schedule(timerTask, 0, 1000); //
 
     }
@@ -93,8 +93,8 @@ public class FakeMarker {
 
     public void stoptimertask() {
         if (timer != null) {
-            timer.purge();
             timer.cancel();
+            timer.purge();
             timer = null;
         }
     }

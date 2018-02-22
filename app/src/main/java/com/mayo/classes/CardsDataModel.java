@@ -205,6 +205,7 @@ public class CardsDataModel {
         }
     }
 
+
     public MapDataModel getMapModelData(TaskLatLng pTaskLatlng) {
         MapDataModel mapDataModel = new MapDataModel();
         GradientColor gradientColor = new GradientColor();
@@ -244,5 +245,13 @@ public class CardsDataModel {
         taskLocations.setLongitude(pLatlng.longitude);
         taskLatLng.setTaskLocations(taskLocations);
         return taskLatLng;
+    }
+
+    public void removeCardListFromView() {
+        int diff = mMapDataModels.size() - mTasksArray.size();
+        if (diff > 0 && mMapViewPagerAdapter != null) {
+            mMapDataModels.subList(diff, mMapDataModels.size()).clear();
+            mMapViewPagerAdapter.notifyDataSetChanged();
+        }
     }
 }

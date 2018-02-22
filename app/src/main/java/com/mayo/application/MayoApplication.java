@@ -2,6 +2,8 @@ package com.mayo.application;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 import android.support.v7.app.AppCompatActivity;
@@ -54,6 +56,15 @@ public class MayoApplication extends MultiDexApplication {
 
     public void showToast(Context mContext, String mMessage) {
         Toast.makeText(mContext, "" + mMessage, Toast.LENGTH_SHORT).show();
+    }
+
+    public Boolean isConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            return networkInfo != null && networkInfo.isConnectedOrConnecting();
+        }
+        return false;
     }
 
     public void showSoftKeyBoard() {

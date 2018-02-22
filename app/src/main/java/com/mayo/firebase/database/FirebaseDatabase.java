@@ -26,6 +26,7 @@ import com.mayo.models.UserMarker;
 import com.mayo.models.Users;
 import com.mayo.models.UsersLocations;
 
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -130,6 +131,46 @@ public class FirebaseDatabase {
         return updateTaskData;
     }
 
+    public void setUpdateTimeOfCurrentTask(String pKey) {
+        mDatabaseReference.child("tasks").child(pKey).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    Task task = dataSnapshot.getValue(Task.class);
+                    Calendar calendar = Calendar.getInstance();
+                    Calendar calendarNewInstance = Calendar.getInstance();
+                    Date saveUpdatedate, getFirebaseUpdateDate;
+                    if (task != null) {
+                        if (CommonUtility.getTaskApplied(mContext)) {
+                            Task saveTaskData = CommonUtility.getTaskData(mContext);
+                            saveUpdatedate = CommonUtility.convertStringToDateTime(saveTaskData.getTimeUpdated());
+                            getFirebaseUpdateDate = CommonUtility.convertStringToDateTime(task.getTimeUpdated());
+                            if (saveUpdatedate != null && getFirebaseUpdateDate != null &&
+                                    getFirebaseUpdateDate.before(saveUpdatedate)) {
+                                ((MapActivity) mContext).scheduleTaskTimer(0, task);
+                                return;
+                            }
+                            calendar.setTime(getFirebaseUpdateDate);
+                            long currentTaskTime = calendar.getTimeInMillis();
+                            calendar.add(Calendar.HOUR, 1);
+                            if (saveUpdatedate != null && calendar.getTime().before(calendarNewInstance.getTime())) {
+                                ((MapActivity) mContext).scheduleTaskTimer(0, task);
+                                return;
+                            }
+                            long diff = calendar.getTimeInMillis() - currentTaskTime;
+                            ((MapActivity) mContext).scheduleTaskTimer((int) diff, task);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     /**
      * fetch live users from firebase and show only that users which is less than 6 minutes
      */
@@ -180,7 +221,7 @@ public class FirebaseDatabase {
                 if (dataSnapshot.getValue() != null) {
                     Task task = dataSnapshot.getValue(Task.class);
                     if (task != null) {
-                        ((MapActivity) mContext).setListsOfFetchingTask(task,pTaskLocations);
+                        ((MapActivity) mContext).setListsOfFetchingTask(task, pTaskLocations);
                     }
                 }
             }

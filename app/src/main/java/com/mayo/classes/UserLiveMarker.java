@@ -18,9 +18,9 @@ import java.util.TimerTask;
 public class UserLiveMarker {
     private Timer timer;
     private TimerTask timerTask;
-    Handler handler = new Handler();
+    private Handler handler = new Handler();
     Context mContext;
-    HashSet<UserMarker> mUserLocationsMarker;
+    private HashSet<UserMarker> mUserLocationsMarker;
 
     public UserLiveMarker(Context pContext, HashSet<UserMarker> pUserLocations) {
         mContext = pContext;
@@ -32,7 +32,7 @@ public class UserLiveMarker {
         timer = new Timer();
         //initialize the TimerTask's job
         initializeTimerTask();
-        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
+        //schedule the timer, after the first 0ms the TimerTask will run every 1000ms
         timer.schedule(timerTask, 0, 1000); //
 
     }
@@ -57,8 +57,8 @@ public class UserLiveMarker {
 
     public void stoptimertask() {
         if (timer != null) {
-            timer.purge();
             timer.cancel();
+            timer.purge();
             timer = null;
         }
     }

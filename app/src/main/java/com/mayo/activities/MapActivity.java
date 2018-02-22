@@ -70,6 +70,7 @@ import com.mayo.classes.AnimateCard;
 import com.mayo.classes.CardsDataModel;
 import com.mayo.classes.MarkerClick;
 import com.mayo.classes.ShownCardMarker;
+import com.mayo.classes.TaskTimer;
 import com.mayo.classes.UserLiveMarker;
 import com.mayo.classes.ViewPagerScroller;
 import com.mayo.firebase.database.FirebaseDatabase;
@@ -163,6 +164,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private float sumPositionAndPositionOffset = 0;
     private RecyclerView mHelpRecyclerView;
     private CardsDataModel mCardsDataModel;
+    private TaskTimer mTaskTimer;
 
     @AfterViews
     protected void init() {
@@ -196,6 +198,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setViewPager();
         if (mViewPagerScroller == null) {
             scrollViewPager();
+        }
+        if (CommonUtility.getTaskApplied(this) && mTaskTimer == null) {
+            FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+            firebaseDatabase.setUpdateTimeOfCurrentTask(CommonUtility.getTaskData(this).getTaskID());
         }
     }
 
@@ -665,8 +671,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void removeFakeMarkerAccodingToTime(int pIndex) {
-        mFakeUserMarker.get(pIndex).getMarker().remove();
-        mFakeUserMarker.remove(pIndex);
+        if (mFakeUserMarker.size() > 0) {
+            mFakeUserMarker.get(pIndex).getMarker().remove();
+            mFakeUserMarker.remove(pIndex);
+        }
         if (mFakeUserMarker.size() == 0) {
             CommonUtility.setFakeMarkerShown(true, MapActivity.this);
             if (mFakeMarker != null) {
@@ -774,6 +782,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void getNearByUsers(String pKey, GeoLocation pGeoLocation) {
+        mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
+        mCardsDataModel.removeCardListFromView();
+        mTasksArray.clear();
+        mTaskLocationsArray.clear();
         UsersLocations usersLocations = new UsersLocations();
         usersLocations.setKey(pKey);
         usersLocations.setLatitude(pGeoLocation.latitude);
@@ -797,6 +809,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         taskLocations.setKey(pKey);
         taskLocations.setLatitude(pGeoLocation.latitude);
         taskLocations.setLongitude(pGeoLocation.longitude);
+        Task task = CommonUtility.getTaskData(this);
+        if (task != null && pKey.equals(task.getTaskID()) && !task.isCompleted()) {
+            return;
+        }
         mTaskLocationsArray.add(taskLocations);
     }
 
@@ -927,14 +943,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             String endColor = mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1);
                             Task task = firebaseDatabase.setTask(pMessage, this, startColor, endColor);
                             firebaseDatabase.writeNewTask(task.getTaskID(), task);
-                            Location location = mCurrentLocation;
-                            sendDataToFirebaseOfTaskLocation(location, task.getTaskID());
+                            sendDataToFirebaseOfTaskLocation(mCurrentLocation, task.getTaskID());
                             // user applied for task
                             CommonUtility.setTaskApplied(true, MapActivity.this);
                             //save Task location
-                            CommonUtility.setTaskLocation(location, MapActivity.this);
+                            CommonUtility.setTaskLocation(mCurrentLocation, MapActivity.this);
                             // save task data
                             CommonUtility.setTaskData(task, MapActivity.this);
+                            firebaseDatabase.setUpdateTimeOfCurrentTask(task.getTaskID());
                         }
                         break;
                     case R.id.doneIcon:
@@ -949,6 +965,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             case DEFAULT:
                 openChatMessageView(pMessage, true);
                 break;
+        }
+    }
+
+    public void scheduleTaskTimer(int pTaskExpiryTime, Task pTask) {
+        if (mTaskTimer != null) {
+            mTaskTimer.stoptimertask();
+        }
+        if (pTaskExpiryTime == 0) {
+            updateTaskData(getResources().getString(R.string.STATUS_FOR_TIME_EXPIRED), pTask);
+            mMapViewPagerAdapter.setPostMessageView();
+            return;
+        }
+        mTaskTimer = new TaskTimer(MapActivity.this, pTaskExpiryTime, mMapViewPagerAdapter);
+        mTaskTimer.startTimer();
+    }
+
+    public void showInternetConnectionDialog() {
+        final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.internet_connection);
+        if (dialog != null) {
+            dialog.findViewById(R.id.noConnectionButton).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
         }
     }
 
@@ -969,10 +1010,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (CommonUtility.getTaskApplied(MapActivity.this)) {
                 CommonUtility.setTaskApplied(false, MapActivity.this);
                 task = CommonUtility.getTaskData(this);
-                if (mMapDataModels.size() > 0 && mMapDataModels.get(0).getCardLatlng() != null) {
-                    mMapDataModels.get(0).getCardLatlng().getMarker().remove();
-                    mMapDataModels.get(0).getCardLatlng().setMarker(null);
-                }
+                updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
@@ -981,11 +1019,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
             mHelpRecyclerView = (RecyclerView) dialog.findViewById(R.id.helpPersonsRecyclerView);
-            setThanksDialog(dialog, task);
+            setThanksDialog(dialog);
         }
     }
 
-    private void setThanksDialog(final Dialog pDialog, final Task task) {
+    private void setThanksDialog(final Dialog pDialog) {
         ArrayList<Message> messageList = new ArrayList<>();
         TextView thanksTextView = (TextView) pDialog.findViewById(R.id.thanks);
         TextView noThanksTextView = (TextView) pDialog.findViewById(R.id.no_one_helped);
@@ -1013,15 +1051,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 pDialog.dismiss();
-                updateTask(true, getResources().getString(R.string.STATUS_FOR_NOT_HELPED));
-                task.setCompleted(true);
-                TaskLatLng taskLatLng = mCardsDataModel.setTaskLatlngModel(task, CommonUtility.getTaskLocation(MapActivity.this));
-                MapDataModel mapDataModel = mCardsDataModel.getMapModelData(taskLatLng);
-                mMapDataModels.add(mapDataModel);
-                mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
-                mCardsDataModel.sortCardViewList(mMapDataModels);
             }
         });
+    }
+
+    public void updateTaskData(String pMessage, Task task) {
+        updateTask(true, pMessage);
+        task.setCompleted(true);
+        CommonUtility.setTaskData(task, MapActivity.this);
+        TaskLatLng taskLatLng = mCardsDataModel.setTaskLatlngModel(task, CommonUtility.getTaskLocation(MapActivity.this));
+        MapDataModel mapDataModel = mCardsDataModel.getMapModelData(taskLatLng);
+        mMapDataModels.add(mapDataModel);
+        mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
+        mCardsDataModel.sortCardViewList(mMapDataModels);
+        CommonUtility.setTaskApplied(false, this);
+        if (mMapDataModels.size() > 0 && mMapDataModels.get(0).getCardLatlng() != null &&
+                mMapDataModels.get(0).getCardLatlng().getMarker() != null) {
+            mMapDataModels.get(0).getCardLatlng().getMarker().remove();
+            mMapDataModels.get(0).getCardLatlng().setMarker(null);
+        }
     }
 
     private void setParentQuestButton(int visibility) {

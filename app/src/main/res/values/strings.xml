@@ -41,7 +41,7 @@
     <string name="thanks">Thanks!</string>
     <string name="no_one_helped">No one helped me</string>
     <string name="quest_completed">Quest has Completed</string>
-    <string name="no_connection">Oops can\'t connect to the Internet.</string>
+    <string name="no_internet_connection">Oops can\'t connect to the Internet.</string>
     <string name="ok">OK</string>
 
 
