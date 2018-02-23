@@ -5,6 +5,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -540,12 +541,14 @@ public class CommonUtility {
         return SIMPLE_DATE_FORMAT.format(pMessage);
     }
 
-    public static NotificationCompat.Builder notificationBuilder(Context pContext, String pMessage) {
+    public static NotificationCompat.Builder notificationBuilder(Context pContext, String pMessage, String pSubtitleMessage) {
         return new NotificationCompat.Builder(pContext)
-                .setSmallIcon(R.drawable.notification_mayo)
+                .setSmallIcon(R.drawable.notification_icon_mayo)
                 .setLargeIcon(drawableToBitmap(pContext.getResources().getDrawable(R.mipmap.mayo_icon)))
                 .setContentTitle(pContext.getResources().getString(R.string.app_name))
                 .setContentText(pMessage)
+                .setSubText(pSubtitleMessage)
+                .setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
                 .setColor(ContextCompat.getColor(pContext, R.color.transparent))
                 .setAutoCancel(true);
     }

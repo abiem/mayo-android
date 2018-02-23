@@ -65,4 +65,10 @@
     <string name="STATUS_FOR_NOT_HELPED">Owner marked as done and no one helped</string>
     <string name="STATUS_FOR_TIME_EXPIRED">Expired due to time limit</string>
     <string name="STATUS_FOR_MOVING_OUT">Expired due to time limit</string>
+    
+    <!--Notification message-->
+    <string name="notification_expired_message">Your help quest expired</string>
+    <string name="notification_help_message">Still need help?</string>
+    <string name="notification_new_quest_available">New quest available</string>
+    <string name="notification_nearby">Someone has a new quest nearby</string>
 </resources>

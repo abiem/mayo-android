@@ -153,11 +153,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mTextView.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
             case DEFAULT: // all cards that is fetch from firebase
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    mCardViewNewCards.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
-                } else {
-                    mCardViewNewCards.setBackgroundDrawable(mMapDataModelArrayList.get(position).getBackgroundView());
-                }
+                mCardViewNewCards.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
                 if (mMapDataModelArrayList.get(position).isCompleted()) {
                     mExpiredImageButton.setVisibility(View.VISIBLE);
                     mExpiredImageButton.setOnClickListener(this);

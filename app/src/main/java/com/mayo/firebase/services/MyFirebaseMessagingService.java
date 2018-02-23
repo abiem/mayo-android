@@ -23,8 +23,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         JSONObject jsonObject = new JSONObject(data);
     }
 
-    private void setNotification(String pMessageBody) {
-        NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this, pMessageBody);
+    private void setNotification(String pMessageBody,String pSubTitle) {
+        NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this, pMessageBody,pSubTitle);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
             notificationManager.notify(0, builder.build());

@@ -63,10 +63,14 @@ public class ViewPagerScroller {
             if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
                 CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
                 if (cardLatlng != null) {
-                    setPostIconLarge(cardLatlng);
-                    CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(cardLatlng.getLatLng()).zoom(Constants.sKeyCameraZoom).build();
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    if (cardLatlng.getMarker() == null && mContext != null) {
+                        ((MapActivity) mContext).getCurrentLocation();
+                    } else {
+                        setPostIconLarge(cardLatlng);
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(cardLatlng.getLatLng()).zoom(Constants.sKeyCameraZoom).build();
+                        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    }
                 } else {
                     if (mContext != null)
                         ((MapActivity) mContext).getCurrentLocation();

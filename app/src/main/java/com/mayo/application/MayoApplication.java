@@ -1,11 +1,13 @@
 package com.mayo.application;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -54,8 +56,8 @@ public class MayoApplication extends MultiDexApplication {
         this.mActivity = mActivity;
     }
 
-    public void showToast(Context mContext, String mMessage) {
-        Toast.makeText(mContext, "" + mMessage, Toast.LENGTH_SHORT).show();
+    public void showToast(Context pContext, String pMessage) {
+        Toast.makeText(pContext, "" + pMessage, Toast.LENGTH_SHORT).show();
     }
 
     public Boolean isConnected() {
@@ -78,6 +80,13 @@ public class MayoApplication extends MultiDexApplication {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             if (imm != null)
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    public void showLocalNotification(int pId,NotificationCompat.Builder pBuilder, Context pContext) {
+        NotificationManager notificationManager = (NotificationManager) pContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.notify(pId, pBuilder.build());
         }
     }
 }

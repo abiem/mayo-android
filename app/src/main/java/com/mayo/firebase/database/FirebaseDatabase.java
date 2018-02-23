@@ -96,7 +96,7 @@ public class FirebaseDatabase {
         mDatabaseReference.child("users").setValue(pUser);
     }
 
-    public Task setTask(String pMessage, Context pContext, String startColor, String endColor) {
+    public Task setTask(String pMessage, Context pContext, String pStartColor, String pEndColor) {
         Task task = new Task();
         task.setCreatedby(CommonUtility.getUserId(pContext));
         task.setTaskID(CommonUtility.convertLocalTimeToUTC());
@@ -107,9 +107,9 @@ public class FirebaseDatabase {
         task.setTimeUpdated(CommonUtility.getLocalTime()); //this is updating time but first time we showing create task time
         task.setUserMovedOutside(false);
         task.setRecentActivity(false);
-        task.setStartColor(startColor);
-        task.setEndColor(endColor);
-        task.setCompleteType("");
+        task.setStartColor(pStartColor);
+        task.setEndColor(pEndColor);
+        task.setCompleteType(Constants.sConstantEmptyString);
         return task;
     }
 
@@ -151,13 +151,16 @@ public class FirebaseDatabase {
                                 return;
                             }
                             calendar.setTime(getFirebaseUpdateDate);
-                            long currentTaskTime = calendar.getTimeInMillis();
                             calendar.add(Calendar.HOUR, 1);
                             if (saveUpdatedate != null && calendar.getTime().before(calendarNewInstance.getTime())) {
                                 ((MapActivity) mContext).scheduleTaskTimer(0, task);
                                 return;
                             }
-                            long diff = calendar.getTimeInMillis() - currentTaskTime;
+                            long diff = calendar.getTimeInMillis() - calendarNewInstance.getTimeInMillis();
+                            if (diff > Constants.sTaskExpiryTime) {
+                                ((MapActivity) mContext).scheduleTaskTimer(Constants.sTaskExpiryTime, task);
+                                return;
+                            }
                             ((MapActivity) mContext).scheduleTaskTimer((int) diff, task);
                         }
                     }

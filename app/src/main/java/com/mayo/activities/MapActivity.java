@@ -2,6 +2,7 @@ package com.mayo.activities;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -347,6 +349,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Constants.CardPaddingValues.sLeftRightPadding, Constants.CardPaddingValues.sTopBottomPadding);
         mViewPagerMap.setPageMargin(Constants.CardMarginSetValues.sMarginValue);
         mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap, this, mMayoApplication);
+        if (mCardsDataModel != null) {
+            mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
+        }
         mViewPagerMap.setAdapter(mMapViewPagerAdapter);
         if (!CommonUtility.getFakeCardShownOrNot(this)) {
             mViewPagerMap.setCurrentItem(0);
@@ -782,15 +787,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void getNearByUsers(String pKey, GeoLocation pGeoLocation) {
-        mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
-        mCardsDataModel.removeCardListFromView();
-        mTasksArray.clear();
-        mTaskLocationsArray.clear();
         UsersLocations usersLocations = new UsersLocations();
         usersLocations.setKey(pKey);
         usersLocations.setLatitude(pGeoLocation.latitude);
         usersLocations.setLongitude(pGeoLocation.longitude);
         setRealTimeUsers(usersLocations);
+    }
+
+    public void removeCardsFromViewPager() {
+        mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
+        mCardsDataModel.removeCardListFromView();
+        mTasksArray.clear();
+        mTaskLocationsArray.clear();
     }
 
     public void setRealTimeUsers(UsersLocations usersLocations) {
@@ -870,6 +878,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     public void moveMarkerOutsideFromCurrentLocation(String pkey) {
         if (pkey.equals(CommonUtility.getUserId(this))) {
+            removeCardsFromViewPager();
             if (mFakeMarker != null) {
                 mFakeMarker.stoptimertask();
             }
@@ -1056,6 +1065,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void updateTaskData(String pMessage, Task task) {
+        //task will complete when expired or done
         updateTask(true, pMessage);
         task.setCompleted(true);
         CommonUtility.setTaskData(task, MapActivity.this);
@@ -1070,6 +1080,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMapDataModels.get(0).getCardLatlng().getMarker().remove();
             mMapDataModels.get(0).getCardLatlng().setMarker(null);
         }
+        showLocalNotification(1);
+        if (task.isRecentActivity()) {
+            Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
+            if (dialog != null)
+                setThanksDialog(dialog);
+        }
+    }
+
+    public void showLocalNotification(int pId) {
+        NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this,
+                getResources().getString(R.string.notification_expired_message), getResources().getString(R.string.notification_help_message));
+        Intent notificationIntent = new Intent(this, MapActivity_.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, pId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+        mMayoApplication.showLocalNotification(0, builder, this);
     }
 
     private void setParentQuestButton(int visibility) {
