@@ -1,5 +1,7 @@
 package com.mayo.models;
 
+import com.google.firebase.database.DatabaseReference;
+
 import java.util.ArrayList;
 
 /**
@@ -7,22 +9,13 @@ import java.util.ArrayList;
  */
 
 public class Channel {
-    private ArrayList<UserId> users;
-    private ArrayList<Message> messages;
-
-    public ArrayList<UserId> getUsers() {
-        return users;
+    private UserId userId;
+    public UserId getUserId() {
+        return userId;
     }
 
-    public void setUsers(ArrayList<UserId> users) {
-        this.users = users;
+    public void setUserId(UserId userId) {
+        this.userId = userId;
     }
 
-    public ArrayList<Message> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(ArrayList<Message> messages) {
-        this.messages = messages;
-    }
 }

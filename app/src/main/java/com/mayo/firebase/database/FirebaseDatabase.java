@@ -19,9 +19,11 @@ import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
 import com.mayo.models.Channel;
+import com.mayo.models.Message;
 import com.mayo.models.Task;
 import com.mayo.models.TaskLocations;
 import com.mayo.models.TaskViews;
+import com.mayo.models.UserId;
 import com.mayo.models.UserMarker;
 import com.mayo.models.Users;
 import com.mayo.models.UsersLocations;
@@ -50,7 +52,7 @@ public class FirebaseDatabase {
 
     public FirebaseDatabase(Context pContext) {
         mContext = pContext;
-        mHashMap = new HashMap();
+        mHashMap = new HashMap<>();
         //intialize database reference
         initDatabase();
     }
@@ -72,8 +74,9 @@ public class FirebaseDatabase {
         mDatabaseReference.child(sTask_Views).child(pTimeStamp).setValue(pTaskView);
     }
 
-    public void setNewChannel(String pTimeStamp, Channel pChannel) {
+    public void writeNewChannel(String pTimeStamp, Channel pChannel, Message pMessage) {
         mDatabaseReference.child(sChannel).child(pTimeStamp).setValue(pChannel);
+        mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").push().setValue(pMessage);
     }
 
 
@@ -97,6 +100,25 @@ public class FirebaseDatabase {
 
     public void writeNewUser(Users pUser) {
         mDatabaseReference.child("users").setValue(pUser);
+    }
+
+    public Channel getChannel(String pSenderId) {
+        UserId userId = new UserId();
+        userId.setUser(pSenderId);
+
+        Channel channel = new Channel();
+        channel.setUserId(userId);
+        return channel;
+    }
+
+    public Message setMessage(String pSenderId, String pMessage, String pColorIndex) {
+        Message message = new Message();
+        message.setColorIndex(pColorIndex);
+        message.setDateCreated(CommonUtility.getLocalTime());
+        message.setSenderId(pSenderId);
+        message.setSenderName(Constants.sConstantEmptyString);
+        message.setText(pMessage);
+        return message;
     }
 
     public Task setTask(String pMessage, Context pContext, String pStartColor, String pEndColor) {

@@ -97,6 +97,7 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -341,8 +342,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void setDataModel() {
-        mCardsDataModel = new CardsDataModel(this, mTasksArray);
-        mMapDataModels = mCardsDataModel.getDataModel();
+        if (mCardsDataModel == null) {
+            mCardsDataModel = new CardsDataModel(this, mTasksArray);
+        }
+        if (mMapDataModels == null) {
+            mMapDataModels = mCardsDataModel.getDataModel();
+        }
     }
 
     private void setViewPager() {
@@ -506,7 +511,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void locationNotEnabled() {
         if (mGoogleMap != null) {
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(0.0, 0.0), Constants.sKeyCameraZoom));
+            LatLng latLng = CommonUtility.getUserLocation(this);
+            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, Constants.sKeyCameraZoom));
         }
     }
 
@@ -573,6 +579,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     private void setCurrentLocation(Location location) {
         mCurrentLocation = location;
+        CommonUtility.setUserLocation(mCurrentLocation, this);
         LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
         mCurrentLat = location.getLatitude();
         mCurrentLng = location.getLongitude();
@@ -747,6 +754,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mCurrentLocationMarker.remove();
         }
         mCurrentLocation = location;
+        CommonUtility.setUserLocation(mCurrentLocation, this);
         addCurrentLocationMarker(mCurrentLocation);
         sendDataToFirebaseOfUserLocation(location);
     }
@@ -977,7 +985,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             case POST:
                 switch (pView.getId()) {
                     case R.id.messageIcon:
-                        openChatMessageView(pMessage, false);
+                        openChatMessageView(pMessage, false, pPosition);
                         break;
                     case R.id.textbutton:
                         if (!pMessage.equals(Constants.sConstantEmptyString)) {
@@ -986,6 +994,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             String endColor = mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1);
                             Task task = mFirebaseDatabase.setTask(pMessage, this, startColor, endColor);
                             mFirebaseDatabase.writeNewTask(task.getTaskID(), task);
+                            TaskLatLng taskLatLng = new TaskLatLng();
+                            taskLatLng.setTask(task);
+                            TaskLocations taskLocations = new TaskLocations();
+                            taskLocations.setLongitude(mCurrentLocation.getLongitude());
+                            taskLocations.setLatitude(mCurrentLocation.getLatitude());
+                            taskLocations.setKey(task.getTaskID());
+                            taskLatLng.setTaskLocations(taskLocations);
+                            mMapDataModels.get(pPosition).setTaskLatLng(taskLatLng);
                             sendDataToFirebaseOfTaskLocation(mCurrentLocation, task.getTaskID());
                             // user applied for task
                             CommonUtility.setTaskApplied(true, MapActivity.this);
@@ -1003,15 +1019,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
                 break;
             case FAKECARDTWO:
-                openChatMessageView(Constants.sConstantEmptyString, false);
+                openChatMessageView(Constants.sConstantEmptyString, false, pPosition);
                 break;
             case DEFAULT:
                 switch (pView.getId()) {
                     case R.id.expiryImageView:
-                        openChatMessageView(pMessage, true);
+                        openChatMessageView(pMessage, true, pPosition);
                         break;
                     case R.id.canHelped:
-                        openChatMessageView(pMessage, false);
+                        openChatMessageView(pMessage, false, pPosition);
                         break;
                 }
                 break;
@@ -1158,13 +1174,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mFirebaseDatabase.updateTask(task.getTaskID(), task);
     }
 
-    //this is for fake card
-    public void openChatMessageView(String pMessage, boolean pExpiredCard) {
+     public void openChatMessageView(String pMessage, boolean pExpiredCard, int pPosition) {
         if (pMessage.equals(Constants.sConstantEmptyString)) {
             ChatActivity_.intent(MapActivity.this).start();
         } else {
+//            ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage)
+//                    .extra(Constants.sQuestMessageShow, pExpiredCard).extra(Constants.sCardsData, mMapDataModels.get(pPosition)).start();
             ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage)
                     .extra(Constants.sQuestMessageShow, pExpiredCard).start();
+
         }
         overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }

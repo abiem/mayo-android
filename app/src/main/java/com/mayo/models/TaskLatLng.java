@@ -1,10 +1,12 @@
 package com.mayo.models;
 
+import java.io.Serializable;
+
 /**
  * Created by Lakshmi on 21/02/18.
  */
 
-public class TaskLatLng {
+public class TaskLatLng implements Serializable{
     private Task task;
     private TaskLocations taskLocations;
 

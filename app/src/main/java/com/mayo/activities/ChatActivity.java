@@ -29,12 +29,17 @@ import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.adapters.ChatListAdapter;
 import com.mayo.application.MayoApplication;
+import com.mayo.firebase.database.FirebaseDatabase;
+import com.mayo.models.MapDataModel;
 import com.mayo.models.Message;
+import com.mayo.models.Task;
+import com.mayo.models.TaskLatLng;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.Extra;
 import org.androidannotations.annotations.TextChange;
 import org.androidannotations.annotations.ViewById;
 
@@ -72,10 +77,15 @@ public class ChatActivity extends AppCompatActivity {
     @App
     MayoApplication mMayoApplication;
 
+    @Extra(Constants.sCardsData)
+    MapDataModel mMapDataModel;
+
     String mMessageText;
     Message mMessage;
     ChatListAdapter mChatAdapter;
     LinearLayoutManager mLayoutManager;
+    FirebaseDatabase mFirebaseDatabase;
+
 
     private ArrayList<Message> mMessageList = new ArrayList<>();
     Bundle pBundle;
@@ -92,6 +102,7 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             setActionBar(Constants.sConstantEmptyString);
         }
+        getFirebaseInstance();
         setRecyclerView();
     }
 
@@ -147,6 +158,12 @@ public class ChatActivity extends AppCompatActivity {
             if (pBundle != null) {
                 mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
                         mMessageChatText.getText().toString().trim();
+                if (mMapDataModel != null) {
+                    Task task = mMapDataModel.getTaskLatLng().getTask();
+                    mFirebaseDatabase.writeNewChannel(task.getTaskID(),
+                            mFirebaseDatabase.getChannel(CommonUtility.getUserId(this)),
+                            mFirebaseDatabase.setMessage(CommonUtility.getUserId(this), mMessageText, "0"));
+                }
             } else {
                 mMessageText = mMessageChatText.getText().toString().trim();
             }
@@ -243,4 +260,9 @@ public class ChatActivity extends AppCompatActivity {
         mActionBarMessage.setLayoutParams(params);
     }
 
+    private void getFirebaseInstance() {
+        if (mFirebaseDatabase == null) {
+            mFirebaseDatabase = new FirebaseDatabase(this);
+        }
+    }
 }

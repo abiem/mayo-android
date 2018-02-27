@@ -218,6 +218,7 @@ public class CardsDataModel {
             drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getEndColor(),
                     "#" + pTaskLatlng.getTask().getStartColor(), mContext);
             mapDataModel.setBackgroundView(drawable);
+            mapDataModel.setTaskLatLng(pTaskLatlng);
             mMapDataModels.add(mapDataModel);
         }
     }

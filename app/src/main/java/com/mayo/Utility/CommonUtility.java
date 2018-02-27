@@ -247,6 +247,25 @@ public class CommonUtility {
         return gson.fromJson(json, Task.class);
     }
 
+    public static void setUserLocation(Location pLocation, Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putFloat(Constants.sharedPreferences.sUserLocation_lat, (float) pLocation.getLatitude());
+        editor.putFloat(Constants.sharedPreferences.sUserLocation_lng, (float) pLocation.getLongitude());
+        editor.apply();
+    }
+
+    public static LatLng getUserLocation(Context pContext) {
+        if (mSharedPreferences == null) {
+            initializeSharedPreference(pContext);
+        }
+        float lat = mSharedPreferences.getFloat(Constants.sharedPreferences.sUserLocation_lat, 0.0f);
+        float lng = mSharedPreferences.getFloat(Constants.sharedPreferences.sUserLocation_lng, 0.0f);
+        return new LatLng(lat, lng);
+    }
+
     public static void setFakeCardTwo(boolean psetValue, Context pContext) {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);

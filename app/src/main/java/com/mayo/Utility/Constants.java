@@ -33,6 +33,7 @@ public class Constants {
     public static final long seconds = 6 * 60; //360 = 6 minutes
     public static final float sMarkerZIndexMaximum = 1.0f;
     public static final float sMarkerZIndexMinimum = 0.1f;
+    public static final String sCardsData="cardsData";
     public static final int sTaskExpiryTime = 1000 * 60 * 60; //3600seconds=1hour
 
     class sharedPreferences {
@@ -51,6 +52,8 @@ public class Constants {
         static final String sTaskData = "taskData";
         static final String sTaskPosition_lat = "taskPosition_lat";
         static final String sTaskPosition_lng = "taskPosition_lng";
+        static final String sUserLocation_lat = "UserLocation_lat";
+        static final String sUserLocation_lng = "UserLocation_lng";
     }
 
     public class FakeUsersValues {

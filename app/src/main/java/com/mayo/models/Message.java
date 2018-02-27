@@ -7,6 +7,7 @@ import com.mayo.Utility.Constants;
  */
 
 public class Message {
+
     private String colorIndex;
     private String dateCreated;
     private String senderId;

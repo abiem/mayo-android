@@ -3,11 +3,13 @@ package com.mayo.models;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 
+import java.io.Serializable;
+
 /**
  * Created by Lakshmikodali on 15/01/18.
  */
 
-public class MapDataModel {
+public class MapDataModel implements Serializable {
     private Drawable backgroundView;
     private GradientColor gradientColor;
     private String textMessage;
@@ -18,6 +20,7 @@ public class MapDataModel {
     private CardLatlng cardLatlng;
     private boolean completed;
     private String timeCreated;
+    private TaskLatLng taskLatLng;
 
     public boolean isCompleted() {
         return completed;
@@ -97,5 +100,13 @@ public class MapDataModel {
 
     public void setTimeCreated(String timeCreated) {
         this.timeCreated = timeCreated;
+    }
+
+    public TaskLatLng getTaskLatLng() {
+        return taskLatLng;
+    }
+
+    public void setTaskLatLng(TaskLatLng taskLatLng) {
+        this.taskLatLng = taskLatLng;
     }
 }

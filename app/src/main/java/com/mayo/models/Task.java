@@ -1,12 +1,13 @@
 package com.mayo.models;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by Lakshmikodali on 15/01/18.
  */
 
-public class Task {
+public class Task implements Serializable{
     private String taskDescription;
     private boolean completed;
     private String timeCreated;
