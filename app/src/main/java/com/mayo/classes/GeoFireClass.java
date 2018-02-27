@@ -23,6 +23,7 @@ public class GeoFireClass {
     private GeoFire mGeoFire, mTaskGeoFire;
     private GeoQuery mGeoQuery;
     private Context mContext;
+    private boolean isNewCardMake;
 
     public GeoFireClass(Context pContext) {
         mContext = pContext;
@@ -80,10 +81,12 @@ public class GeoFireClass {
     public GeoQuery setGeoQueryForTaskFetch(Location pLocation) {
         GeoQuery geoQuery = mTaskGeoFire.queryAtLocation(new GeoLocation(pLocation.getLatitude(),
                 pLocation.getLongitude()), Constants.sKeyForMapRadiusInDouble);
+        ((MapActivity) mContext).removeCardsFromViewPager();
+        isNewCardMake = false;
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                ((MapActivity) mContext).getNearByTask(key, location);
+                ((MapActivity) mContext).getNearByTask(key, location, isNewCardMake);
             }
 
             @Override
@@ -99,6 +102,7 @@ public class GeoFireClass {
             @Override
             public void onGeoQueryReady() {
                 ((MapActivity) mContext).fetchAfterNearByTask();
+                isNewCardMake = true;
             }
 
             @Override

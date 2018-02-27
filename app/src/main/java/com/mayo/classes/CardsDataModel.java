@@ -158,7 +158,7 @@ public class CardsDataModel {
         pTempArray.clear();
     }
 
-    public void sortCardViewList(ArrayList<MapDataModel> pArray) {
+    public void sortExpiredCardViewList(ArrayList<MapDataModel> pArray) {
         Collections.sort(pArray, new Comparator<MapDataModel>() {
             public int compare(MapDataModel o1, MapDataModel o2) {
                 if (o1.getTimeCreated() != null && o2.getTimeCreated() != null && o1.isCompleted() && o2.isCompleted()) {
@@ -173,6 +173,23 @@ public class CardsDataModel {
         });
         mMapViewPagerAdapter.notifyDataSetChanged();
     }
+
+    public void sortNonExpiredCardViewList(ArrayList<MapDataModel> pArray) {
+        Collections.sort(pArray, new Comparator<MapDataModel>() {
+            public int compare(MapDataModel o1, MapDataModel o2) {
+                if (o1.getTimeCreated() != null && o2.getTimeCreated() != null && !o1.isCompleted() && !o2.isCompleted()) {
+                    Date date1 = CommonUtility.convertStringToDateTime(o1.getTimeCreated());
+                    Date date2 = CommonUtility.convertStringToDateTime(o2.getTimeCreated());
+                    if (date1 != null) {
+                        return (-1) * date1.compareTo(date2);
+                    }
+                }
+                return 0;
+            }
+        });
+        mMapViewPagerAdapter.notifyDataSetChanged();
+    }
+
 
     private void setMapModelData(TaskLatLng pTaskLatlng) {
         MapDataModel mapDataModel = new MapDataModel();
@@ -248,9 +265,42 @@ public class CardsDataModel {
     }
 
     public void removeCardListFromView() {
-        int diff = mMapDataModels.size() - mTasksArray.size();
-        if (diff > 0 && mMapViewPagerAdapter != null) {
-            mMapDataModels.subList(diff, mMapDataModels.size()).clear();
+        int count = 0;
+        if (!CommonUtility.getFakeCardOne(mContext)) {
+            count++;
+        }
+        if (!CommonUtility.getFakeCardTwo(mContext)) {
+            count++;
+        }
+        if (!CommonUtility.getFakeCardThree(mContext)) {
+            count++;
+        }
+        mMapDataModels.subList(count + 1, mMapDataModels.size()).clear();
+        if (mMapViewPagerAdapter != null) {
+            mMapViewPagerAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void setListOnUpdationOfTask(Task pTask) {
+        MapDataModel mapDataModel = null;
+        for (int i = 0; i < mTasksArray.size(); i++) {
+            if (mTasksArray.get(i).getTask().getTaskID().equals(pTask.getTaskID())) {
+                if (pTask.isCompleted()) {
+                    mTasksArray.get(i).setTask(pTask);
+                    mapDataModel = getMapModelData(mTasksArray.get(i));
+                }
+                break;
+            }
+        }
+        if (mapDataModel != null) {
+            for (int i = 0; i < mMapDataModels.size(); i++) {
+                if (mMapDataModels.get(i).getTimeCreated() != null && mMapDataModels.get(i).getTimeCreated().equals(mapDataModel.getTimeCreated())) {
+                    mMapDataModels.remove(i);
+                    break;
+                }
+            }
+            mMapDataModels.add(mapDataModel);
+            sortArray(mMapDataModels);
             mMapViewPagerAdapter.notifyDataSetChanged();
         }
     }

@@ -71,4 +71,6 @@
     <string name="notification_help_message">Still need help?</string>
     <string name="notification_new_quest_available">New quest available</string>
     <string name="notification_nearby">Someone has a new quest nearby</string>
+    <string name="notification_posted_message">New Message Posted</string>
+    <string name="notification_someone">Someone posted in</string>
 </resources>

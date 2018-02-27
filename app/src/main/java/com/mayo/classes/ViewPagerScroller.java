@@ -204,7 +204,23 @@ public class ViewPagerScroller {
      * @param pPosition
      */
     public void setLiveCardViewMarker(int pPosition) {
+        CardLatlng cardLatlng;
         for (int count = 0; count < mMapDataModel.size(); count++) {
+            if (mMapDataModel.get(count).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
+                setPostIconSmall(mMapDataModel.get(count).getCardLatlng());
+            } else if (mMapDataModel.get(count).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue()) {
+                cardLatlng = mMapDataModel.get(count).getCardLatlng();
+                cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+            } else if (mMapDataModel.get(count).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
+                cardLatlng = mMapDataModel.get(count).getCardLatlng();
+                cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+            } else if (mMapDataModel.get(count).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
+                cardLatlng = mMapDataModel.get(count).getCardLatlng();
+                cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+            }
             if (mMarker != null) {
                 mMarker.remove();
                 mMarker = null;

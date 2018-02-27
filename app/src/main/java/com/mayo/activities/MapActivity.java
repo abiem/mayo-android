@@ -27,6 +27,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -145,7 +146,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GroundOverlay mCurrentLocationGroundOverlay;
     private Marker mCurrentLocationMarker;
     private ArrayList<UserMarker> mFakeUserMarker;
-    private boolean isMarkerClick = false, isScrollingRight = false;
+    private boolean isMarkerClick = false, isScrollingRight = false, isNewTaskEnter = false;
     private BackgroundLocationService mBackgroundLocationService;
     ArrayList<MapDataModel> mMapDataModels;
     Dialog mDialog;
@@ -167,6 +168,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private RecyclerView mHelpRecyclerView;
     private CardsDataModel mCardsDataModel;
     private TaskTimer mTaskTimer;
+    private FirebaseDatabase mFirebaseDatabase;
 
     @AfterViews
     protected void init() {
@@ -175,6 +177,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mNearByUsers = new HashSet<>();
         mTaskLocationsArray = new ArrayList<>();
         mTasksArray = new ArrayList<>();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ApngImageLoader.getInstance().displayImage("assets://apng/fist_bump_720p.png", mImageHandsViewOnMap);
         mFakeUserMarker = new ArrayList<>();
         mRelativeMapLayout.setFitsSystemWindows(true);
@@ -202,8 +205,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             scrollViewPager();
         }
         if (CommonUtility.getTaskApplied(this) && mTaskTimer == null) {
-            FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
-            firebaseDatabase.setUpdateTimeOfCurrentTask(CommonUtility.getTaskData(this).getTaskID());
+            getFirebaseInstance();
+            mFirebaseDatabase.setUpdateTimeOfCurrentTask(CommonUtility.getTaskData(this).getTaskID());
         }
     }
 
@@ -767,8 +770,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void sendDataToFirebaseOfTaskLocation(Location location, String pTimeStamp) {
         mTaskLocation = location;
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
-        GeoFire geoFire = firebaseDatabase.setTaskLocationWithGeoFire();
+        getFirebaseInstance();
+        GeoFire geoFire = mFirebaseDatabase.setTaskLocationWithGeoFire();
         if (mTaskLocation != null) {
             geoFire.setLocation(pTimeStamp,
                     new GeoLocation(mTaskLocation.getLatitude(), mTaskLocation.getLongitude()));
@@ -783,7 +786,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mNearByUsers.clear();
         mGeoQuery = mGeoFireClass.setGeoQuery(mCurrentLocation);
         mTaskGeoQuery = mGeoFireClass.setGeoQueryForTaskFetch(mCurrentLocation);
-        mCardsDataModel.waitingTimeToFetchTaskArrayList(6000, 1000);
+        mCardsDataModel.waitingTimeToFetchTaskArrayList(8000, 1000);
     }
 
     public void getNearByUsers(String pKey, GeoLocation pGeoLocation) {
@@ -802,17 +805,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void setRealTimeUsers(UsersLocations usersLocations) {
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+        getFirebaseInstance();
         String key = usersLocations.getKey();
         if (usersLocations.getKey().contains("Optional(")) {
             key = key.substring(key.indexOf("(") + 2, key.length() - 2);
-            firebaseDatabase.getUsersCurrentTimeFromFirebase(key, usersLocations, mGoogleMap);
+            mFirebaseDatabase.getUsersCurrentTimeFromFirebase(key, usersLocations, mGoogleMap);
         } else {
-            firebaseDatabase.getUsersCurrentTimeFromFirebase(key, usersLocations, mGoogleMap);
+            mFirebaseDatabase.getUsersCurrentTimeFromFirebase(key, usersLocations, mGoogleMap);
         }
     }
 
-    public void getNearByTask(String pKey, GeoLocation pGeoLocation) {
+    public void getNearByTask(String pKey, GeoLocation pGeoLocation, boolean isNewCardEnter) {
         TaskLocations taskLocations = new TaskLocations();
         taskLocations.setKey(pKey);
         taskLocations.setLatitude(pGeoLocation.latitude);
@@ -822,14 +825,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             return;
         }
         mTaskLocationsArray.add(taskLocations);
+        if (isNewCardEnter) {
+            isNewTaskEnter = isNewCardEnter;
+            getFirebaseInstance();
+            mFirebaseDatabase.getTaskFromFirebase(mTaskLocationsArray.get(mTaskLocationsArray.size() - 1));
+        }
     }
 
     public void fetchAfterNearByTask() {
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+        getFirebaseInstance();
         if (mTaskLocationsArray.size() > 0) {
             for (int i = 0; i < mTaskLocationsArray.size(); i++) {
-                firebaseDatabase.getTaskFromFirebase(mTaskLocationsArray.get(i));
+                mFirebaseDatabase.getTaskFromFirebase(mTaskLocationsArray.get(i));
             }
+        }
+    }
+
+    private void getFirebaseInstance() {
+        if (mFirebaseDatabase == null) {
+            mFirebaseDatabase = new FirebaseDatabase(this);
         }
     }
 
@@ -853,10 +867,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void setListsOfFetchingTask(Task pTask, TaskLocations pTaskLocations) {
+        int count = 0;
         TaskLatLng taskLatLng = new TaskLatLng();
         taskLatLng.setTask(pTask);
         taskLatLng.setTaskLocations(pTaskLocations);
         mTasksArray.add(taskLatLng);
+        if (isNewTaskEnter) {
+            MapDataModel mapDataModel = mCardsDataModel.getMapModelData(taskLatLng);
+            if (!CommonUtility.getFakeCardOne(this)) {
+                count++;
+            }
+            if (!CommonUtility.getFakeCardTwo(this)) {
+                count++;
+            }
+            if (!CommonUtility.getFakeCardThree(this)) {
+                count++;
+            }
+            mMapDataModels.add(count + 1, mapDataModel);
+            mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
+            mCardsDataModel.sortNonExpiredCardViewList(mMapDataModels);
+            isNewTaskEnter = false;
+        }
+    }
+
+    public void updateTaskCardFromViewPager(Task pTask) {
+        mCardsDataModel.setListOnUpdationOfTask(pTask);
     }
 
     private void showFakeMarker() {
@@ -878,7 +913,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     public void moveMarkerOutsideFromCurrentLocation(String pkey) {
         if (pkey.equals(CommonUtility.getUserId(this))) {
-            removeCardsFromViewPager();
             if (mFakeMarker != null) {
                 mFakeMarker.stoptimertask();
             }
@@ -908,7 +942,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mNearByUsers = hashSetUserMarker;
     }
 
-    private void disableLocationDialogView(final int val) {
+    public void disableLocationDialogView(final int val) {
         if (mDialog == null) {
             mDialog = CommonUtility.showCustomDialog(this, R.layout.location_disable_dialog_view);
         }
@@ -947,11 +981,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         break;
                     case R.id.textbutton:
                         if (!pMessage.equals(Constants.sConstantEmptyString)) {
-                            FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
+                            getFirebaseInstance();
                             String startColor = mMapDataModels.get(pPosition).getGradientColor().getStartColor().substring(1);
                             String endColor = mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1);
-                            Task task = firebaseDatabase.setTask(pMessage, this, startColor, endColor);
-                            firebaseDatabase.writeNewTask(task.getTaskID(), task);
+                            Task task = mFirebaseDatabase.setTask(pMessage, this, startColor, endColor);
+                            mFirebaseDatabase.writeNewTask(task.getTaskID(), task);
                             sendDataToFirebaseOfTaskLocation(mCurrentLocation, task.getTaskID());
                             // user applied for task
                             CommonUtility.setTaskApplied(true, MapActivity.this);
@@ -959,7 +993,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             CommonUtility.setTaskLocation(mCurrentLocation, MapActivity.this);
                             // save task data
                             CommonUtility.setTaskData(task, MapActivity.this);
-                            firebaseDatabase.setUpdateTimeOfCurrentTask(task.getTaskID());
+                            mFirebaseDatabase.setUpdateTimeOfCurrentTask(task.getTaskID());
                         }
                         break;
                     case R.id.doneIcon:
@@ -972,7 +1006,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 openChatMessageView(Constants.sConstantEmptyString, false);
                 break;
             case DEFAULT:
-                openChatMessageView(pMessage, true);
+                switch (pView.getId()) {
+                    case R.id.expiryImageView:
+                        openChatMessageView(pMessage, true);
+                        break;
+                    case R.id.canHelped:
+                        openChatMessageView(pMessage, false);
+                        break;
+                }
                 break;
         }
     }
@@ -1019,6 +1060,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (CommonUtility.getTaskApplied(MapActivity.this)) {
                 CommonUtility.setTaskApplied(false, MapActivity.this);
                 task = CommonUtility.getTaskData(this);
+                if (mTaskTimer != null) {
+                    mTaskTimer.stoptimertask();
+                }
                 updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -1073,14 +1117,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         MapDataModel mapDataModel = mCardsDataModel.getMapModelData(taskLatLng);
         mMapDataModels.add(mapDataModel);
         mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
-        mCardsDataModel.sortCardViewList(mMapDataModels);
+        mCardsDataModel.sortExpiredCardViewList(mMapDataModels);
         CommonUtility.setTaskApplied(false, this);
         if (mMapDataModels.size() > 0 && mMapDataModels.get(0).getCardLatlng() != null &&
                 mMapDataModels.get(0).getCardLatlng().getMarker() != null) {
             mMapDataModels.get(0).getCardLatlng().getMarker().remove();
             mMapDataModels.get(0).getCardLatlng().setMarker(null);
         }
-        showLocalNotification(1);
+        if (pMessage.equals(getResources().getString(R.string.STATUS_FOR_TIME_EXPIRED))) {
+            showLocalNotification(1);
+        }
         if (task.isRecentActivity()) {
             Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
             if (dialog != null)
@@ -1107,9 +1153,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void updateTask(boolean pCompleteOrNot, String pCompleteType) {
-        FirebaseDatabase firebaseDatabase = new FirebaseDatabase(this);
-        Task task = firebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this);
-        firebaseDatabase.updateTask(task.getTaskID(), task);
+        getFirebaseInstance();
+        Task task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this);
+        mFirebaseDatabase.updateTask(task.getTaskID(), task);
     }
 
     //this is for fake card

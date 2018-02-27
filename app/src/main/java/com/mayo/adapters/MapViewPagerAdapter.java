@@ -44,7 +44,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     private ArrayList<MapDataModel> mMapDataModelArrayList;
     private ViewClickListener mClickListener;
     private CustomViewPager mCustomViewPager;
-    private TextView mImageTextView, mTextView, mTextViewNew;
+    private TextView mImageTextView, mTextView, mTextViewNew, mCanHelped;
     private LinearLayout mChatPopupLayout, mDoneParentLayout, mPostParentLayout;
     private ImageButton mImageButton, mMessageButton, mDoneButton, mExpiredImageButton;
     private EditText mEditText, mEdiTextNew;
@@ -101,6 +101,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mTextViewNew = (TextView) layout.findViewById(R.id.viewTextOfThree);
                 mCardViewNewCards = (CardView) layout.findViewById(R.id.mapcardViewThree);
                 mExpiredImageButton = (ImageButton) layout.findViewById(R.id.expiryImageView);
+                mCanHelped = (TextView) layout.findViewById(R.id.canHelped);
                 mMapDataModelArrayList.get(position).setCardView(mCardViewNewCards);
                 break;
         }
@@ -156,9 +157,12 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mCardViewNewCards.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
                 if (mMapDataModelArrayList.get(position).isCompleted()) {
                     mExpiredImageButton.setVisibility(View.VISIBLE);
+                    mCanHelped.setVisibility(View.GONE);
                     mExpiredImageButton.setOnClickListener(this);
                 } else {
                     mExpiredImageButton.setVisibility(View.GONE);
+                    mCanHelped.setVisibility(View.VISIBLE);
+                    mCanHelped.setOnClickListener(this);
                 }
                 mTextViewNew.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
@@ -241,6 +245,9 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
             case R.id.expiryImageView:
                 mClickListener.onClick(v, position, mMapDataModelArrayList.get(position).getTextMessage());
                 break;
+            case R.id.canHelped:
+                mClickListener.onClick(v, position, mMapDataModelArrayList.get(position).getTextMessage());
+                break;
         }
     }
 
@@ -319,6 +326,10 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
         switch (v.getId()) {
             case R.id.postEditText:
                 if (hasFocus) {
+                    if (!CommonUtility.isLocationEnabled(mContext)) {
+                        ((MapActivity) mContext).disableLocationDialogView(Constants.PermissionDialog.LocationDialog.ordinal());
+                        return;
+                    }
                     mEditText.setHint("");
                     mEditText.setCursorVisible(true);
                     CommonUtility.setSoftKeyBoardState(true, mContext);

@@ -28,6 +28,7 @@ import com.mayo.models.UsersLocations;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 
 /**
@@ -45,9 +46,11 @@ public class FirebaseDatabase {
     private static final String sTask_Views = "task_views";
     private static final String sChannel = "channels";
     private static final String sUserLocations = "users_locations";
+    private HashMap<String, Task> mHashMap;
 
     public FirebaseDatabase(Context pContext) {
         mContext = pContext;
+        mHashMap = new HashMap();
         //intialize database reference
         initDatabase();
     }
@@ -218,13 +221,18 @@ public class FirebaseDatabase {
 
 
     public void getTaskFromFirebase(final TaskLocations pTaskLocations) {
-        mDatabaseReference.child("tasks").child(pTaskLocations.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+        mDatabaseReference.child("tasks").child(pTaskLocations.getKey()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
                     Task task = dataSnapshot.getValue(Task.class);
                     if (task != null) {
-                        ((MapActivity) mContext).setListsOfFetchingTask(task, pTaskLocations);
+                        if (mHashMap.containsKey(task.getTaskID())) {
+                            ((MapActivity) mContext).updateTaskCardFromViewPager(task);
+                        } else {
+                            mHashMap.put(task.getTaskID(), task);
+                            ((MapActivity) mContext).setListsOfFetchingTask(task, pTaskLocations);
+                        }
                     }
                 }
             }
@@ -235,4 +243,5 @@ public class FirebaseDatabase {
             }
         });
     }
+
 }
