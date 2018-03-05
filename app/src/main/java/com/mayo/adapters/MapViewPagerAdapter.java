@@ -21,15 +21,19 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
 import com.mayo.application.MayoApplication;
 import com.mayo.interfaces.ViewClickListener;
+import com.mayo.models.Location;
 import com.mayo.models.MapDataModel;
 import com.mayo.classes.CustomViewPager;
 import com.mayo.models.Task;
+import com.mayo.models.TaskLatLng;
+import com.mayo.models.TaskLocations;
 
 import java.util.ArrayList;
 
@@ -128,6 +132,15 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     Task task = CommonUtility.getTaskData(mContext);
                     Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getStartColor(), "#" + task.getEndColor(), mContext);
                     mMapDataModelArrayList.get(position).setBackgroundView(drawable);
+                    TaskLatLng taskLatLng = new TaskLatLng();
+                    taskLatLng.setTask(task);
+                    TaskLocations taskLocations = new TaskLocations();
+                    LatLng mCurrentLocation = CommonUtility.getTaskLocation(mContext);
+                    taskLocations.setLongitude(mCurrentLocation.latitude);
+                    taskLocations.setLatitude(mCurrentLocation.longitude);
+                    taskLocations.setKey(task.getTaskID());
+                    taskLatLng.setTaskLocations(taskLocations);
+                    mMapDataModelArrayList.get(position).setTaskLatLng(taskLatLng);
                     mEditText.setText(task.getTaskDescription());
                     requestEditTextNew();
                 }

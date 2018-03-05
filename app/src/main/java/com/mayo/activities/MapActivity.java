@@ -994,6 +994,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             String endColor = mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1);
                             Task task = mFirebaseDatabase.setTask(pMessage, this, startColor, endColor);
                             mFirebaseDatabase.writeNewTask(task.getTaskID(), task);
+                            mFirebaseDatabase.writeNewChannelForCurrentTask(task.getTaskID());
                             TaskLatLng taskLatLng = new TaskLatLng();
                             taskLatLng.setTask(task);
                             TaskLocations taskLocations = new TaskLocations();
@@ -1178,11 +1179,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (pMessage.equals(Constants.sConstantEmptyString)) {
             ChatActivity_.intent(MapActivity.this).start();
         } else {
-//            ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage)
-//                    .extra(Constants.sQuestMessageShow, pExpiredCard).extra(Constants.sCardsData, mMapDataModels.get(pPosition)).start();
             ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage)
-                    .extra(Constants.sQuestMessageShow, pExpiredCard).start();
-
+                    .extra(Constants.sQuestMessageShow, pExpiredCard).extra(Constants.sCardsData, mMapDataModels.get(pPosition)).start();
         }
         overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }

@@ -102,8 +102,8 @@ public class ChatActivity extends AppCompatActivity {
         } else {
             setActionBar(Constants.sConstantEmptyString);
         }
-        getFirebaseInstance();
         setRecyclerView();
+        getFirebaseInstance();
     }
 
     private void setRecyclerView() {
@@ -147,6 +147,9 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        if (mFirebaseDatabase != null) {
+            mFirebaseDatabase.removeMessageListener();
+        }
         finish();
         super.onBackPressed();
     }
@@ -158,11 +161,12 @@ public class ChatActivity extends AppCompatActivity {
             if (pBundle != null) {
                 mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
                         mMessageChatText.getText().toString().trim();
-                if (mMapDataModel != null) {
+                if (mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
                     Task task = mMapDataModel.getTaskLatLng().getTask();
-                    mFirebaseDatabase.writeNewChannel(task.getTaskID(),
-                            mFirebaseDatabase.getChannel(CommonUtility.getUserId(this)),
-                            mFirebaseDatabase.setMessage(CommonUtility.getUserId(this), mMessageText, "0"));
+                    if (task != null) {
+                        mFirebaseDatabase.setMessage(CommonUtility.getUserId(this),
+                                mMessageText, task.getTaskID());
+                    }
                 }
             } else {
                 mMessageText = mMessageChatText.getText().toString().trim();
@@ -190,7 +194,7 @@ public class ChatActivity extends AppCompatActivity {
         mMessage.setText(pMessageText);
         mMessage.setDateCreated(CommonUtility.timeFormat(new Date().getTime()));
         mMessage.setSenderId(userType.name());
-        mMessage.setMessageFromLocalDevice(true);
+        mMessage.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
         mMessage.setUserType(userType);
         mMessageList.add(mMessage);
 
@@ -203,7 +207,7 @@ public class ChatActivity extends AppCompatActivity {
             public void run() {
                 Message message = new Message();
                 message.setText(Constants.sSmileCode + Constants.sConstantSpaceString + getResources().getString(R.string.wooho)); // 10 spaces;
-                message.setMessageFromLocalDevice(false);
+                message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
                 message.setDateCreated(CommonUtility.timeFormat(new Date().getTime()));
                 message.setUserType(Constants.UserType.SELF);
                 mMessageList.add(message);
@@ -263,6 +267,10 @@ public class ChatActivity extends AppCompatActivity {
     private void getFirebaseInstance() {
         if (mFirebaseDatabase == null) {
             mFirebaseDatabase = new FirebaseDatabase(this);
+            mFirebaseDatabase.currentUserColorIndex = -1;
+            if (mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
+                mFirebaseDatabase.getMessagesFromFirebase(mMapDataModel.getTaskLatLng().getTask().getTaskID(), mChatAdapter, mMessageList);
+            }
         }
     }
 }

@@ -13,14 +13,24 @@ public class Message {
     private String senderId;
     private String senderName;
     private String text;
-    private boolean messageFromLocalDevice;
+//    private boolean messageFromLocalDevice;
+    private Constants.MessageFromLocalDevice messageFromLocalDevice;
     private Constants.UserType userType;
 
-    public boolean isMessageFromLocalDevice() {
+//    public boolean isMessageFromLocalDevice() {
+//        return messageFromLocalDevice;
+//    }
+//
+//    public void setMessageFromLocalDevice(boolean messageFromLocalDevice) {
+//        this.messageFromLocalDevice = messageFromLocalDevice;
+//    }
+
+
+    public Constants.MessageFromLocalDevice getMessageFromLocalDevice() {
         return messageFromLocalDevice;
     }
 
-    public void setMessageFromLocalDevice(boolean messageFromLocalDevice) {
+    public void setMessageFromLocalDevice(Constants.MessageFromLocalDevice messageFromLocalDevice) {
         this.messageFromLocalDevice = messageFromLocalDevice;
     }
 

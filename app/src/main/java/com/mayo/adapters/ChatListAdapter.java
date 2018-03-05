@@ -115,7 +115,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public int getItemViewType(int position) {
         Message message = mMessages.get(position);
-        if (message.isMessageFromLocalDevice()) {
+        if (message.getMessageFromLocalDevice().name().equals(Constants.sYes)) {
             return message.getUserType().ordinal(); //sender
         }
         return message.getUserType().ordinal();  //receiver

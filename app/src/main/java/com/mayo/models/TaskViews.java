@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class TaskViews {
     private int count;
-    private ArrayList<UserId> userIds;
+    private ArrayList<Users> users;
 
     public int getCount() {
         return count;
@@ -18,11 +18,11 @@ public class TaskViews {
         this.count = count;
     }
 
-    public ArrayList<UserId> getUserIds() {
-        return userIds;
+    public ArrayList<Users> getUsers() {
+        return users;
     }
 
-    public void setUserIds(ArrayList<UserId> userIds) {
-        this.userIds = userIds;
+    public void setUsers(ArrayList<Users> users) {
+        this.users = users;
     }
 }

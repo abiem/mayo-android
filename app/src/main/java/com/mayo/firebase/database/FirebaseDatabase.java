@@ -18,19 +18,20 @@ import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
-import com.mayo.models.Channel;
+import com.mayo.adapters.ChatListAdapter;
 import com.mayo.models.Message;
 import com.mayo.models.Task;
 import com.mayo.models.TaskLocations;
 import com.mayo.models.TaskViews;
-import com.mayo.models.UserId;
 import com.mayo.models.UserMarker;
-import com.mayo.models.Users;
+import com.mayo.models.UserData;
 import com.mayo.models.UsersLocations;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -49,10 +50,17 @@ public class FirebaseDatabase {
     private static final String sChannel = "channels";
     private static final String sUserLocations = "users_locations";
     private HashMap<String, Task> mHashMap;
+    private HashMap mMessageHashMap;
+    public int currentUserColorIndex = -1;
+    private boolean currentUserIsInConversation = false;
+    private int usersCountAndNewColorIndex;
+    private ValueEventListener mMessagelistener;
+    private boolean sendMessageFromLocalDevice = false;
 
     public FirebaseDatabase(Context pContext) {
         mContext = pContext;
         mHashMap = new HashMap<>();
+        mMessageHashMap = new HashMap();
         //intialize database reference
         initDatabase();
     }
@@ -74,11 +82,16 @@ public class FirebaseDatabase {
         mDatabaseReference.child(sTask_Views).child(pTimeStamp).setValue(pTaskView);
     }
 
-    public void writeNewChannel(String pTimeStamp, Channel pChannel, Message pMessage) {
-        mDatabaseReference.child(sChannel).child(pTimeStamp).setValue(pChannel);
+    public void writeNewChannel(String pTimeStamp, Message pMessage) {
+        mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").child(CommonUtility.getUserId(mContext))
+                .setValue(Integer.parseInt(pMessage.getColorIndex()));
         mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").push().setValue(pMessage);
     }
 
+    public void writeNewChannelForCurrentTask(String pTimeStamp) {
+        mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").child(CommonUtility.getUserId(mContext))
+                .setValue(0);
+    }
 
     public void updateTask(String pTimeStamp, Task pTask) {
         mDatabaseReference.child(swriteNew_UpdateTask).child(pTimeStamp).setValue(pTask);
@@ -98,27 +111,113 @@ public class FirebaseDatabase {
         return mTaskGeoFire;
     }
 
-    public void writeNewUser(Users pUser) {
+    public void writeNewUser(UserData pUser) {
         mDatabaseReference.child("users").setValue(pUser);
     }
 
-    public Channel getChannel(String pSenderId) {
-        UserId userId = new UserId();
-        userId.setUser(pSenderId);
 
-        Channel channel = new Channel();
-        channel.setUserId(userId);
-        return channel;
+    public void setMessage(final String pSenderId, final String pMessage, final String pTimeStamp) {
+        if (currentUserColorIndex == -1) {
+            mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    HashMap usersValue = (HashMap) dataSnapshot.getValue();
+                    if (usersValue != null) {
+                        for (Object o : usersValue.entrySet()) {
+                            Map.Entry pair = (Map.Entry) o;
+                            if (pair.getKey().equals(CommonUtility.getUserId(mContext))) {
+                                currentUserColorIndex = Integer.parseInt(pair.getValue().toString());
+                                currentUserIsInConversation = true;
+                                break;
+                            }
+                        }
+
+                        // if the user is not in the conversation
+                        if (!currentUserIsInConversation) {
+                            usersCountAndNewColorIndex = usersValue.size();
+                            //save the index
+                            currentUserColorIndex = usersCountAndNewColorIndex;
+                        }
+                        Message message = setMessageData(pSenderId, pMessage);
+                        sendMessageFromLocalDevice = true;
+                        writeNewChannel(pTimeStamp, message);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        } else {
+            Message message = setMessageData(pSenderId, pMessage);
+            writeNewChannel(pTimeStamp, message);
+        }
     }
 
-    public Message setMessage(String pSenderId, String pMessage, String pColorIndex) {
+    private Message setMessageData(String pSenderId, String pMessage) {
         Message message = new Message();
-        message.setColorIndex(pColorIndex);
+        message.setColorIndex(String.valueOf(currentUserColorIndex));
         message.setDateCreated(CommonUtility.getLocalTime());
         message.setSenderId(pSenderId);
         message.setSenderName(Constants.sConstantEmptyString);
         message.setText(pMessage);
         return message;
+    }
+
+    public void getMessagesFromFirebase(String pTimeStamp, final ChatListAdapter pChatAdapter, final ArrayList<Message> pMessageList) {
+        mMessagelistener = mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap messageHashList = (HashMap) dataSnapshot.getValue();
+                    if (messageHashList != null) {
+                        for (Object o : messageHashList.entrySet()) {
+                            Map.Entry pair = (Map.Entry) o;
+                            try {
+                                if (!mMessageHashMap.containsKey(pair.getKey())) {
+                                    HashMap messageGet = (HashMap) pair.getValue();
+                                    if (messageGet != null) {
+                                        Message message = new Message();
+                                        message.setColorIndex(messageGet.get("colorIndex").toString());
+                                        message.setDateCreated(messageGet.get("dateCreated").toString());
+                                        message.setSenderId(messageGet.get("senderId").toString());
+                                        message.setSenderName(messageGet.get("senderName").toString());
+                                        if (sendMessageFromLocalDevice) {
+                                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
+                                            message.setUserType(Constants.UserType.OTHER);
+                                        } else {
+                                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
+                                            message.setUserType(Constants.UserType.SELF);
+                                        }
+                                        message.setText(messageGet.get("text").toString());
+                                        pMessageList.add(message);
+                                    }
+                                    if (!sendMessageFromLocalDevice)
+                                        mMessageHashMap.put(pair.getKey(), pair.getValue());
+                                }
+                            } catch (Exception e) {
+                                e.getMessage();
+                            }
+                        }
+                        if (pChatAdapter != null) {
+                            pChatAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void removeMessageListener() {
+        if (mMessagelistener != null) {
+            mDatabaseReference.removeEventListener(mMessagelistener);
+        }
     }
 
     public Task setTask(String pMessage, Context pContext, String pStartColor, String pEndColor) {

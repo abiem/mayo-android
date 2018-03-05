@@ -1,9 +1,7 @@
 package com.mayo.firebase.auth;
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -13,10 +11,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
-import com.mayo.firebase.database.FirebaseDatabase;
-import com.mayo.models.Users;
-
-import java.util.Date;
 
 /**
  * Created by Lakshmikodali on 15/01/18.

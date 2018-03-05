@@ -10,14 +10,14 @@ import java.io.Serializable;
  */
 
 public class MapDataModel implements Serializable {
-    private Drawable backgroundView;
+    private transient Drawable backgroundView;
     private GradientColor gradientColor;
     private String textMessage;
     private String buttonMessage;
     private int fakeCardPosition;
     private boolean isFakeCard;
-    private CardView cardView;
-    private CardLatlng cardLatlng;
+    private transient CardView cardView;
+    private transient CardLatlng cardLatlng;
     private boolean completed;
     private String timeCreated;
     private TaskLatLng taskLatLng;

@@ -302,7 +302,8 @@ public class CardsDataModel {
             }
             mMapDataModels.add(mapDataModel);
             sortArray(mMapDataModels);
-            mMapViewPagerAdapter.notifyDataSetChanged();
+            if (mMapViewPagerAdapter != null)
+                mMapViewPagerAdapter.notifyDataSetChanged();
         }
     }
 }
