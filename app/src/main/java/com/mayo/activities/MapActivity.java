@@ -99,6 +99,7 @@ import org.androidannotations.annotations.ViewById;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 
 import static com.mayo.Utility.CommonUtility.isLocationEnabled;
@@ -170,6 +171,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private CardsDataModel mCardsDataModel;
     private TaskTimer mTaskTimer;
     private FirebaseDatabase mFirebaseDatabase;
+    private Date lastUpdateTime;
 
     @AfterViews
     protected void init() {
@@ -281,13 +283,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mViewPagerMap.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                if (position + positionOffset > sumPositionAndPositionOffset) {
-                    //swipe from right to left
-                    isScrollingRight = false;
-                } else {
-                    //swipe from left to right
-                    isScrollingRight = true;
-                }
+                isScrollingRight = !(position + positionOffset > sumPositionAndPositionOffset);
                 sumPositionAndPositionOffset = position + positionOffset;
             }
 
@@ -359,6 +355,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMapViewPagerAdapter = new MapViewPagerAdapter(this, mMapDataModels, this, mViewPagerMap, this, mMayoApplication);
         if (mCardsDataModel != null) {
             mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
+        }
+        if (mShownCardMarker != null) {
+            mShownCardMarker.getAnotherUsersLiveMarker();
         }
         mViewPagerMap.setAdapter(mMapViewPagerAdapter);
         if (!CommonUtility.getFakeCardShownOrNot(this)) {
@@ -630,6 +629,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDTHREE.getValue());
                             mViewPagerScroller.clearExpireCardMarker();
                             break;
+                        case DEFAULT:
+                            mMarkerClick.getCardMarker();
+                            break;
 
                     }
                 }
@@ -757,6 +759,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         CommonUtility.setUserLocation(mCurrentLocation, this);
         addCurrentLocationMarker(mCurrentLocation);
         sendDataToFirebaseOfUserLocation(location);
+        Date currentTime = CommonUtility.getCurrentTime();
+        getFirebaseInstance();
+        if (lastUpdateTime == null) {
+            lastUpdateTime = currentTime;
+            sendUsersDataToFirebase();
+        } else {
+            if (currentTime != null) {
+                long timeDifference = currentTime.getTime() - lastUpdateTime.getTime();
+                if (timeDifference > Constants.sLocationUpdateTime) {
+                    lastUpdateTime = currentTime;
+                    mFirebaseDatabase.writeNewUserLocation(CommonUtility.getUserId(this), mCurrentLocation);
+                }
+            }
+        }
+    }
+
+    private void sendUsersDataToFirebase() {
+        if (CommonUtility.getFakeCardShownOrNot(this)) {
+            mFirebaseDatabase.writeNewUserData(CommonUtility.getUserId(this), CommonUtility.getLocalTime(),
+                    CommonUtility.getDeviceToken(this), false, mCurrentLocation);
+        } else {
+            mFirebaseDatabase.writeNewUserData(CommonUtility.getUserId(this), CommonUtility.getLocalTime(),
+                    CommonUtility.getDeviceToken(this), true, mCurrentLocation);
+        }
     }
 
     /**
@@ -764,6 +790,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      *
      * @param location current location of user send to firebase using geoquery
      */
+
     private void sendDataToFirebaseOfUserLocation(Location location) {
         mGeoFireClass.sendDataToFirebaseOfUserLocation(location);
     }
@@ -995,6 +1022,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             Task task = mFirebaseDatabase.setTask(pMessage, this, startColor, endColor);
                             mFirebaseDatabase.writeNewTask(task.getTaskID(), task);
                             mFirebaseDatabase.writeNewChannelForCurrentTask(task.getTaskID());
+                            mFirebaseDatabase.writeTaskCreatedInUserNode(CommonUtility.getUserId(this), task.getTaskID());
                             TaskLatLng taskLatLng = new TaskLatLng();
                             taskLatLng.setTask(task);
                             TaskLocations taskLocations = new TaskLocations();
@@ -1175,7 +1203,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mFirebaseDatabase.updateTask(task.getTaskID(), task);
     }
 
-     public void openChatMessageView(String pMessage, boolean pExpiredCard, int pPosition) {
+    public void openChatMessageView(String pMessage, boolean pExpiredCard, int pPosition) {
         if (pMessage.equals(Constants.sConstantEmptyString)) {
             ChatActivity_.intent(MapActivity.this).start();
         } else {

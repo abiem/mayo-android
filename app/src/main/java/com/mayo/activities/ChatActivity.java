@@ -85,6 +85,7 @@ public class ChatActivity extends AppCompatActivity {
     ChatListAdapter mChatAdapter;
     LinearLayoutManager mLayoutManager;
     FirebaseDatabase mFirebaseDatabase;
+    String mColorIndex;
 
 
     private ArrayList<Message> mMessageList = new ArrayList<>();
@@ -158,26 +159,37 @@ public class ChatActivity extends AppCompatActivity {
     protected void sendMessageFromUser() {
         if (!mMessageChatText.getText().toString().trim().isEmpty()) {
             // If we post a message in our created task then we need to add smily to it else post a message
-            if (pBundle != null) {
-                mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
-                        mMessageChatText.getText().toString().trim();
-                if (mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
-                    Task task = mMapDataModel.getTaskLatLng().getTask();
-                    if (task != null) {
-                        mFirebaseDatabase.setMessage(CommonUtility.getUserId(this),
-                                mMessageText, task.getTaskID());
-                    }
+            if (pBundle != null && mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
+                Task task = mMapDataModel.getTaskLatLng().getTask();
+                Task taskData = CommonUtility.getTaskData(this);
+                if (CommonUtility.getTaskApplied(this) && taskData.getTaskID().equals(task.getTaskID())) {
+                    mColorIndex = "0";
+                    mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
+                            mMessageChatText.getText().toString().trim();
+                } else {
+                    mMessageText = mMessageChatText.getText().toString().trim();
                 }
+                if (task != null) {
+                    mFirebaseDatabase.setMessage(this, CommonUtility.getUserId(this),
+                            mMessageText, task.getTaskID());
+                }
+
             } else {
+                mColorIndex = "0";
                 mMessageText = mMessageChatText.getText().toString().trim();
+                sendMessagesToUser(mColorIndex);
             }
-            sendMessage(mMessageText, Constants.UserType.OTHER);
+
             mMessageChatText.setText("");
             if (pBundle == null) {
                 execSchedular();
             }
         }
         mChatRecyclerView.scrollToPosition(mChatAdapter.getItemCount() - 1);
+    }
+
+    public void sendMessagesToUser(String pColorIndex) {
+        sendMessage(mMessageText, Constants.UserType.OTHER, pColorIndex);
     }
 
 
@@ -189,13 +201,14 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void sendMessage(String pMessageText, Constants.UserType userType) {
+    private void sendMessage(String pMessageText, Constants.UserType userType, String pColorIndex) {
         mMessage = new Message();
         mMessage.setText(pMessageText);
         mMessage.setDateCreated(CommonUtility.timeFormat(new Date().getTime()));
         mMessage.setSenderId(userType.name());
         mMessage.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
         mMessage.setUserType(userType);
+        mMessage.setColorIndex(pColorIndex);
         mMessageList.add(mMessage);
 
     }
@@ -209,6 +222,7 @@ public class ChatActivity extends AppCompatActivity {
                 message.setText(Constants.sSmileCode + Constants.sConstantSpaceString + getResources().getString(R.string.wooho)); // 10 spaces;
                 message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
                 message.setDateCreated(CommonUtility.timeFormat(new Date().getTime()));
+                message.setColorIndex("0");
                 message.setUserType(Constants.UserType.SELF);
                 mMessageList.add(message);
 
@@ -266,10 +280,10 @@ public class ChatActivity extends AppCompatActivity {
 
     private void getFirebaseInstance() {
         if (mFirebaseDatabase == null) {
-            mFirebaseDatabase = new FirebaseDatabase(this);
+            mFirebaseDatabase = new  FirebaseDatabase(this);
             mFirebaseDatabase.currentUserColorIndex = -1;
             if (mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
-                mFirebaseDatabase.getMessagesFromFirebase(mMapDataModel.getTaskLatLng().getTask().getTaskID(), mChatAdapter, mMessageList);
+                mFirebaseDatabase.getMessagesFromFirebase(mMapDataModel.getTaskLatLng().getTask().getTaskID(), mChatAdapter, mMessageList, mChatRecyclerView);
             }
         }
     }
