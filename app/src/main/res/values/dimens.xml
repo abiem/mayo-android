@@ -88,4 +88,6 @@
     <dimen name="scale_70">-70dp</dimen>
     <dimen name="scale_40">-40dp</dimen>
 
+    <!--Line Spacing-->
+    <dimen name="ln_sp_2">2dp</dimen>
 </resources>

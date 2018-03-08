@@ -204,6 +204,7 @@ public class CardsDataModel {
         cardLatlng.setLatLng(new LatLng(pTaskLatlng.getTaskLocations().getLatitude(),
                 pTaskLatlng.getTaskLocations().getLongitude()));
         mapDataModel.setCardLatlng(cardLatlng);
+        mapDataModel.setTaskLatLng(pTaskLatlng);
         Drawable drawable;
         if (pTaskLatlng.getTask().isCompleted()) {
             gradientColor.setStartColor(CardColor.expireCard[0]);
@@ -218,7 +219,6 @@ public class CardsDataModel {
             drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getEndColor(),
                     "#" + pTaskLatlng.getTask().getStartColor(), mContext);
             mapDataModel.setBackgroundView(drawable);
-            mapDataModel.setTaskLatLng(pTaskLatlng);
             mMapDataModels.add(mapDataModel);
         }
     }
@@ -237,6 +237,7 @@ public class CardsDataModel {
         cardLatlng.setLatLng(new LatLng(pTaskLatlng.getTaskLocations().getLatitude(),
                 pTaskLatlng.getTaskLocations().getLongitude()));
         mapDataModel.setCardLatlng(cardLatlng);
+        mapDataModel.setTaskLatLng(pTaskLatlng);
         Drawable drawable;
         if (pTaskLatlng.getTask().isCompleted()) {
             gradientColor.setStartColor(CardColor.expireCard[0]);
@@ -296,6 +297,7 @@ public class CardsDataModel {
         if (mapDataModel != null) {
             for (int i = 0; i < mMapDataModels.size(); i++) {
                 if (mMapDataModels.get(i).getTimeCreated() != null && mMapDataModels.get(i).getTimeCreated().equals(mapDataModel.getTimeCreated())) {
+                    mMapDataModels.get(i).getCardLatlng().getMarker().remove();
                     mMapDataModels.remove(i);
                     break;
                 }

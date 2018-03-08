@@ -70,4 +70,11 @@ public class MarkerClick {
             }
         }
     }
+
+    public void getCardMarker(int pPosition) {
+        if (mMapDataModels.get(pPosition).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue() &&
+                !mMapDataModels.get(pPosition).getTaskLatLng().getTask().isCompleted()) {
+            mCustomMapView.setCurrentItem(pPosition);
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.mayo.models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Lakshmikodali on 17/01/18.
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 
 public class TaskCreated {
     private int count;
-    private ArrayList<TaskId> tasks;
+    private HashMap<String,TaskId> tasks;
 
     public int getCount() {
         return count;
@@ -18,11 +19,11 @@ public class TaskCreated {
         this.count = count;
     }
 
-    public ArrayList<TaskId> getTasks() {
+    public HashMap<String, TaskId> getTasks() {
         return tasks;
     }
 
-    public void setTasks(ArrayList<TaskId> tasks) {
+    public void setTasks(HashMap<String, TaskId> tasks) {
         this.tasks = tasks;
     }
 }

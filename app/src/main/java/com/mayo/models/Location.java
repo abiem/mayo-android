@@ -11,19 +11,19 @@ public class Location {
 
     private String updatedAt;
 
-    public double getLatitude() {
+    public double getLat() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLat(double latitude) {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public double getLong() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLong(double longitude) {
         this.longitude = longitude;
     }
 

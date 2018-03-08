@@ -3,6 +3,7 @@ package com.mayo.firebase.database;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.RecyclerView;
 
 import com.firebase.geofire.GeoFire;
 import com.google.android.gms.maps.GoogleMap;
@@ -10,6 +11,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -17,11 +19,16 @@ import com.google.firebase.database.ValueEventListener;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
+import com.mayo.activities.ChatActivity;
 import com.mayo.activities.MapActivity;
 import com.mayo.adapters.ChatListAdapter;
+import com.mayo.models.Location;
 import com.mayo.models.Message;
+import com.mayo.models.ScoreDetail;
 import com.mayo.models.Task;
+import com.mayo.models.TaskCreated;
 import com.mayo.models.TaskLocations;
+import com.mayo.models.TaskParticipated;
 import com.mayo.models.TaskViews;
 import com.mayo.models.UserMarker;
 import com.mayo.models.UserData;
@@ -54,13 +61,16 @@ public class FirebaseDatabase {
     public int currentUserColorIndex = -1;
     private boolean currentUserIsInConversation = false;
     private int usersCountAndNewColorIndex;
-    private ValueEventListener mMessagelistener;
+    private ChildEventListener mMessagelistener;
     private boolean sendMessageFromLocalDevice = false;
+    private HashMap locationHashMap;
+    private int locationHashMapValue = 0;
 
     public FirebaseDatabase(Context pContext) {
         mContext = pContext;
         mHashMap = new HashMap<>();
         mMessageHashMap = new HashMap();
+        locationHashMap = new HashMap<>();
         //intialize database reference
         initDatabase();
     }
@@ -78,11 +88,58 @@ public class FirebaseDatabase {
         return new GeoFire(mDatabaseReference.child(sTask_location));
     }
 
-    public void setTaskViewsByUsers(String pTimeStamp, TaskViews pTaskView) {
-        mDatabaseReference.child(sTask_Views).child(pTimeStamp).setValue(pTaskView);
+    public void setTaskViewsByUsers(final String pTimeStamp) {
+        mDatabaseReference.child(sTask_Views).child(pTimeStamp).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                TaskViews taskViews = null;
+                int count = 0;
+                boolean isCountAdded = true;
+                if (dataSnapshot.getValue() != null) {
+                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
+                    ArrayList arrayListTaskView = new ArrayList();
+                    if (hashMap.containsKey("users")) {
+                        ArrayList arrayList = (ArrayList) hashMap.get("users");
+                        if (arrayList != null) {
+                            count = arrayList.size();
+                            for (int i = 0; i < arrayList.size(); i++) {
+                                arrayListTaskView.add(arrayList.get(i));
+                                if (arrayList.get(i).equals(CommonUtility.getUserId(mContext))) {
+                                    isCountAdded = false;
+                                }
+                            }
+                        }
+                    }
+                    if (isCountAdded) {
+                        taskViews = new TaskViews();
+                        taskViews.setCount(count + 1);
+                        arrayListTaskView.add(CommonUtility.getUserId(mContext));
+                        taskViews.setUsers(arrayListTaskView);
+                    }
+                } else {
+                    taskViews = setTaskViewByUser(1);
+                }
+                if (taskViews != null)
+                    mDatabaseReference.child(sTask_Views).child(pTimeStamp).setValue(taskViews);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
-    public void writeNewChannel(String pTimeStamp, Message pMessage) {
+    private TaskViews setTaskViewByUser(int count) {
+        TaskViews taskViews = new TaskViews();
+        taskViews.setCount(count);
+        ArrayList arrayList = new ArrayList();
+        arrayList.add(CommonUtility.getUserId(mContext));
+        taskViews.setUsers(arrayList);
+        return taskViews;
+    }
+
+    private void writeNewChannel(String pTimeStamp, Message pMessage) {
         mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").child(CommonUtility.getUserId(mContext))
                 .setValue(Integer.parseInt(pMessage.getColorIndex()));
         mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").push().setValue(pMessage);
@@ -111,12 +168,269 @@ public class FirebaseDatabase {
         return mTaskGeoFire;
     }
 
-    public void writeNewUser(UserData pUser) {
-        mDatabaseReference.child("users").setValue(pUser);
+    public void writeNewUserData(final String pUserId, final String pUpdateTime, final String pDeviceToken, final boolean pDemoTaskShownTrue, final android.location.Location pLocation) {
+        mDatabaseReference.child("users").child(pUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap hashMapUserData = (HashMap) dataSnapshot.getValue();
+                    UserData userData = new UserData();
+                    if (hashMapUserData.containsKey("taskCreated")) {
+                        HashMap hashMapTaskCreated = (HashMap) hashMapUserData.get("taskCreated");
+                        TaskCreated taskCreated = new TaskCreated();
+                        taskCreated.setCount(Integer.parseInt(hashMapTaskCreated.get("count").toString()));
+                        ArrayList arraylistTasksFetch = (ArrayList) hashMapTaskCreated.get("tasks");
+                        HashMap hashMap = new HashMap();
+                        for (int i = 0; i < arraylistTasksFetch.size(); i++) {
+                            hashMap.put(String.valueOf(i), arraylistTasksFetch.get(i));
+                        }
+                        taskCreated.setTasks(hashMap);
+                        userData.setTaskCreated(taskCreated);
+
+                    }
+                    userData.setDeviceToken(pDeviceToken);
+                    userData.setUpdatedAt(pUpdateTime);
+                    userData.setDemoTaskShown(pDemoTaskShownTrue);
+                    Location location = new Location();
+                    location.setLat(pLocation.getLatitude());
+                    location.setLong(pLocation.getLongitude());
+                    location.setUpdatedAt(CommonUtility.getLocalTime());
+                    locationHashMap.put(String.valueOf(locationHashMapValue), location);
+                    userData.setLocation(locationHashMap);
+                    mDatabaseReference.child("users").child(pUserId).setValue(userData);
+                    locationHashMapValue++;
+                } else {
+                    setUserData(pUserId, pUpdateTime, pDeviceToken, pDemoTaskShownTrue, pLocation);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private UserData setUserData(final String pUserId, final String pUpdateTime, final String pDeviceToken, final boolean pDemoTaskShownTrue, final android.location.Location pLocation) {
+        UserData userData = new UserData();
+        userData.setDeviceToken(pDeviceToken);
+        userData.setUpdatedAt(pUpdateTime);
+        userData.setDemoTaskShown(pDemoTaskShownTrue);
+        Location location = new Location();
+        location.setLat(pLocation.getLatitude());
+        location.setLong(pLocation.getLongitude());
+        location.setUpdatedAt(CommonUtility.getLocalTime());
+        locationHashMap.put(String.valueOf(locationHashMapValue), location);
+        userData.setLocation(locationHashMap);
+        mDatabaseReference.child("users").child(pUserId).setValue(userData);
+        locationHashMapValue++;
+        return userData;
+    }
+
+    public void writeNewUserLocation(final String pUserId, final android.location.Location pLocation) {
+        mDatabaseReference.child("users").child(pUserId).child("location").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    if (dataSnapshot.getChildrenCount() > 4 && locationHashMapValue == 5) {
+                        locationHashMapValue = 0;
+                    }
+                    Location location = new Location();
+                    location.setLat(pLocation.getLatitude());
+                    location.setLong(pLocation.getLongitude());
+                    location.setUpdatedAt(CommonUtility.getLocalTime());
+                    locationHashMap.put(String.valueOf(locationHashMapValue), location);
+                    mDatabaseReference.child("users").child(pUserId).child("location").updateChildren(locationHashMap);
+                    locationHashMapValue++;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void writeTaskParticipated(final String pUserId, final String pTaskId) {
+        mDatabaseReference.child("users").child(pUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap hashMapUserData = (HashMap) dataSnapshot.getValue();
+                    UserData userData = new UserData();
+                    if (hashMapUserData != null) {
+                        if (hashMapUserData.containsKey("demoTaskShown")) {
+                            userData.setDemoTaskShown(Boolean.parseBoolean(hashMapUserData.get("demoTaskShown").toString()));
+                        }
+                        if (hashMapUserData.containsKey("updatedAt")) {
+                            userData.setUpdatedAt(hashMapUserData.get("updatedAt").toString());
+                        }
+                        if (hashMapUserData.containsKey("deviceToken")) {
+                            userData.setDeviceToken(hashMapUserData.get("deviceToken").toString());
+                        }
+                        if (hashMapUserData.containsKey("score")) {
+                            userData.setScore(Integer.parseInt(hashMapUserData.get("score").toString()));
+                        }
+                        if (hashMapUserData.containsKey("location")) {
+                            ArrayList arrayListLocation = (ArrayList) hashMapUserData.get("location");
+                            HashMap<String, Location> hashMapArrayLocation = new HashMap<>();
+                            for (int i = 0; i < arrayListLocation.size(); i++) {
+                                HashMap hashMap = (HashMap) arrayListLocation.get(i);
+                                Location location = new Location();
+                                location.setLat(Double.parseDouble(hashMap.get("lat").toString()));
+                                location.setLong(Double.parseDouble(hashMap.get("long").toString()));
+                                location.setUpdatedAt(hashMap.get("updatedAt").toString());
+                                hashMapArrayLocation.put(String.valueOf(i), location);
+                            }
+                            userData.setLocation(hashMapArrayLocation);
+                        }
+                        if (hashMapUserData.containsKey("taskParticipated")) {
+                            boolean isNewTaskParticipated = true;
+                            HashMap hashMapTaskParticipated = (HashMap) hashMapUserData.get("taskParticipated");
+                            TaskParticipated taskParticipated = new TaskParticipated();
+                            taskParticipated.setCount(Integer.parseInt(hashMapTaskParticipated.get("count").toString()) + 1);
+                            ArrayList arraylistTasksFetch = (ArrayList) hashMapTaskParticipated.get("tasks");
+                            HashMap hashMap = new HashMap();
+                            for (int i = 0; i < arraylistTasksFetch.size(); i++) {
+                                hashMap.put(String.valueOf(i), arraylistTasksFetch.get(i));
+                                if (arraylistTasksFetch.get(i).equals(pTaskId)) {
+                                    isNewTaskParticipated = false;
+                                    taskParticipated.setCount(Integer.parseInt(hashMapTaskParticipated.get("count").toString()));
+                                }
+                            }
+                            if (isNewTaskParticipated) {
+                                hashMap.put(String.valueOf(arraylistTasksFetch.size()), pTaskId);
+                            }
+                            taskParticipated.setTasks(hashMap);
+                            userData.setTaskParticipated(taskParticipated);
+                        } else {
+                            TaskParticipated taskParticipated = new TaskParticipated();
+                            taskParticipated.setCount(1);
+                            HashMap hashMap = new HashMap();
+                            hashMap.put(String.valueOf(0), pTaskId);
+                            taskParticipated.setTasks(hashMap);
+                            userData.setTaskParticipated(taskParticipated);
+                        }
+                        if (hashMapUserData.containsKey("scoreDetail")) {
+
+                        }
+                        if (hashMapUserData.containsKey("taskCreated")) {
+                            HashMap hashMapTaskCreated = (HashMap) hashMapUserData.get("taskCreated");
+                            TaskCreated taskCreated = new TaskCreated();
+                            taskCreated.setCount(Integer.parseInt(hashMapTaskCreated.get("count").toString()));
+                            ArrayList arraylistTasksFetch = (ArrayList) hashMapTaskCreated.get("tasks");
+                            HashMap hashMap = new HashMap();
+                            for (int i = 0; i < arraylistTasksFetch.size(); i++) {
+                                hashMap.put(String.valueOf(i), arraylistTasksFetch.get(i));
+                            }
+                            taskCreated.setTasks(hashMap);
+                            userData.setTaskCreated(taskCreated);
+
+                        }
+                        mDatabaseReference.child("users").child(pUserId).setValue(userData);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
-    public void setMessage(final String pSenderId, final String pMessage, final String pTimeStamp) {
+    public void writeTaskCreatedInUserNode(final String pUserId, final String pTaskId) {
+        mDatabaseReference.child("users").child(pUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap hashMapUserData = (HashMap) dataSnapshot.getValue();
+                    UserData userData = new UserData();
+                    if (hashMapUserData != null) {
+                        if (hashMapUserData.containsKey("demoTaskShown")) {
+                            userData.setDemoTaskShown(Boolean.parseBoolean(hashMapUserData.get("demoTaskShown").toString()));
+                        }
+                        if (hashMapUserData.containsKey("updatedAt")) {
+                            userData.setUpdatedAt(hashMapUserData.get("updatedAt").toString());
+                        }
+                        if (hashMapUserData.containsKey("deviceToken")) {
+                            userData.setDeviceToken(hashMapUserData.get("deviceToken").toString());
+                        }
+                        if (hashMapUserData.containsKey("score")) {
+                            userData.setScore(Integer.parseInt(hashMapUserData.get("score").toString()));
+                        }
+                        if (hashMapUserData.containsKey("location")) {
+                            ArrayList arrayListLocation = (ArrayList) hashMapUserData.get("location");
+                            HashMap<String, Location> hashMapArrayLocation = new HashMap<>();
+                            for (int i = 0; i < arrayListLocation.size(); i++) {
+                                HashMap hashMap = (HashMap) arrayListLocation.get(i);
+                                Location location = new Location();
+                                location.setLat(Double.parseDouble(hashMap.get("lat").toString()));
+                                location.setLong(Double.parseDouble(hashMap.get("long").toString()));
+                                location.setUpdatedAt(hashMap.get("updatedAt").toString());
+                                hashMapArrayLocation.put(String.valueOf(i), location);
+                            }
+                            userData.setLocation(hashMapArrayLocation);
+                        }
+                        if (hashMapUserData.containsKey("taskParticipated")) {
+                            HashMap hashMapTaskParticipated = (HashMap) hashMapUserData.get("taskParticipated");
+                            TaskParticipated taskParticipated = new TaskParticipated();
+                            taskParticipated.setCount(Integer.parseInt(hashMapTaskParticipated.get("count").toString()));
+                            ArrayList arraylistTasksFetch = (ArrayList) hashMapTaskParticipated.get("tasks");
+                            HashMap hashMap = new HashMap();
+                            for (int i = 0; i < arraylistTasksFetch.size(); i++) {
+                                hashMap.put(String.valueOf(i), arraylistTasksFetch.get(i));
+                            }
+                            taskParticipated.setTasks(hashMap);
+                            userData.setTaskParticipated(taskParticipated);
+                        }
+                        if (hashMapUserData.containsKey("scoreDetail")) {
+
+                        }
+                        if (hashMapUserData.containsKey("taskCreated")) {
+                            boolean isNewTaskParticipated = true;
+                            HashMap hashMapTaskCreated = (HashMap) hashMapUserData.get("taskCreated");
+                            TaskCreated taskCreated = new TaskCreated();
+                            taskCreated.setCount(Integer.parseInt(hashMapTaskCreated.get("count").toString()) + 1);
+                            ArrayList arraylistTasksFetch = (ArrayList) hashMapTaskCreated.get("tasks");
+                            HashMap hashMap = new HashMap();
+                            for (int i = 0; i < arraylistTasksFetch.size(); i++) {
+                                hashMap.put(String.valueOf(i), arraylistTasksFetch.get(i));
+                                if (arraylistTasksFetch.get(i).equals(pTaskId)) {
+                                    isNewTaskParticipated = false;
+                                    taskCreated.setCount(Integer.parseInt(hashMapTaskCreated.get("count").toString()));
+                                }
+                            }
+                            if (isNewTaskParticipated) {
+                                hashMap.put(String.valueOf(arraylistTasksFetch.size()), pTaskId);
+                            }
+                            taskCreated.setTasks(hashMap);
+                            userData.setTaskCreated(taskCreated);
+
+                        } else {
+                            TaskCreated taskCreated = new TaskCreated();
+                            taskCreated.setCount(1);
+                            HashMap hashMap = new HashMap();
+                            hashMap.put(String.valueOf(0), pTaskId);
+                            taskCreated.setTasks(hashMap);
+                            userData.setTaskCreated(taskCreated);
+                        }
+                        mDatabaseReference.child("users").child(pUserId).setValue(userData);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void setMessage(final Context pContext, final String pSenderId, final String pMessage, final String pTimeStamp) {
+        sendMessageFromLocalDevice = true;
         if (currentUserColorIndex == -1) {
             mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -139,9 +453,9 @@ public class FirebaseDatabase {
                             currentUserColorIndex = usersCountAndNewColorIndex;
                         }
                         Message message = setMessageData(pSenderId, pMessage);
-                        sendMessageFromLocalDevice = true;
                         writeNewChannel(pTimeStamp, message);
                     }
+                    ((ChatActivity) pContext).sendMessagesToUser(String.valueOf(currentUserColorIndex));
                 }
 
                 @Override
@@ -152,7 +466,9 @@ public class FirebaseDatabase {
         } else {
             Message message = setMessageData(pSenderId, pMessage);
             writeNewChannel(pTimeStamp, message);
+            ((ChatActivity) pContext).sendMessagesToUser(String.valueOf(currentUserColorIndex));
         }
+
     }
 
     private Message setMessageData(String pSenderId, String pMessage) {
@@ -165,46 +481,57 @@ public class FirebaseDatabase {
         return message;
     }
 
-    public void getMessagesFromFirebase(String pTimeStamp, final ChatListAdapter pChatAdapter, final ArrayList<Message> pMessageList) {
-        mMessagelistener = mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").addValueEventListener(new ValueEventListener() {
+    public void getMessagesFromFirebase(String pTimeStamp, final ChatListAdapter pChatAdapter, final ArrayList<Message> pMessageList, final RecyclerView pRecyclerView) {
+        mMessagelistener = mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 if (dataSnapshot.getValue() != null) {
                     HashMap messageHashList = (HashMap) dataSnapshot.getValue();
                     if (messageHashList != null) {
-                        for (Object o : messageHashList.entrySet()) {
-                            Map.Entry pair = (Map.Entry) o;
-                            try {
-                                if (!mMessageHashMap.containsKey(pair.getKey())) {
-                                    HashMap messageGet = (HashMap) pair.getValue();
-                                    if (messageGet != null) {
-                                        Message message = new Message();
-                                        message.setColorIndex(messageGet.get("colorIndex").toString());
-                                        message.setDateCreated(messageGet.get("dateCreated").toString());
-                                        message.setSenderId(messageGet.get("senderId").toString());
-                                        message.setSenderName(messageGet.get("senderName").toString());
-                                        if (sendMessageFromLocalDevice) {
-                                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
-                                            message.setUserType(Constants.UserType.OTHER);
-                                        } else {
-                                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
-                                            message.setUserType(Constants.UserType.SELF);
-                                        }
-                                        message.setText(messageGet.get("text").toString());
-                                        pMessageList.add(message);
-                                    }
-                                    if (!sendMessageFromLocalDevice)
-                                        mMessageHashMap.put(pair.getKey(), pair.getValue());
-                                }
-                            } catch (Exception e) {
-                                e.getMessage();
+                        try {
+                            Message message = new Message();
+                            message.setColorIndex(messageHashList.get("colorIndex").toString());
+                            message.setDateCreated(messageHashList.get("dateCreated").toString());
+                            message.setSenderId(messageHashList.get("senderId").toString());
+                            message.setSenderName(messageHashList.get("senderName").toString());
+                            if (message.getSenderId().equals(CommonUtility.getUserId(mContext))) {
+                                message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
+                                message.setUserType(Constants.UserType.OTHER);
+                            } else {
+                                message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
+                                message.setUserType(Constants.UserType.SELF);
                             }
+                            message.setText(messageHashList.get("text").toString());
+                            if (!sendMessageFromLocalDevice) {
+                                pMessageList.add(message);
+                            }
+                            sendMessageFromLocalDevice = false;
+                        } catch (Exception e) {
+                            e.getMessage();
                         }
+                        //  }
                         if (pChatAdapter != null) {
                             pChatAdapter.notifyDataSetChanged();
+                            pRecyclerView.scrollToPosition(pChatAdapter.getItemCount() - 1);
                         }
+
                     }
                 }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
             }
 
             @Override

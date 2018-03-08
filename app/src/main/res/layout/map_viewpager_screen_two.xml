@@ -23,6 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/chatPopupLayout"
+            android:lineSpacingExtra="@dimen/ln_sp_2"
             android:textColor="@color/white"
             android:textSize="@dimen/tx_25"
             android:visibility="visible" />

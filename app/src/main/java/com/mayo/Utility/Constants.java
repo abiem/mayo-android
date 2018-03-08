@@ -35,6 +35,7 @@ public class Constants {
     public static final float sMarkerZIndexMinimum = 0.1f;
     public static final String sCardsData = "cardsData";
     public static final int sTaskExpiryTime = 1000 * 60 * 60; //3600seconds=1hour
+    public static final int sLocationUpdateTime = 1000 * 60 * 10; //600seconds=10min
     public static final String  sYes = "yes";
 
     class sharedPreferences {

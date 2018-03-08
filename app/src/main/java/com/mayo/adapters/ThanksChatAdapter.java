@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.mayo.R;
+import com.mayo.classes.ChatBubbleColors;
 import com.mayo.models.Message;
 
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ public class ThanksChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     private void setHelpMessageColor(SenderList pSenderView, int position) {
         GradientDrawable drawable = (GradientDrawable) pSenderView.viewColor.getBackground();
-        drawable.setColor(Color.parseColor(mChatMessages.get(position).getColorIndex()));
+        drawable.setColor(Color.parseColor(ChatBubbleColors.colors[Integer.parseInt(mChatMessages.get(position).getColorIndex())]));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             pSenderView.viewColor.setBackground(drawable);
         } else {

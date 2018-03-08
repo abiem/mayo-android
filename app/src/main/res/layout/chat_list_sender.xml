@@ -60,6 +60,7 @@
         tools:ignore="UselessParent">
 
         <ImageView
+            android:id="@+id/imageViewSender"
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_alignBottom="@+id/textGreyParentLayout"

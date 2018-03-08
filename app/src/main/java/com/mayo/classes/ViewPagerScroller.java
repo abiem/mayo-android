@@ -150,6 +150,13 @@ public class ViewPagerScroller {
                         }
                     }
                 }
+                if (!mMapDataModel.get(i).isCompleted() && mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue()) {
+                    CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
+                    if (cardLatlng.getMarker() != null) {
+                        cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                        setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                    }
+                }
             }
         }
         return value;
@@ -220,6 +227,19 @@ public class ViewPagerScroller {
                 cardLatlng = mMapDataModel.get(count).getCardLatlng();
                 cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
                 setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+            } else if (mMapDataModel.get(count).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue() &&
+                    !mMapDataModel.get(count).isCompleted()) {
+                cardLatlng = mMapDataModel.get(count).getCardLatlng();
+                if (count == pPosition) {
+                    cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMaximum);
+                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconLarge());
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(cardLatlng.getLatLng()).zoom(Constants.sKeyCameraZoom).build();
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                } else {
+                    cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                }
             }
             if (mMarker != null) {
                 mMarker.remove();
@@ -274,6 +294,33 @@ public class ViewPagerScroller {
                                 setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    public void setLiveUserMarkerLarge(int pPosition) {
+        CardLatlng cardLatlng = mMapDataModel.get(pPosition).getCardLatlng();
+        if (cardLatlng != null) {
+            if (cardLatlng.getMarker() != null) {
+                cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMaximum);
+            }
+            setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconLarge());
+            for (int i = 0; i < mMapDataModel.size(); i++) {
+                cardLatlng = mMapDataModel.get(i).getCardLatlng();
+                if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue() && cardLatlng != null) {
+                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getBlueIconSmall());
+                } else if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDONE.getValue() && cardLatlng != null) {
+                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                } else if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue() && cardLatlng != null) {
+                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                } else if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue() && cardLatlng != null) {
+                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                } else if (mMapDataModel.get(i).getTaskLatLng() != null && !mMapDataModel.get(i).getTaskLatLng().getTask().isCompleted() && cardLatlng != null) {
+                    if (i != pPosition && cardLatlng.getMarker() != null && cardLatlng.getMarker() != null) {
+                        cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                        setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
                     }
                 }
             }

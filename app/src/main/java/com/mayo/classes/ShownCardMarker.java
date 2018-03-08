@@ -20,6 +20,7 @@ import com.mayo.Utility.Constants;
 import com.mayo.activities.MapActivity;
 import com.mayo.models.CardLatlng;
 import com.mayo.models.MapDataModel;
+import com.mayo.models.MarkerTag;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -200,6 +201,7 @@ public class ShownCardMarker {
                 }
             }
         }
+
         MarkerOptions taskCardMarker = getTaskCardMarker(setStateOfFakeMarker);
         if (taskCardMarker != null) {
             if (CommonUtility.getTaskApplied(mContext)) {
@@ -208,6 +210,25 @@ public class ShownCardMarker {
                         Marker marker = mGoogleMap.addMarker(taskCardMarker);
                         marker.setTag(Constants.CardType.FAKECARDTHREE.getValue());
                     }
+                }
+            }
+        }
+    }
+
+    public void getAnotherUsersLiveMarker() {
+        for (int i = 0; i < mMapDataModel.size(); i++) {
+            if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue()) {
+                if (mMapDataModel.get(i).getTaskLatLng() != null && !mMapDataModel.get(i).getTaskLatLng().getTask().isCompleted()) {
+                    CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
+                    if (cardLatlng.getMarker() != null) {
+                        cardLatlng.getMarker().remove();
+                    }
+                    Marker marker = mGoogleMap.addMarker(new MarkerOptions().position(cardLatlng.getLatLng()).icon(iconSmall));
+                    MarkerTag markerTag = new MarkerTag();
+                    markerTag.setId(String.valueOf(Constants.CardType.DEFAULT.getValue()));
+                    markerTag.setIdNew(String.valueOf(i));
+                    marker.setTag(markerTag);
+                    cardLatlng.setMarker(marker);
                 }
             }
         }
@@ -232,6 +253,34 @@ public class ShownCardMarker {
             mMapDataModel.get(0).setCardLatlng(cardLatlng);
             mMapDataModel.get(0).getCardLatlng().setMarker(marker);
             marker.setTag(Constants.CardType.POST.getValue());
+        }
+    }
+
+    public void setOtherUsersTaskMarker(MapDataModel pMapDataModel, int count) {
+        MarkerOptions markerOptions = new MarkerOptions().position(pMapDataModel.getCardLatlng().getLatLng()).icon(iconSmall)
+                .zIndex(Constants.sMarkerZIndexMinimum);
+        Marker marker = mGoogleMap.addMarker(markerOptions);
+        if (marker != null) {
+            MarkerTag markerTag = new MarkerTag();
+            markerTag.setId(String.valueOf(Constants.CardType.DEFAULT.getValue()));
+            markerTag.setIdNew(String.valueOf(count));
+            marker.setTag(markerTag);
+            pMapDataModel.getCardLatlng().setMarker(marker);
+        }
+    }
+
+    public void setMarkerTagsOnNewTaskFetch(ArrayList<MapDataModel> pMapDataModel, int count) {
+        for (int i = count + 1; i < pMapDataModel.size(); i++) {
+            Marker marker = pMapDataModel.get(i).getCardLatlng().getMarker();
+            MarkerTag markerTag = new MarkerTag();
+            markerTag.setId(String.valueOf(Constants.CardType.DEFAULT.getValue()));
+            markerTag.setIdNew(String.valueOf(count + 1));
+            //this is beacuse we have not store expire card marker
+            if (marker != null) {
+                marker.setTag(markerTag);
+                pMapDataModel.get(i).getCardLatlng().getMarker().remove();
+                pMapDataModel.get(i).getCardLatlng().setMarker(marker);
+            }
         }
     }
 

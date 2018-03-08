@@ -173,7 +173,7 @@ public class ChatActivity extends AppCompatActivity {
                     mFirebaseDatabase.setMessage(this, CommonUtility.getUserId(this),
                             mMessageText, task.getTaskID());
                 }
-
+                mFirebaseDatabase.writeTaskParticipated(CommonUtility.getUserId(this), task.getTaskID());
             } else {
                 mColorIndex = "0";
                 mMessageText = mMessageChatText.getText().toString().trim();
@@ -280,7 +280,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void getFirebaseInstance() {
         if (mFirebaseDatabase == null) {
-            mFirebaseDatabase = new  FirebaseDatabase(this);
+            mFirebaseDatabase = new FirebaseDatabase(this);
             mFirebaseDatabase.currentUserColorIndex = -1;
             if (mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
                 mFirebaseDatabase.getMessagesFromFirebase(mMapDataModel.getTaskLatLng().getTask().getTaskID(), mChatAdapter, mMessageList, mChatRecyclerView);

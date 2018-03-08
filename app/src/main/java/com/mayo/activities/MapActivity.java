@@ -80,6 +80,7 @@ import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.CardLatlng;
+import com.mayo.models.MarkerTag;
 import com.mayo.models.Message;
 import com.mayo.models.TaskLatLng;
 import com.mayo.models.TaskLocations;
@@ -306,14 +307,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 mCountButton.setText(String.valueOf(value));
                             }
                             mMapViewPagerAdapter.setTaskCardViewVisible();
+                            if (mShownCardMarker != null) {
+                                mShownCardMarker.getAnotherUsersLiveMarker();
+                            }
                             break;
                         case FAKECARDONE:
                             mViewPagerScroller.getFakeCardOne();
+                            if (mShownCardMarker != null) {
+                                mShownCardMarker.getAnotherUsersLiveMarker();
+                            }
                             break;
                         case FAKECARDTWO:
                             value = mViewPagerScroller.getFakeCardTwo(isScrollingRight);
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
+                            }
+                            if (mShownCardMarker != null) {
+                                mShownCardMarker.getAnotherUsersLiveMarker();
                             }
                             break;
                         case FAKECARDTHREE:
@@ -321,9 +331,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                             }
+                            if (mShownCardMarker != null) {
+                                mShownCardMarker.getAnotherUsersLiveMarker();
+                            }
                             break;
                         case DEFAULT:
                             mViewPagerScroller.setLiveCardViewMarker(mViewPagerMap.getCurrentItem());
+                            if (mShownCardMarker != null) {
+                                mShownCardMarker.getAnotherUsersLiveMarker();
+                            }
+                            getFirebaseInstance();
+                            if (mMapDataModels.get(mViewPagerMap.getCurrentItem()).getTaskLatLng() != null) {
+                                String timeStamp = mMapDataModels.get(mViewPagerMap.getCurrentItem()).getTaskLatLng().getTask().getTaskID();
+                                mFirebaseDatabase.setTaskViewsByUsers(timeStamp);
+                            }
                             break;
                     }
                     positionNew = position;
@@ -606,33 +627,42 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public boolean onMarkerClick(Marker marker) {
                 if (marker.getTag() != null && mViewPagerScroller != null) {
                     isMarkerClick = true;
-                    int markerGet = Integer.parseInt(marker.getTag().toString());
-                    Constants.CardType cardType = Constants.CardType.values()[markerGet];
-                    switch (cardType) {
-                        case POST:
-                            mMarkerClick.getPostCardMarker();
-                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.POST.getValue());
+                    if (marker.getTag().toString().equals(String.valueOf(Constants.CardType.FAKECARDTHREE.getValue()))
+                            || marker.getTag().toString().equals(String.valueOf(Constants.CardType.FAKECARDONE.getValue()))
+                            || marker.getTag().toString().equals(String.valueOf(Constants.CardType.FAKECARDTWO.getValue()))
+                            || marker.getTag().toString().equals(String.valueOf(Constants.CardType.POST.getValue()))) {
+                        int markerGet = Integer.parseInt(marker.getTag().toString());
+                        Constants.CardType cardType = Constants.CardType.values()[markerGet];
+                        switch (cardType) {
+                            case POST:
+                                mMarkerClick.getPostCardMarker();
+                                mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.POST.getValue());
+                                mViewPagerScroller.clearExpireCardMarker();
+                                break;
+                            case FAKECARDONE:
+                                mMarkerClick.getFirstFakeCard();
+                                mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDONE.getValue());
+                                mViewPagerScroller.clearExpireCardMarker();
+                                break;
+                            case FAKECARDTWO:
+                                mMarkerClick.getSecondFakeCard();
+                                mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDTWO.getValue());
+                                mViewPagerScroller.clearExpireCardMarker();
+                                break;
+                            case FAKECARDTHREE:
+                                mMarkerClick.getThirdFakeCard();
+                                mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDTHREE.getValue());
+                                mViewPagerScroller.clearExpireCardMarker();
+                                break;
+                        }
+                    } else {
+                        if (marker.getTag() != null && marker.getTag() instanceof MarkerTag) {
+                            MarkerTag markerTag = ((MarkerTag) marker.getTag());
+                            int position = Integer.parseInt(markerTag.getIdNew());
+                            mMarkerClick.getCardMarker(position);
+                            mViewPagerScroller.setLiveUserMarkerLarge(position);
                             mViewPagerScroller.clearExpireCardMarker();
-                            break;
-                        case FAKECARDONE:
-                            mMarkerClick.getFirstFakeCard();
-                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDONE.getValue());
-                            mViewPagerScroller.clearExpireCardMarker();
-                            break;
-                        case FAKECARDTWO:
-                            mMarkerClick.getSecondFakeCard();
-                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDTWO.getValue());
-                            mViewPagerScroller.clearExpireCardMarker();
-                            break;
-                        case FAKECARDTHREE:
-                            mMarkerClick.getThirdFakeCard();
-                            mViewPagerScroller.setFakeCardLargeIcon(Constants.CardType.FAKECARDTHREE.getValue());
-                            mViewPagerScroller.clearExpireCardMarker();
-                            break;
-                        case DEFAULT:
-                            mMarkerClick.getCardMarker();
-                            break;
-
+                        }
                     }
                 }
                 return true;
@@ -918,7 +948,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (!CommonUtility.getFakeCardThree(this)) {
                 count++;
             }
+            mShownCardMarker.setOtherUsersTaskMarker(mapDataModel, count + 1);
             mMapDataModels.add(count + 1, mapDataModel);
+            mShownCardMarker.setMarkerTagsOnNewTaskFetch(mMapDataModels, count + 1);
             mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
             mCardsDataModel.sortNonExpiredCardViewList(mMapDataModels);
             isNewTaskEnter = false;
