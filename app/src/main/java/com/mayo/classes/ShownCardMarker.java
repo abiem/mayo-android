@@ -223,10 +223,20 @@ public class ShownCardMarker {
                     if (cardLatlng.getMarker() != null) {
                         cardLatlng.getMarker().remove();
                     }
+                    int count = 0;
+                    if (CommonUtility.getFakeCardOne(mContext)) {
+                        count += 1;
+                    }
+                    if (CommonUtility.getFakeCardTwo(mContext)) {
+                        count += 1;
+                    }
+                    if (CommonUtility.getFakeCardThree(mContext)) {
+                        count += 1;
+                    }
                     Marker marker = mGoogleMap.addMarker(new MarkerOptions().position(cardLatlng.getLatLng()).icon(iconSmall));
                     MarkerTag markerTag = new MarkerTag();
                     markerTag.setId(String.valueOf(Constants.CardType.DEFAULT.getValue()));
-                    markerTag.setIdNew(String.valueOf(i));
+                    markerTag.setIdNew(String.valueOf(i + count));
                     marker.setTag(markerTag);
                     cardLatlng.setMarker(marker);
                 }
@@ -270,16 +280,17 @@ public class ShownCardMarker {
     }
 
     public void setMarkerTagsOnNewTaskFetch(ArrayList<MapDataModel> pMapDataModel, int count) {
-        for (int i = count + 1; i < pMapDataModel.size(); i++) {
+        int countSet = 5;
+        for (int i = count; i < pMapDataModel.size(); i++) {
             Marker marker = pMapDataModel.get(i).getCardLatlng().getMarker();
             MarkerTag markerTag = new MarkerTag();
             markerTag.setId(String.valueOf(Constants.CardType.DEFAULT.getValue()));
-            markerTag.setIdNew(String.valueOf(count + 1));
+            markerTag.setIdNew(String.valueOf(countSet));
             //this is beacuse we have not store expire card marker
             if (marker != null) {
                 marker.setTag(markerTag);
-                pMapDataModel.get(i).getCardLatlng().getMarker().remove();
                 pMapDataModel.get(i).getCardLatlng().setMarker(marker);
+                countSet++;
             }
         }
     }

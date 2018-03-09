@@ -307,23 +307,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 mCountButton.setText(String.valueOf(value));
                             }
                             mMapViewPagerAdapter.setTaskCardViewVisible();
-                            if (mShownCardMarker != null) {
-                                mShownCardMarker.getAnotherUsersLiveMarker();
-                            }
                             break;
                         case FAKECARDONE:
                             mViewPagerScroller.getFakeCardOne();
-                            if (mShownCardMarker != null) {
-                                mShownCardMarker.getAnotherUsersLiveMarker();
-                            }
                             break;
                         case FAKECARDTWO:
                             value = mViewPagerScroller.getFakeCardTwo(isScrollingRight);
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
-                            }
-                            if (mShownCardMarker != null) {
-                                mShownCardMarker.getAnotherUsersLiveMarker();
                             }
                             break;
                         case FAKECARDTHREE:
@@ -331,15 +322,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                             }
-                            if (mShownCardMarker != null) {
-                                mShownCardMarker.getAnotherUsersLiveMarker();
-                            }
                             break;
                         case DEFAULT:
                             mViewPagerScroller.setLiveCardViewMarker(mViewPagerMap.getCurrentItem());
-                            if (mShownCardMarker != null) {
-                                mShownCardMarker.getAnotherUsersLiveMarker();
-                            }
                             getFirebaseInstance();
                             if (mMapDataModels.get(mViewPagerMap.getCurrentItem()).getTaskLatLng() != null) {
                                 String timeStamp = mMapDataModels.get(mViewPagerMap.getCurrentItem()).getTaskLatLng().getTask().getTaskID();
@@ -657,8 +642,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         }
                     } else {
                         if (marker.getTag() != null && marker.getTag() instanceof MarkerTag) {
+                            int count = 0;
+                            if (CommonUtility.getFakeCardOne(MapActivity.this)) {
+                                count += 1;
+                            }
+                            if (CommonUtility.getFakeCardTwo(MapActivity.this)) {
+                                count += 1;
+                            }
+                            if (CommonUtility.getFakeCardThree(MapActivity.this)) {
+                                count += 1;
+                            }
                             MarkerTag markerTag = ((MarkerTag) marker.getTag());
-                            int position = Integer.parseInt(markerTag.getIdNew());
+                            int position = Integer.parseInt(markerTag.getIdNew()) - count;
                             mMarkerClick.getCardMarker(position);
                             mViewPagerScroller.setLiveUserMarkerLarge(position);
                             mViewPagerScroller.clearExpireCardMarker();
@@ -932,25 +927,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void setListsOfFetchingTask(Task pTask, TaskLocations pTaskLocations) {
-        int count = 0;
         TaskLatLng taskLatLng = new TaskLatLng();
         taskLatLng.setTask(pTask);
         taskLatLng.setTaskLocations(pTaskLocations);
         mTasksArray.add(taskLatLng);
         if (isNewTaskEnter) {
             MapDataModel mapDataModel = mCardsDataModel.getMapModelData(taskLatLng);
-            if (!CommonUtility.getFakeCardOne(this)) {
-                count++;
+            mShownCardMarker.setOtherUsersTaskMarker(mapDataModel, 4);
+            int count = 0;
+            if (CommonUtility.getFakeCardOne(this)) {
+                count += 1;
             }
-            if (!CommonUtility.getFakeCardTwo(this)) {
-                count++;
+            if (CommonUtility.getFakeCardTwo(this)) {
+                count += 1;
             }
-            if (!CommonUtility.getFakeCardThree(this)) {
-                count++;
+            if (CommonUtility.getFakeCardThree(this)) {
+                count += 1;
             }
-            mShownCardMarker.setOtherUsersTaskMarker(mapDataModel, count + 1);
-            mMapDataModels.add(count + 1, mapDataModel);
-            mShownCardMarker.setMarkerTagsOnNewTaskFetch(mMapDataModels, count + 1);
+            mMapDataModels.add(4 - count, mapDataModel);
+            mShownCardMarker.setMarkerTagsOnNewTaskFetch(mMapDataModels, 5 - count);
             mCardsDataModel.setViewPagerAdapter(mMapViewPagerAdapter);
             mCardsDataModel.sortNonExpiredCardViewList(mMapDataModels);
             isNewTaskEnter = false;
@@ -958,7 +953,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void updateTaskCardFromViewPager(Task pTask) {
-        mCardsDataModel.setListOnUpdationOfTask(pTask);
+        mCardsDataModel.setListOnUpdationOfTask(pTask, mMapDataModels);
+        if (mMapViewPagerAdapter != null) {
+            mMapViewPagerAdapter.notifyDataSetChanged();
+        }
     }
 
     private void showFakeMarker() {

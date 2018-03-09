@@ -200,6 +200,15 @@ public class ViewPagerScroller {
                         }
                     }
                 }
+                if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue()) {
+                    if (mShownCardMarker != null) {
+                        CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
+                        if (cardLatlng.getMarker() != null) {
+                            cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                            setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                        }
+                    }
+                }
             }
         }
         return value;
@@ -254,7 +263,11 @@ public class ViewPagerScroller {
 
     private void setCardLatlngMarker(CardLatlng pCardLatlng, BitmapDescriptor pBitmapDescriptior) {
         if (pCardLatlng.getMarker() != null) {
-            pCardLatlng.getMarker().setIcon(pBitmapDescriptior);
+            try {
+                pCardLatlng.getMarker().setIcon(pBitmapDescriptior);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

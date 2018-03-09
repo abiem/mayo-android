@@ -6,6 +6,7 @@ import android.os.CountDownTimer;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
@@ -14,6 +15,7 @@ import com.mayo.adapters.MapViewPagerAdapter;
 import com.mayo.models.CardLatlng;
 import com.mayo.models.GradientColor;
 import com.mayo.models.MapDataModel;
+import com.mayo.models.MarkerTag;
 import com.mayo.models.Task;
 import com.mayo.models.TaskLatLng;
 import com.mayo.models.TaskLocations;
@@ -133,7 +135,7 @@ public class CardsDataModel {
         }
     }
 
-    private void sortArray(ArrayList<MapDataModel> pArray) {
+    private ArrayList<MapDataModel> sortArray(ArrayList<MapDataModel> pArray) {
         Collections.sort(pArray, new Comparator<MapDataModel>() {
             public int compare(MapDataModel o1, MapDataModel o2) {
                 if (o1.getTimeCreated() != null && o2.getTimeCreated() != null) {
@@ -146,9 +148,10 @@ public class CardsDataModel {
                 return 0;
             }
         });
+        return pArray;
     }
 
-    private void mergeArray(ArrayList<MapDataModel> pOriginalArray, ArrayList<MapDataModel> pTempArray) {
+    private ArrayList<MapDataModel> mergeArray(ArrayList<MapDataModel> pOriginalArray, ArrayList<MapDataModel> pTempArray) {
         int secondArray = pTempArray.size();
         int tempValue = 0;
         while (tempValue < secondArray) {
@@ -156,6 +159,7 @@ public class CardsDataModel {
             tempValue++;
         }
         pTempArray.clear();
+        return pOriginalArray;
     }
 
     public void sortExpiredCardViewList(ArrayList<MapDataModel> pArray) {
@@ -171,7 +175,9 @@ public class CardsDataModel {
                 return 0;
             }
         });
-        mMapViewPagerAdapter.notifyDataSetChanged();
+        if (mMapViewPagerAdapter != null) {
+            mMapViewPagerAdapter.notifyDataSetChanged();
+        }
     }
 
     public void sortNonExpiredCardViewList(ArrayList<MapDataModel> pArray) {
@@ -187,9 +193,43 @@ public class CardsDataModel {
                 return 0;
             }
         });
-        mMapViewPagerAdapter.notifyDataSetChanged();
+        if (mMapViewPagerAdapter != null) {
+            mMapViewPagerAdapter.notifyDataSetChanged();
+        }
     }
 
+    public ArrayList<MapDataModel> sortExpiryCard(ArrayList<MapDataModel> pArray) {
+        Collections.sort(pArray, new Comparator<MapDataModel>() {
+            public int compare(MapDataModel o1, MapDataModel o2) {
+                if (o1.getTimeCreated() != null && o2.getTimeCreated() != null && o1.isCompleted() && o2.isCompleted()) {
+                    Date date1 = CommonUtility.convertStringToDateTime(o1.getTimeCreated());
+                    Date date2 = CommonUtility.convertStringToDateTime(o2.getTimeCreated());
+                    if (date1 != null) {
+                        return (-1) * date1.compareTo(date2);
+                    }
+                }
+                return 0;
+            }
+        });
+        return pArray;
+    }
+
+
+    public ArrayList<MapDataModel> sortNonExpiryCard(ArrayList<MapDataModel> pArray) {
+        Collections.sort(pArray, new Comparator<MapDataModel>() {
+            public int compare(MapDataModel o1, MapDataModel o2) {
+                if (o1.getTimeCreated() != null && o2.getTimeCreated() != null && o1.isCompleted() && o2.isCompleted()) {
+                    Date date1 = CommonUtility.convertStringToDateTime(o1.getTimeCreated());
+                    Date date2 = CommonUtility.convertStringToDateTime(o2.getTimeCreated());
+                    if (date1 != null) {
+                        return (-1) * date1.compareTo(date2);
+                    }
+                }
+                return 0;
+            }
+        });
+        return pArray;
+    }
 
     private void setMapModelData(TaskLatLng pTaskLatlng) {
         MapDataModel mapDataModel = new MapDataModel();
@@ -283,7 +323,7 @@ public class CardsDataModel {
         }
     }
 
-    public void setListOnUpdationOfTask(Task pTask) {
+    public void setListOnUpdationOfTask(Task pTask, ArrayList<MapDataModel> pMapDataModel) {
         MapDataModel mapDataModel = null;
         for (int i = 0; i < mTasksArray.size(); i++) {
             if (mTasksArray.get(i).getTask().getTaskID().equals(pTask.getTaskID())) {
@@ -295,17 +335,45 @@ public class CardsDataModel {
             }
         }
         if (mapDataModel != null) {
-            for (int i = 0; i < mMapDataModels.size(); i++) {
-                if (mMapDataModels.get(i).getTimeCreated() != null && mMapDataModels.get(i).getTimeCreated().equals(mapDataModel.getTimeCreated())) {
-                    mMapDataModels.get(i).getCardLatlng().getMarker().remove();
-                    mMapDataModels.remove(i);
+            for (int i = 0; i < pMapDataModel.size(); i++) {
+                if (pMapDataModel.get(i).getTimeCreated() != null && pMapDataModel.get(i).getTimeCreated().equals(mapDataModel.getTimeCreated())) {
+                    pMapDataModel.get(i).getCardLatlng().getMarker().remove();
+                    pMapDataModel.remove(i);
                     break;
                 }
             }
-            mMapDataModels.add(mapDataModel);
-            sortArray(mMapDataModels);
-            if (mMapViewPagerAdapter != null)
-                mMapViewPagerAdapter.notifyDataSetChanged();
+            pMapDataModel.add(mapDataModel);
+            sortTaskLists(pMapDataModel);
         }
+    }
+
+    public ArrayList<MapDataModel> sortTaskLists(ArrayList<MapDataModel> pMapDataModel) {
+        ArrayList<MapDataModel> pNonExpiryCard = new ArrayList<>();
+        for (MapDataModel mapDataModelNew : pMapDataModel) {
+            if (mapDataModelNew.getFakeCardPosition() == Constants.CardType.DEFAULT.getValue() && !mapDataModelNew.isCompleted()) {
+                pNonExpiryCard.add(mapDataModelNew);
+            }
+        }
+        pNonExpiryCard = sortNonExpiryCard(pNonExpiryCard);
+        int counter = 4;
+        for (int i = 0; i < pNonExpiryCard.size(); i++) {
+            MarkerTag markerTag = new MarkerTag();
+            markerTag.setId(String.valueOf(Constants.CardType.DEFAULT.getValue()));
+            markerTag.setIdNew(String.valueOf(counter));
+            Marker marker = pNonExpiryCard.get(i).getCardLatlng().getMarker();
+            marker.setTag(markerTag);
+            pNonExpiryCard.get(i).getCardLatlng().setMarker(marker);
+            counter++;
+        }
+        ArrayList<MapDataModel> pExpiryCard = new ArrayList<>();
+        for (MapDataModel mapDataModelNew : pMapDataModel) {
+            if (mapDataModelNew.getFakeCardPosition() == Constants.CardType.DEFAULT.getValue() && mapDataModelNew.isCompleted()) {
+                pExpiryCard.add(mapDataModelNew);
+            }
+        }
+        pExpiryCard = sortExpiryCard(pExpiryCard);
+        pMapDataModel = getDataModel();
+        pNonExpiryCard = mergeArray(pNonExpiryCard, pExpiryCard);
+        return mergeArray(pMapDataModel, pNonExpiryCard);
     }
 }
