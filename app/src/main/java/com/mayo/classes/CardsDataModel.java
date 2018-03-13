@@ -331,7 +331,7 @@ public class CardsDataModel {
         }
     }
 
-    public void setListOnUpdationOfTask(Task pTask, ArrayList<MapDataModel> pMapDataModel) {
+    public void setListOnUpdationOfTask(Task pTask, ArrayList<MapDataModel> pMapDataModel, TaskLocations pTaskLocations) {
         MapDataModel mapDataModel = null;
         for (int i = 0; i < mTasksArray.size(); i++) {
             if (mTasksArray.get(i).getTask().getTaskID().equals(pTask.getTaskID())) {
@@ -344,8 +344,9 @@ public class CardsDataModel {
         }
         if (mapDataModel != null) {
             for (int i = 0; i < pMapDataModel.size(); i++) {
-                if (pMapDataModel.get(i).getTimeCreated() != null && pMapDataModel.get(i).getTimeCreated().equals(mapDataModel.getTimeCreated())) {
-                    if (pMapDataModel.get(i).getCardLatlng().getMarker() != null) {
+                if (pMapDataModel.get(i).getTimeCreated() != null && pMapDataModel.get(i).getTaskLatLng().getTask().getTaskID().
+                        equals(mapDataModel.getTaskLatLng().getTask().getTaskID())) {
+                    if (pMapDataModel.get(i).getCardLatlng() != null && pMapDataModel.get(i).getCardLatlng().getMarker() != null) {
                         pMapDataModel.get(i).getCardLatlng().getMarker().remove();
                     }
                     pMapDataModel.remove(i);
@@ -354,6 +355,24 @@ public class CardsDataModel {
             }
             pMapDataModel.add(mapDataModel);
             sortTaskLists(pMapDataModel);
+        } else {
+            if (pTask.isCompleted() && pTask.isUserMovedOutside()) {
+                boolean isAdded = true;
+                for (int i = 0; i < pMapDataModel.size(); i++) {
+                    if (pMapDataModel.get(i).getTaskLatLng() != null && pMapDataModel.get(i).getTaskLatLng().getTask().getTaskID().
+                            equals(pTask.getTaskID())) {
+                        isAdded = false;
+                        break;
+                    }
+                }
+                if (isAdded) {
+                    LatLng latLng = new LatLng(pTaskLocations.getLatitude(), pTaskLocations.getLongitude());
+                    TaskLatLng taskLatLng = setTaskLatlngModel(pTask, latLng);
+                    mapDataModel = getMapModelData(taskLatLng);
+                    pMapDataModel.add(mapDataModel);
+                    sortTaskLists(pMapDataModel);
+                }
+            }
         }
     }
 

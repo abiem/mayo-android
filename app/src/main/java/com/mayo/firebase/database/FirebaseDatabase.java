@@ -58,7 +58,7 @@ public class FirebaseDatabase {
     private static final String sChannel = "channels";
     private static final String sUserLocations = "users_locations";
     private HashMap<String, Task> mHashMap;
-    private HashMap mMessageHashMap;
+    private HashMap mMessageHashMap, mTaskParticpatedHashMap, mGetAllUsers;
     public int currentUserColorIndex = -1;
     private boolean currentUserIsInConversation = false;
     private int usersCountAndNewColorIndex;
@@ -73,13 +73,15 @@ public class FirebaseDatabase {
         mHashMap = new HashMap<>();
         mMessageHashMap = new HashMap();
         locationHashMap = new HashMap<>();
+        mTaskParticpatedHashMap = new HashMap();
+        mGetAllUsers = new HashMap();
         //intialize database reference
         initDatabase();
     }
 
     private void initDatabase() {
-       // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
-         mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
+        // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
+        mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
     }
 
     public void writeNewTask(String pTimeStamp, Task pTask) {
@@ -227,6 +229,22 @@ public class FirebaseDatabase {
         mDatabaseReference.child("users").child(pUserId).setValue(userData);
         locationHashMapValue++;
         return userData;
+    }
+
+    public void getUserIdsFromFirebase() {
+        mDatabaseReference.child("users").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    mGetAllUsers = (HashMap) dataSnapshot.getValue();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void writeNewUserLocation(final String pUserId, final android.location.Location pLocation) {
@@ -472,31 +490,6 @@ public class FirebaseDatabase {
         }
     }
 
-    public void checkAnyActvityInsideTask(Context pContext, final String pTimeStamp) {
-        mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue() != null) {
-                    HashMap usersHashList = (HashMap) dataSnapshot.getValue();
-                    if (usersHashList != null) {
-                        for (Object o : usersHashList.entrySet()) {
-                            Map.Entry pair = (Map.Entry) o;
-                            if (!pair.getKey().equals(pTimeStamp)) {
-                                isAnyActivityInsideCurrentTask = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-
     private Message setMessageData(String pSenderId, String pMessage) {
         Message message = new Message();
         message.setColorIndex(String.valueOf(currentUserColorIndex));
@@ -590,7 +583,7 @@ public class FirebaseDatabase {
         return task;
     }
 
-    public Task updateTaskOnFirebase(boolean pCompleteOrNot, String pCompleteType, Context pContext,boolean pUserMoveOutside) {
+    public Task updateTaskOnFirebase(boolean pCompleteOrNot, String pCompleteType, Context pContext, boolean pUserMoveOutside) {
         Task task = CommonUtility.getTaskData(pContext);
         Task updateTaskData = new Task();
         updateTaskData.setCreatedby(CommonUtility.getUserId(pContext));
@@ -697,6 +690,33 @@ public class FirebaseDatabase {
         if (mHashMap != null) {
             mHashMap.clear();
         }
+        if (mTaskParticpatedHashMap != null) {
+            mTaskParticpatedHashMap.clear();
+        }
+    }
+
+    public void getTaskParticipatedByUsers(String pUserId) {
+        mDatabaseReference.child("users").child(pUserId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap hashMapUserData = (HashMap) dataSnapshot.getValue();
+                    if (hashMapUserData.containsKey("taskParticipated")) {
+                        HashMap hashMapTaskParticipated = (HashMap) hashMapUserData.get("taskParticipated");
+                        ArrayList arraylistTasksFetch = (ArrayList) hashMapTaskParticipated.get("tasks");
+                        if (arraylistTasksFetch != null) {
+                            for (int i = 0; i < arraylistTasksFetch.size(); i++)
+                                mTaskParticpatedHashMap.put(String.valueOf(i), arraylistTasksFetch.get(i));
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
@@ -705,13 +725,49 @@ public class FirebaseDatabase {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
+                    try {
+                        Task task = dataSnapshot.getValue(Task.class);
+                        if (task != null) {
+                            if (mHashMap.containsKey(task.getTaskID())) {
+                                ((MapActivity) mContext).updateTaskCardFromViewPager(task, pTaskLocations);
+                            } else {
+                                mHashMap.put(task.getTaskID(), task);
+                                if (!task.isUserMovedOutside()) {
+                                    ((MapActivity) mContext).setListsOfFetchingTask(task, pTaskLocations);
+                                } else {
+                                    if (task.isUserMovedOutside()) {
+                                        if (mTaskParticpatedHashMap.size() > 0 && mTaskParticpatedHashMap.containsValue(task.getTaskID())) {
+                                            ((MapActivity) mContext).setListsOfFetchingTask(task, pTaskLocations);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void setListenerForEnteringTask(String pkey) {
+        mDatabaseReference.child("tasks").child(pkey).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
                     Task task = dataSnapshot.getValue(Task.class);
                     if (task != null) {
-                        if (mHashMap.containsKey(task.getTaskID())) {
-                            ((MapActivity) mContext).updateTaskCardFromViewPager(task);
-                        } else {
-                            mHashMap.put(task.getTaskID(), task);
-                            ((MapActivity) mContext).setListsOfFetchingTask(task, pTaskLocations);
+                        Task taskData = CommonUtility.getTaskData(mContext);
+                        if (task.isRecentActivity()) {
+                            taskData.setRecentActivity(task.isRecentActivity());
+                            CommonUtility.setTaskData(taskData, mContext);
+                            ((MapActivity) mContext).setRecentActivity(task.isRecentActivity());
                         }
                     }
                 }

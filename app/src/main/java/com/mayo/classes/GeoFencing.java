@@ -17,6 +17,8 @@ import com.mayo.R;
 import com.mayo.Utility.Constants;
 import com.mayo.backgroundservice.GeofenceTransitionService;
 
+import java.util.ArrayList;
+
 /**
  * Created by Lakshmi on 12/03/18.
  */
@@ -32,7 +34,7 @@ public class GeoFencing {
     public Geofence createGeofences(double latitude, double longitude) {
         return new Geofence.Builder()
                 .setRequestId(Constants.GeoFencing.GEOFENCE_REQ_ID)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT|Geofence.GEOFENCE_TRANSITION_ENTER)
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT | Geofence.GEOFENCE_TRANSITION_ENTER)
                 .setCircularRegion(latitude, longitude, Constants.GeoFencing.sGeoFenceRadius)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .build();
@@ -79,5 +81,11 @@ public class GeoFencing {
             default:
                 return mResources.getString(R.string.unknown_geofence_error);
         }
+    }
+
+    public void stopGeoFenceMonitoring(GoogleApiClient pGoogleApiClient) {
+        ArrayList<String> geofenceIds = new ArrayList<>();
+        geofenceIds.add(Constants.GeoFencing.GEOFENCE_REQ_ID);
+        LocationServices.GeofencingApi.removeGeofences(pGoogleApiClient, geofenceIds);
     }
 }

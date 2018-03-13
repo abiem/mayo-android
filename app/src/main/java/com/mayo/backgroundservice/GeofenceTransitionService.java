@@ -3,11 +3,14 @@ package com.mayo.backgroundservice;
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
+import com.mayo.Utility.*;
+import com.mayo.Utility.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +52,8 @@ public class GeofenceTransitionService extends IntentService {
                     List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
 
                     String geofenceTransitionDetails = getGeofenceTrasitionDetails(geoFenceTransition, triggeringGeofences);
+                    Intent lbcIntent = new Intent(Constants.BroadCastReceiver.sBroadCastName); //Send to any reciever listening for this
+                    LocalBroadcastManager.getInstance(this).sendBroadcast(lbcIntent);
                     break;
             }
 

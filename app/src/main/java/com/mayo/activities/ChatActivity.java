@@ -164,6 +164,7 @@ public class ChatActivity extends AppCompatActivity {
 
     @Click(R.id.messageSend)
     protected void sendMessageFromUser() {
+        boolean isRecentActivity = true;
         if (!mMessageChatText.getText().toString().trim().isEmpty()) {
             // If we post a message in our created task then we need to add smily to it else post a message
             if (pBundle != null && mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
@@ -173,6 +174,7 @@ public class ChatActivity extends AppCompatActivity {
                     mColorIndex = "0";
                     mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
                             mMessageChatText.getText().toString().trim();
+                    isRecentActivity = false;
                 } else {
                     mMessageText = mMessageChatText.getText().toString().trim();
                 }
@@ -181,7 +183,9 @@ public class ChatActivity extends AppCompatActivity {
                             mMessageText, task.getTaskID());
                 }
                 if (task != null) {
-                    task.setRecentActivity(true);
+                    if (isRecentActivity) {
+                        task.setRecentActivity(true);
+                    }
                     mFirebaseDatabase.updateTask(task.getTaskID(), task);
                     mFirebaseDatabase.writeTaskParticipated(CommonUtility.getUserId(this), task.getTaskID());
                 }

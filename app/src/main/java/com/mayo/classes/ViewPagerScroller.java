@@ -351,7 +351,7 @@ public class ViewPagerScroller {
 
     private void setPostIconSmall(CardLatlng pCardLatLng) {
         if (CommonUtility.getTaskApplied(mContext)) {
-            if (pCardLatLng != null) {
+            if (pCardLatLng != null && pCardLatLng.getMarker() != null) {
                 pCardLatLng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
                 setCardLatlngMarker(pCardLatLng, mShownCardMarker.getBlueIconSmall());
             }

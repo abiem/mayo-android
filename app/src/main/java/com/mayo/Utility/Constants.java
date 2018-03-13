@@ -42,6 +42,7 @@ public class Constants {
         public static final String GEOFENCE_REQ_ID = "Geofence";
         public static final int sGEOFENCE_REQ_CODE = 0;
         public static final float sGeoFenceRadius = 200.0f;
+        public static final float sGeoFenceDitance = 0.1000f;
     }
 
     class sharedPreferences {
@@ -62,6 +63,10 @@ public class Constants {
         static final String sTaskPosition_lng = "taskPosition_lng";
         static final String sUserLocation_lat = "UserLocation_lat";
         static final String sUserLocation_lng = "UserLocation_lng";
+    }
+
+    public class BroadCastReceiver {
+        public static final String sBroadCastName = "googlegeofence";
     }
 
     public class FakeUsersValues {

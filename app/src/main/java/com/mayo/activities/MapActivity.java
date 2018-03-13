@@ -1,11 +1,14 @@
 package com.mayo.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -19,6 +22,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -181,6 +185,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FirebaseDatabase mFirebaseDatabase;
     private Date lastUpdateTime;
     private GeoFencing mGeoFencing;
+    private GoogleReceiver mReceiver;
 
     @AfterViews
     protected void init() {
@@ -189,6 +194,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mNearByUsers = new HashSet<>();
         mTaskLocationsArray = new ArrayList<>();
         mTasksArray = new ArrayList<>();
+        registerReceiver();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ApngImageLoader.getInstance().displayImage("assets://apng/fist_bump_720p.png", mImageHandsViewOnMap);
         mFakeUserMarker = new ArrayList<>();
@@ -212,6 +218,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (mGeoFencing == null) {
             mGeoFencing = new GeoFencing(this);
         }
+        getFirebaseInstance();
+        mFirebaseDatabase.getTaskParticipatedByUsers(CommonUtility.getUserId(this));
+        mFirebaseDatabase.getUserIdsFromFirebase();
     }
 
     public void setViewPagerData() {
@@ -222,6 +231,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (CommonUtility.getTaskApplied(this) && mTaskTimer == null) {
             getFirebaseInstance();
             mFirebaseDatabase.setUpdateTimeOfCurrentTask(CommonUtility.getTaskData(this).getTaskID());
+            mFirebaseDatabase.setListenerForEnteringTask(CommonUtility.getTaskData(this).getTaskID());
         }
     }
 
@@ -788,6 +798,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (mUserLiveMarker != null) {
             mUserLiveMarker.stoptimertask();
         }
+        if (mReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        }
     }
 
     @Override
@@ -857,13 +870,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             geoFire.setLocation(pTimeStamp,
                     new GeoLocation(mTaskLocation.getLatitude(), mTaskLocation.getLongitude()));
             mShownCardMarker.setTaskMarker(mTaskLocation);
-            Geofence geofence = mGeoFencing.createGeofences(mTaskLocation.getLatitude(), mTaskLocation.getLongitude());
-            if (geofence != null) {
-                GeofencingRequest geofencingRequest = mGeoFencing.createGeofenceRequest(geofence);
-                if (geofencingRequest != null) {
-                    PendingResult<Status> statusPendingResult = mGeoFencing.addGeofence(geofencingRequest, mGoogleApiClient);
-                    statusPendingResult.setResultCallback(this);
-                }
+            startGeoFencing(mTaskLocation.getLatitude(), mTaskLocation.getLongitude());
+        }
+    }
+
+    private void startGeoFencing(double lat, double lng) {
+        Geofence geofence = mGeoFencing.createGeofences(lat, lng);
+        if (geofence != null) {
+            GeofencingRequest geofencingRequest = mGeoFencing.createGeofenceRequest(geofence);
+            if (geofencingRequest != null) {
+                PendingResult<Status> statusPendingResult = mGeoFencing.addGeofence(geofencingRequest, mGoogleApiClient);
+                statusPendingResult.setResultCallback(this);
             }
         }
     }
@@ -873,8 +890,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (CommonUtility.getTaskApplied(this)) {
                 LatLng latLng = CommonUtility.getTaskLocation(this);
                 double distance = mMayoApplication.distance(pLat, pLong, latLng.latitude, latLng.longitude);
-                if (distance > 200) {
+                if (distance > Constants.GeoFencing.sGeoFenceDitance) {
                     userMovedAway();
+                } else {
+                    startGeoFencing(latLng.latitude, latLng.longitude);
                 }
             }
 
@@ -995,8 +1014,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    public void updateTaskCardFromViewPager(Task pTask) {
-        mCardsDataModel.setListOnUpdationOfTask(pTask, mMapDataModels);
+    public void updateTaskCardFromViewPager(Task pTask, TaskLocations pTaskLocations) {
+        mCardsDataModel.setListOnUpdationOfTask(pTask, mMapDataModels, pTaskLocations);
         if (mMapViewPagerAdapter != null) {
             mMapViewPagerAdapter.notifyDataSetChanged();
         }
@@ -1006,6 +1025,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMayoApplication.getActivity().finish();
             mMayoApplication.setActivity(this);
         }
+
     }
 
     private void showFakeMarker() {
@@ -1102,6 +1122,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             mFirebaseDatabase.writeNewTask(task.getTaskID(), task);
                             mFirebaseDatabase.writeNewChannelForCurrentTask(task.getTaskID());
                             mFirebaseDatabase.writeTaskCreatedInUserNode(CommonUtility.getUserId(this), task.getTaskID());
+                            mFirebaseDatabase.setListenerForEnteringTask(task.getTaskID());
                             TaskLatLng taskLatLng = new TaskLatLng();
                             taskLatLng.setTask(task);
                             TaskLocations taskLocations = new TaskLocations();
@@ -1191,6 +1212,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if (mTaskTimer != null) {
                     mTaskTimer.stoptimertask();
                 }
+                if (mGeoFencing != null && mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+                    mGeoFencing.stopGeoFenceMonitoring(mGoogleApiClient);
+                }
                 updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -1238,7 +1262,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void updateTaskData(String pMessage, Task task) {
         //task will complete when expired or done
-        updateTask(true, pMessage, false);
+        updateTask(true, pMessage, task.isUserMovedOutside());
         task.setCompleted(true);
         CommonUtility.setTaskData(task, MapActivity.this);
         TaskLatLng taskLatLng = mCardsDataModel.setTaskLatlngModel(task, CommonUtility.getTaskLocation(MapActivity.this));
@@ -1257,8 +1281,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         if (task.isRecentActivity()) {
             Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
-            if (dialog != null)
+            if (dialog != null && !dialog.isShowing()) {
                 setThanksDialog(dialog);
+            }
         }
     }
 
@@ -1292,7 +1317,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (task != null) {
                 if (!task.getTaskDescription().equals(Constants.sConstantEmptyString) &&
                         !task.isUserMovedOutside()) {
-                    updateTask(false, Constants.sConstantEmptyString, true);
+                    task.setUserMovedOutside(true);
+                    CommonUtility.setTaskData(task, this);
+                    if (task.isRecentActivity()) {
+                        updateTask(false, Constants.sConstantEmptyString, true);
+                    } else {
+                        updateTask(true, getResources().getString(R.string.STATUS_FOR_MOVING_OUT), true);
+                        if (mTaskTimer != null) {
+                            mTaskTimer.stoptimertask();
+                        }
+                        CommonUtility.setTaskApplied(true, this);
+                        if (mMapViewPagerAdapter != null) {
+                            mMapViewPagerAdapter.setPostMessageView();
+                        }
+                    }
                 }
             }
         }
@@ -1312,6 +1350,39 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onPause() {
         super.onPause();
         mMapView.onPause();
+    }
+
+    public void setRecentActivity(boolean pVal) {
+        for (int i = 0; i < mMapDataModels.size(); i++) {
+            if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
+                mMapDataModels.get(i).getTaskLatLng().getTask().setRecentActivity(pVal);
+                break;
+            }
+        }
+    }
+
+
+    private void registerReceiver() {
+        LocalBroadcastManager lbc = LocalBroadcastManager.getInstance(this);
+        mReceiver = new GoogleReceiver(this);
+        lbc.registerReceiver(mReceiver, new IntentFilter(Constants.BroadCastReceiver.sBroadCastName));
+    }
+
+    class GoogleReceiver extends BroadcastReceiver {
+
+        MapActivity mActivity;
+
+        public GoogleReceiver(Activity activity) {
+            mActivity = (MapActivity) activity;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            userMovedAway();
+            if (mGeoFencing != null && mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+                mGeoFencing.stopGeoFenceMonitoring(mGoogleApiClient);
+            }
+        }
     }
 
 }
