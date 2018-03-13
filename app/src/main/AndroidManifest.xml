@@ -32,18 +32,22 @@
 
         <activity
             android:name=".activities.MapActivity_"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppThemeWithNoActionBar"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
-        <service android:name=".firebase.services.MyFirebaseMessagingService" android:exported="false">
+        <service
+            android:name=".firebase.services.MyFirebaseMessagingService"
+            android:exported="false">
             <intent-filter>
 
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service android:name=".firebase.services.MyFirebaseInstanceIDService" android:exported="false">
+        <service
+            android:name=".firebase.services.MyFirebaseInstanceIDService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
@@ -52,6 +56,11 @@
             android:name=".backgroundservice.BackgroundLocationService"
             android:enabled="true"
             android:exported="true" />
+
+        <service
+            android:name=".backgroundservice.GeofenceTransitionService"
+            android:exported="true"
+            android:enabled="true"/>
 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"

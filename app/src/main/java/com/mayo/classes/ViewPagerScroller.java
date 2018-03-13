@@ -49,9 +49,9 @@ public class ViewPagerScroller {
         int value = -1;
         for (int i = 0; i < mMapDataModel.size(); i++) {
             if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
+                mMapDataModel.get(i).getCardLatlng().getMarker().remove();
                 mMapViewPagerAdapter.deleteItemFromArrayList(i);
                 mMapViewPagerAdapter.notifyDataSetChanged();
-                mMapDataModel.get(i).getCardLatlng().getMarker().remove();
                 value = CommonUtility.getPoints(mContext) + 1;
                 CommonUtility.setPoints(value, mContext);
                 CommonUtility.setFakeCardThree(true, mContext);

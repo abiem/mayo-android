@@ -247,6 +247,7 @@ public class CommonUtility {
         return gson.fromJson(json, Task.class);
     }
 
+
     public static void setUserLocation(Location pLocation, Context pContext) {
         if (mSharedPreferences == null) {
             initializeSharedPreference(pContext);

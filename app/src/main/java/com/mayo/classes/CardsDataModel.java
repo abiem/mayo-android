@@ -317,6 +317,14 @@ public class CardsDataModel {
         if (!CommonUtility.getFakeCardThree(mContext)) {
             count++;
         }
+        for (int i = 0; i < mMapDataModels.size(); i++) {
+            if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue()) {
+                CardLatlng cardLatlng = mMapDataModels.get(i).getCardLatlng();
+                if (cardLatlng.getMarker() != null) {
+                    cardLatlng.getMarker().remove();
+                }
+            }
+        }
         mMapDataModels.subList(count + 1, mMapDataModels.size()).clear();
         if (mMapViewPagerAdapter != null) {
             mMapViewPagerAdapter.notifyDataSetChanged();
@@ -337,7 +345,9 @@ public class CardsDataModel {
         if (mapDataModel != null) {
             for (int i = 0; i < pMapDataModel.size(); i++) {
                 if (pMapDataModel.get(i).getTimeCreated() != null && pMapDataModel.get(i).getTimeCreated().equals(mapDataModel.getTimeCreated())) {
-                    pMapDataModel.get(i).getCardLatlng().getMarker().remove();
+                    if (pMapDataModel.get(i).getCardLatlng().getMarker() != null) {
+                        pMapDataModel.get(i).getCardLatlng().getMarker().remove();
+                    }
                     pMapDataModel.remove(i);
                     break;
                 }

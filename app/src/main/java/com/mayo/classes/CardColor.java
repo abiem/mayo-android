@@ -24,7 +24,7 @@ public class CardColor {
             {"#e86d5d", "#e8c378"} // dark red to light orange
     };
 
-    public static String[] expireCard = {"66888888", "40FFFFFF"};
+    public static String[] expireCard = {"66888888", "E6eeeeee"};
 
     public static int generateRandomColor() {
         // generate random number between 0 and length of color choices

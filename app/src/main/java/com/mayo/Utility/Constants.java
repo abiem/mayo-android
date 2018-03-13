@@ -36,7 +36,13 @@ public class Constants {
     public static final String sCardsData = "cardsData";
     public static final int sTaskExpiryTime = 1000 * 60 * 60; //3600seconds=1hour
     public static final int sLocationUpdateTime = 1000 * 60 * 10; //600seconds=10min
-    public static final String  sYes = "yes";
+    public static final String sYes = "yes";
+
+    public class GeoFencing {
+        public static final String GEOFENCE_REQ_ID = "Geofence";
+        public static final int sGEOFENCE_REQ_CODE = 0;
+        public static final float sGeoFenceRadius = 200.0f;
+    }
 
     class sharedPreferences {
         static final String sTutorialDone = "isTutorialDone";

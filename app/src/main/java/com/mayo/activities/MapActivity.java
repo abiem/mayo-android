@@ -36,6 +36,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
@@ -44,6 +45,11 @@ import com.github.sahasbhop.apngview.ApngDrawable;
 import com.github.sahasbhop.apngview.ApngImageLoader;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -71,6 +77,7 @@ import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
 import com.mayo.classes.AnimateCard;
 import com.mayo.classes.CardsDataModel;
+import com.mayo.classes.GeoFencing;
 import com.mayo.classes.MarkerClick;
 import com.mayo.classes.ShownCardMarker;
 import com.mayo.classes.TaskTimer;
@@ -107,7 +114,7 @@ import static com.mayo.Utility.CommonUtility.isLocationEnabled;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_map)
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationUpdationInterface, ViewClickListener, GoogleMap.OnMapClickListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationUpdationInterface, ViewClickListener, GoogleMap.OnMapClickListener, ResultCallback<Status> {
 
     @App
     MayoApplication mMayoApplication;
@@ -173,6 +180,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private TaskTimer mTaskTimer;
     private FirebaseDatabase mFirebaseDatabase;
     private Date lastUpdateTime;
+    private GeoFencing mGeoFencing;
 
     @AfterViews
     protected void init() {
@@ -200,6 +208,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             CommonUtility.setFakeCardShownOrNot(false, this);
             AnimateCard animateCard = new AnimateCard(this, mFadeInOutCardView, mViewPagerMap);
             animateCard.playFadeInOutAnimation();
+        }
+        if (mGeoFencing == null) {
+            mGeoFencing = new GeoFencing(this);
         }
     }
 
@@ -426,6 +437,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMapViewPagerAdapter.setPostCardText();
     }
 
+    @Override
+    public void onResult(@NonNull Status status) {
+        if (!status.isSuccess()) {
+            String errorMessage = mGeoFencing.getErrorString(this, status.getStatusCode());
+            Toast.makeText(getApplicationContext(), errorMessage,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
     private class CountDown extends CountDownTimer {
         CountDown(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
@@ -584,6 +604,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     private void setCurrentLocation(Location location) {
         mCurrentLocation = location;
+        setUpGeoFencingForTask(location.getLatitude(), location.getLongitude());
         CommonUtility.setUserLocation(mCurrentLocation, this);
         LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
         mCurrentLat = location.getLatitude();
@@ -836,6 +857,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             geoFire.setLocation(pTimeStamp,
                     new GeoLocation(mTaskLocation.getLatitude(), mTaskLocation.getLongitude()));
             mShownCardMarker.setTaskMarker(mTaskLocation);
+            Geofence geofence = mGeoFencing.createGeofences(mTaskLocation.getLatitude(), mTaskLocation.getLongitude());
+            if (geofence != null) {
+                GeofencingRequest geofencingRequest = mGeoFencing.createGeofenceRequest(geofence);
+                if (geofencingRequest != null) {
+                    PendingResult<Status> statusPendingResult = mGeoFencing.addGeofence(geofencingRequest, mGoogleApiClient);
+                    statusPendingResult.setResultCallback(this);
+                }
+            }
+        }
+    }
+
+    public void setUpGeoFencingForTask(double pLat, double pLong) {
+        if (pLat != 0.0 && pLong != 0.0) {
+            if (CommonUtility.getTaskApplied(this)) {
+                LatLng latLng = CommonUtility.getTaskLocation(this);
+                double distance = mMayoApplication.distance(pLat, pLong, latLng.latitude, latLng.longitude);
+                if (distance > 200) {
+                    userMovedAway();
+                }
+            }
+
         }
     }
 
@@ -894,6 +936,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void fetchAfterNearByTask() {
         getFirebaseInstance();
+        mFirebaseDatabase.clearTaskArray();
         if (mTaskLocationsArray.size() > 0) {
             for (int i = 0; i < mTaskLocationsArray.size(); i++) {
                 mFirebaseDatabase.getTaskFromFirebase(mTaskLocationsArray.get(i));
@@ -956,6 +999,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mCardsDataModel.setListOnUpdationOfTask(pTask, mMapDataModels);
         if (mMapViewPagerAdapter != null) {
             mMapViewPagerAdapter.notifyDataSetChanged();
+        }
+        if (mMayoApplication.gettActivityName().equals(ChatActivity_.class.getSimpleName()) &&
+                mMayoApplication.isActivityVisible() && pTask.isCompleted()) {
+            mMayoApplication.hideKeyboard(mMayoApplication.getActivity().getCurrentFocus());
+            mMayoApplication.getActivity().finish();
+            mMayoApplication.setActivity(this);
         }
     }
 
@@ -1072,8 +1121,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         }
                         break;
                     case R.id.doneIcon:
-                        setParentAnmationOfQuest(R.anim.slide_up);
-                        setParentQuestButton(View.VISIBLE);
+                        if (mMayoApplication.isConnected()) {
+                            setParentAnmationOfQuest(R.anim.slide_up);
+                            setParentQuestButton(View.VISIBLE);
+                        } else {
+                            showInternetConnectionDialog();
+                        }
                         break;
                 }
                 break;
@@ -1185,7 +1238,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void updateTaskData(String pMessage, Task task) {
         //task will complete when expired or done
-        updateTask(true, pMessage);
+        updateTask(true, pMessage, false);
         task.setCompleted(true);
         CommonUtility.setTaskData(task, MapActivity.this);
         TaskLatLng taskLatLng = mCardsDataModel.setTaskLatlngModel(task, CommonUtility.getTaskLocation(MapActivity.this));
@@ -1227,10 +1280,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mParentQuestLayout.startAnimation(slide_up);
     }
 
-    private void updateTask(boolean pCompleteOrNot, String pCompleteType) {
+    private void updateTask(boolean pCompleteOrNot, String pCompleteType, boolean pUserMoveOutside) {
         getFirebaseInstance();
-        Task task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this);
+        Task task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside);
         mFirebaseDatabase.updateTask(task.getTaskID(), task);
+    }
+
+    public void userMovedAway() {
+        if (CommonUtility.getTaskApplied(this)) {
+            Task task = CommonUtility.getTaskData(this);
+            if (task != null) {
+                if (!task.getTaskDescription().equals(Constants.sConstantEmptyString) &&
+                        !task.isUserMovedOutside()) {
+                    updateTask(false, Constants.sConstantEmptyString, true);
+                }
+            }
+        }
     }
 
     public void openChatMessageView(String pMessage, boolean pExpiredCard, int pPosition) {

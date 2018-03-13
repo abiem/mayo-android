@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 
@@ -65,6 +66,7 @@ public class FirebaseDatabase {
     private boolean sendMessageFromLocalDevice = false;
     private HashMap locationHashMap;
     private int locationHashMapValue = 0;
+    private boolean isAnyActivityInsideCurrentTask;
 
     public FirebaseDatabase(Context pContext) {
         mContext = pContext;
@@ -76,8 +78,8 @@ public class FirebaseDatabase {
     }
 
     private void initDatabase() {
-        mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
-        // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
+       // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
+         mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
     }
 
     public void writeNewTask(String pTimeStamp, Task pTask) {
@@ -468,8 +470,32 @@ public class FirebaseDatabase {
             writeNewChannel(pTimeStamp, message);
             ((ChatActivity) pContext).sendMessagesToUser(String.valueOf(currentUserColorIndex));
         }
-
     }
+
+    public void checkAnyActvityInsideTask(Context pContext, final String pTimeStamp) {
+        mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap usersHashList = (HashMap) dataSnapshot.getValue();
+                    if (usersHashList != null) {
+                        for (Object o : usersHashList.entrySet()) {
+                            Map.Entry pair = (Map.Entry) o;
+                            if (!pair.getKey().equals(pTimeStamp)) {
+                                isAnyActivityInsideCurrentTask = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 
     private Message setMessageData(String pSenderId, String pMessage) {
         Message message = new Message();
@@ -564,7 +590,7 @@ public class FirebaseDatabase {
         return task;
     }
 
-    public Task updateTaskOnFirebase(boolean pCompleteOrNot, String pCompleteType, Context pContext) {
+    public Task updateTaskOnFirebase(boolean pCompleteOrNot, String pCompleteType, Context pContext,boolean pUserMoveOutside) {
         Task task = CommonUtility.getTaskData(pContext);
         Task updateTaskData = new Task();
         updateTaskData.setCreatedby(CommonUtility.getUserId(pContext));
@@ -574,7 +600,7 @@ public class FirebaseDatabase {
         updateTaskData.setCompleted(pCompleteOrNot);
         updateTaskData.setTaskDescription(task.getTaskDescription());
         updateTaskData.setTimeUpdated(CommonUtility.getLocalTime()); //this is updating time but first time we showing create task time
-        updateTaskData.setUserMovedOutside(false);
+        updateTaskData.setUserMovedOutside(pUserMoveOutside);
         updateTaskData.setRecentActivity(false);
         updateTaskData.setStartColor(task.getStartColor());
         updateTaskData.setEndColor(task.getEndColor());
@@ -665,6 +691,12 @@ public class FirebaseDatabase {
         BitmapDescriptor fakeLocationIcon = BitmapDescriptorFactory.fromBitmap(bitmap);
         LatLng latLng = pUserMarker.getLatLng();
         return new MarkerOptions().position(latLng).icon(fakeLocationIcon);
+    }
+
+    public void clearTaskArray() {
+        if (mHashMap != null) {
+            mHashMap.clear();
+        }
     }
 
 

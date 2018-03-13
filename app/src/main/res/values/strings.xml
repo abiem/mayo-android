@@ -73,4 +73,11 @@
     <string name="notification_nearby">Someone has a new quest nearby</string>
     <string name="notification_posted_message">New Message Posted</string>
     <string name="notification_someone">Someone posted in</string>
+
+    <!--GeoFences Details-->
+    <string name="geofence_not_available">Geofencing Not Available</string>
+    <string name="geofence_too_many_geofences">Geofence has too many geofences</string>
+    <string name="geofence_too_many_pending_intents">Geofences too many pending intent</string>
+    <string name="unknown_geofence_error">Geofence Unknown error</string>
+    <string name="geofences_added">GeoFence added successfully</string>
 </resources>

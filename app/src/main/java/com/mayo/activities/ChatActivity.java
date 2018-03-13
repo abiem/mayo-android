@@ -94,6 +94,7 @@ public class ChatActivity extends AppCompatActivity {
     @AfterViews
     protected void init() {
         pBundle = getIntent().getExtras();
+        mMayoApplication.setActivity(this);
         if (pBundle != null) {
             setActionBar(pBundle.getString(Constants.sPostMessage));
             if (pBundle.getBoolean(Constants.sQuestMessageShow)) {
@@ -105,6 +106,12 @@ public class ChatActivity extends AppCompatActivity {
         }
         setRecyclerView();
         getFirebaseInstance();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMayoApplication.activityResumed();
     }
 
     private void setRecyclerView() {
@@ -173,7 +180,11 @@ public class ChatActivity extends AppCompatActivity {
                     mFirebaseDatabase.setMessage(this, CommonUtility.getUserId(this),
                             mMessageText, task.getTaskID());
                 }
-                mFirebaseDatabase.writeTaskParticipated(CommonUtility.getUserId(this), task.getTaskID());
+                if (task != null) {
+                    task.setRecentActivity(true);
+                    mFirebaseDatabase.updateTask(task.getTaskID(), task);
+                    mFirebaseDatabase.writeTaskParticipated(CommonUtility.getUserId(this), task.getTaskID());
+                }
             } else {
                 mColorIndex = "0";
                 mMessageText = mMessageChatText.getText().toString().trim();
@@ -286,5 +297,11 @@ public class ChatActivity extends AppCompatActivity {
                 mFirebaseDatabase.getMessagesFromFirebase(mMapDataModel.getTaskLatLng().getTask().getTaskID(), mChatAdapter, mMessageList, mChatRecyclerView);
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mMayoApplication.activityDestroyed();
     }
 }
