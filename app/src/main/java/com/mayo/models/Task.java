@@ -1,6 +1,7 @@
 package com.mayo.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -16,7 +17,7 @@ public class Task implements Serializable{
     private String endColor;
     private String taskID;
     private String completeType;
-    private String helpedBy;
+    private ArrayList<String> helpedBy;
     private String createdby;
     private boolean recentActivity;
     private boolean userMovedOutside;
@@ -85,11 +86,11 @@ public class Task implements Serializable{
         this.completeType = completeType;
     }
 
-    public String getHelpedBy() {
+    public ArrayList<String> getHelpedBy() {
         return helpedBy;
     }
 
-    public void setHelpedBy(String helpedBy) {
+    public void setHelpedBy(ArrayList<String> helpedBy) {
         this.helpedBy = helpedBy;
     }
 

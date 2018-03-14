@@ -8,10 +8,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.mayo.R;
+import com.mayo.Utility.Constants;
 import com.mayo.classes.ChatBubbleColors;
+import com.mayo.interfaces.OnItemClickListener;
 import com.mayo.models.Message;
 
 import java.util.ArrayList;
@@ -23,10 +26,12 @@ import java.util.ArrayList;
 public class ThanksChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
     private ArrayList<Message> mChatMessages;
+    private OnItemClickListener mListener;
 
-    public ThanksChatAdapter(ArrayList<Message> pChatMessages, Context pContext) {
+    public ThanksChatAdapter(ArrayList<Message> pChatMessages, Context pContext, OnItemClickListener pOnItemClickListener) {
         this.mChatMessages = pChatMessages;
         this.mContext = pContext;
+        this.mListener = pOnItemClickListener;
     }
 
     @Override
@@ -38,8 +43,10 @@ public class ThanksChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         SenderList helpMessagesList = (SenderList) holder;
-        helpMessagesList.messageText.setText(mChatMessages.get(position).getText());
-        setHelpMessageColor(helpMessagesList, position);
+        if (mChatMessages.get(position).getMessageFromLocalDevice().equals(Constants.MessageFromLocalDevice.no)) {
+            helpMessagesList.messageText.setText(mChatMessages.get(position).getText());
+            setHelpMessageColor(helpMessagesList, position);
+        }
     }
 
     @Override
@@ -47,14 +54,32 @@ public class ThanksChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         return mChatMessages.size();
     }
 
-    public static class SenderList extends RecyclerView.ViewHolder {
+
+    public class SenderList extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView messageText;
         View viewColor;
+        LinearLayout messageBackground;
 
         SenderList(View view) {
             super(view);
+            view.setOnClickListener(this);
             messageText = (TextView) view.findViewById(R.id.help_messages_list);
             viewColor = view.findViewById(R.id.backgroundChatColor);
+            messageBackground = (LinearLayout) view.findViewById(R.id.messageBackground);
+        }
+
+        @Override
+        public void onClick(View v) {
+            boolean checkSelected;
+            if (messageBackground.getBackground().getConstantState() == mContext.getResources().
+                    getDrawable(R.drawable.background_white).getConstantState()) {
+                messageBackground.setBackground(mContext.getResources().getDrawable(R.drawable.background_white_transparent));
+                checkSelected = false;
+            } else {
+                messageBackground.setBackground(mContext.getResources().getDrawable(R.drawable.background_white));
+                checkSelected = true;
+            }
+            mListener.onItemClick(v, getAdapterPosition(), checkSelected);
         }
     }
 

@@ -89,6 +89,7 @@ import com.mayo.classes.UserLiveMarker;
 import com.mayo.classes.ViewPagerScroller;
 import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.interfaces.LocationUpdationInterface;
+import com.mayo.interfaces.OnItemClickListener;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.CardLatlng;
 import com.mayo.models.MarkerTag;
@@ -118,7 +119,8 @@ import static com.mayo.Utility.CommonUtility.isLocationEnabled;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_map)
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, LocationUpdationInterface, ViewClickListener, GoogleMap.OnMapClickListener, ResultCallback<Status> {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
+        LocationUpdationInterface, ViewClickListener, GoogleMap.OnMapClickListener, ResultCallback<Status>, OnItemClickListener {
 
     @App
     MayoApplication mMayoApplication;
@@ -186,6 +188,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private Date lastUpdateTime;
     private GeoFencing mGeoFencing;
     private GoogleReceiver mReceiver;
+    private boolean isThanksDialogOpen = false;
+    private ArrayList<Message> mMessageList;
+    private ArrayList<Message> mhelpMessageList;
+    private TextView mThanksTextView;
 
     @AfterViews
     protected void init() {
@@ -194,6 +200,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mNearByUsers = new HashSet<>();
         mTaskLocationsArray = new ArrayList<>();
         mTasksArray = new ArrayList<>();
+        mhelpMessageList = new ArrayList<>();
         registerReceiver();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         ApngImageLoader.getInstance().displayImage("assets://apng/fist_bump_720p.png", mImageHandsViewOnMap);
@@ -221,6 +228,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         getFirebaseInstance();
         mFirebaseDatabase.getTaskParticipatedByUsers(CommonUtility.getUserId(this));
         mFirebaseDatabase.getUserIdsFromFirebase();
+        if (CommonUtility.getTaskApplied(this)) {
+            Task task = CommonUtility.getTaskData(this);
+            mFirebaseDatabase.getAllMessagesOfTaskEnteredByUser(task.getTaskID(), this);
+        }
     }
 
     public void setViewPagerData() {
@@ -453,6 +464,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             String errorMessage = mGeoFencing.getErrorString(this, status.getStatusCode());
             Toast.makeText(getApplicationContext(), errorMessage,
                     Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onItemClick(View view, int position, boolean isSelected) {
+        Message message = mMessageList.get(position);
+        if (isSelected) {
+            mhelpMessageList.add(message);
+        } else {
+            for (int i = 0; i < mhelpMessageList.size(); i++) {
+                if (mhelpMessageList.get(i).getSenderId().equals(message.getSenderId())) {
+                    mhelpMessageList.remove(i);
+                }
+            }
+        }
+        if (mThanksTextView != null) {
+            if (mhelpMessageList.size() > 0) {
+                mThanksTextView.setAlpha(Constants.sNonTransparencyLevel);
+            } else {
+                mThanksTextView.setAlpha(Constants.sTransparencyLevelFade);
+            }
         }
     }
 
@@ -1123,6 +1155,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             mFirebaseDatabase.writeNewChannelForCurrentTask(task.getTaskID());
                             mFirebaseDatabase.writeTaskCreatedInUserNode(CommonUtility.getUserId(this), task.getTaskID());
                             mFirebaseDatabase.setListenerForEnteringTask(task.getTaskID());
+                            mFirebaseDatabase.getAllMessagesOfTaskEnteredByUser(task.getTaskID(), this);
                             TaskLatLng taskLatLng = new TaskLatLng();
                             taskLatLng.setTask(task);
                             TaskLocations taskLocations = new TaskLocations();
@@ -1215,6 +1248,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if (mGeoFencing != null && mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
                     mGeoFencing.stopGeoFenceMonitoring(mGoogleApiClient);
                 }
+                isThanksDialogOpen = true;
                 updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -1225,31 +1259,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
             mHelpRecyclerView = (RecyclerView) dialog.findViewById(R.id.helpPersonsRecyclerView);
             setThanksDialog(dialog);
+            removeMessageListener();
         }
     }
 
     private void setThanksDialog(final Dialog pDialog) {
-        ArrayList<Message> messageList = new ArrayList<>();
-        TextView thanksTextView = (TextView) pDialog.findViewById(R.id.thanks);
+        getFirebaseInstance();
+        mMessageList = mFirebaseDatabase.getLastFiveMessagesFromMessagesList();
+        mThanksTextView = (TextView) pDialog.findViewById(R.id.thanks);
         TextView noThanksTextView = (TextView) pDialog.findViewById(R.id.no_one_helped);
         pDialog.findViewById(R.id.lineThanks).setAlpha(Constants.sTransparencyLevelFade);
         if (mHelpRecyclerView != null) {
-            ThanksChatAdapter helpChatAdapter = new ThanksChatAdapter(messageList, this);
+            ThanksChatAdapter helpChatAdapter = new ThanksChatAdapter(mMessageList, this, this);
             LinearLayoutManager layoutManager = new LinearLayoutManager(this);
             mHelpRecyclerView.setLayoutManager(layoutManager);
             mHelpRecyclerView.setAdapter(helpChatAdapter);
         }
-        if (messageList.size() == 0) {
-            thanksTextView.setAlpha(Constants.sTransparencyLevelFade);
-            noThanksTextView.setAlpha(Constants.sNonTransparencyLevel);
-        } else {
-            thanksTextView.setAlpha(Constants.sNonTransparencyLevel);
-            noThanksTextView.setAlpha(Constants.sTransparencyLevelFade);
-        }
-        thanksTextView.setOnClickListener(new View.OnClickListener() {
+        mThanksTextView.setAlpha(Constants.sTransparencyLevelFade);
+        noThanksTextView.setAlpha(Constants.sNonTransparencyLevel);
+        mThanksTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (mThanksTextView.getAlpha() == Constants.sNonTransparencyLevel) {
+                    Toast.makeText(MapActivity.this, "update helped by", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         noThanksTextView.findViewById(R.id.no_one_helped).setOnClickListener(new View.OnClickListener() {
@@ -1258,6 +1291,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 pDialog.dismiss();
             }
         });
+    }
+
+    private void removeMessageListener() {
+        getFirebaseInstance();
+        mFirebaseDatabase.removeGetAllMessagesListener();
     }
 
     public void updateTaskData(String pMessage, Task task) {
@@ -1279,7 +1317,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (pMessage.equals(getResources().getString(R.string.STATUS_FOR_TIME_EXPIRED))) {
             showLocalNotification(1);
         }
-        if (task.isRecentActivity()) {
+        if (task.isRecentActivity() && !isThanksDialogOpen) {
             Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
             if (dialog != null && !dialog.isShowing()) {
                 setThanksDialog(dialog);

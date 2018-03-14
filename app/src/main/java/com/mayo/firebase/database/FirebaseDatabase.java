@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.widget.TextView;
 
 import com.firebase.geofire.GeoFire;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,7 +26,6 @@ import com.mayo.activities.MapActivity;
 import com.mayo.adapters.ChatListAdapter;
 import com.mayo.models.Location;
 import com.mayo.models.Message;
-import com.mayo.models.ScoreDetail;
 import com.mayo.models.Task;
 import com.mayo.models.TaskCreated;
 import com.mayo.models.TaskLocations;
@@ -38,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -62,11 +62,11 @@ public class FirebaseDatabase {
     public int currentUserColorIndex = -1;
     private boolean currentUserIsInConversation = false;
     private int usersCountAndNewColorIndex;
-    private ChildEventListener mMessagelistener;
+    private ChildEventListener mMessagelistener, mMessagesGetReferences;
     private boolean sendMessageFromLocalDevice = false;
     private HashMap locationHashMap;
     private int locationHashMapValue = 0;
-    private boolean isAnyActivityInsideCurrentTask;
+
 
     public FirebaseDatabase(Context pContext) {
         mContext = pContext;
@@ -80,7 +80,7 @@ public class FirebaseDatabase {
     }
 
     private void initDatabase() {
-        // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
+       // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
         mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
     }
 
@@ -235,8 +235,10 @@ public class FirebaseDatabase {
         mDatabaseReference.child("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                mGetAllUsers.clear();
                 if (dataSnapshot.getValue() != null) {
                     mGetAllUsers = (HashMap) dataSnapshot.getValue();
+                    Log.e("Get All users", "" + mGetAllUsers.size());
                 }
             }
 
@@ -245,6 +247,59 @@ public class FirebaseDatabase {
 
             }
         });
+    }
+
+    public void getAllMessagesOfTaskEnteredByUser(String pTimeStamp, Context pContext) {
+        mMessagesGetReferences = mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap messageHashList = (HashMap) dataSnapshot.getValue();
+                    if (messageHashList != null) {
+                        Message message = new Message();
+                        message.setColorIndex(messageHashList.get("colorIndex").toString());
+                        message.setDateCreated(messageHashList.get("dateCreated").toString());
+                        message.setSenderId(messageHashList.get("senderId").toString());
+                        message.setSenderName(messageHashList.get("senderName").toString());
+                        if (message.getSenderId().equals(CommonUtility.getUserId(mContext))) {
+                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
+                            message.setUserType(Constants.UserType.OTHER);
+                        } else {
+                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
+                            message.setUserType(Constants.UserType.SELF);
+                        }
+                        message.setText(messageHashList.get("text").toString());
+                        mMessageHashMap.put(message.getSenderId(), message);
+                    }
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void removeGetAllMessagesListener() {
+        if (mMessagesGetReferences != null) {
+            mDatabaseReference.removeEventListener(mMessagesGetReferences);
+        }
     }
 
     public void writeNewUserLocation(final String pUserId, final android.location.Location pLocation) {
@@ -570,7 +625,7 @@ public class FirebaseDatabase {
         Task task = new Task();
         task.setCreatedby(CommonUtility.getUserId(pContext));
         task.setTaskID(CommonUtility.convertLocalTimeToUTC());
-        task.setHelpedBy(Constants.sConstantEmptyString);
+        task.setHelpedBy(new ArrayList<String>());
         task.setTimeCreated(CommonUtility.getLocalTime()); //this is time when we create task
         task.setCompleted(false);
         task.setTaskDescription(pMessage);
@@ -588,7 +643,7 @@ public class FirebaseDatabase {
         Task updateTaskData = new Task();
         updateTaskData.setCreatedby(CommonUtility.getUserId(pContext));
         updateTaskData.setTaskID(task.getTaskID());
-        updateTaskData.setHelpedBy(Constants.sConstantEmptyString);
+        updateTaskData.setHelpedBy(new ArrayList<String>());
         updateTaskData.setTimeCreated(task.getTimeCreated()); //this is time when we create task
         updateTaskData.setCompleted(pCompleteOrNot);
         updateTaskData.setTaskDescription(task.getTaskDescription());
@@ -778,6 +833,27 @@ public class FirebaseDatabase {
 
             }
         });
+    }
+
+    /*
+        This will get last message from each user and display only last 5 messages.
+     */
+    public ArrayList<Message> getLastFiveMessagesFromMessagesList() {
+        ArrayList<Message> messageArrayList = new ArrayList<>();
+        if (mMessageHashMap.size() > 0 && mGetAllUsers.size() > 0) {
+            for (Object o : mMessageHashMap.entrySet()) {
+                Map.Entry pair = (Map.Entry) o;
+                if (mGetAllUsers.containsKey(pair.getKey()) && !pair.getKey().equals(CommonUtility.getUserId(mContext))) {
+                    messageArrayList.add((Message) pair.getValue());
+                }
+            }
+        }
+        clearMessageHashMap();
+        return messageArrayList;
+    }
+
+    private void clearMessageHashMap() {
+        mMessageHashMap.clear();
     }
 
 }
