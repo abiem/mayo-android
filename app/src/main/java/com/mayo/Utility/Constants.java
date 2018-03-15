@@ -38,6 +38,34 @@ public class Constants {
     public static final int sLocationUpdateTime = 1000 * 60 * 10; //600seconds=10min
     public static final String sYes = "yes";
 
+    public class Notifications {
+        public static final int sNOTIFICATION_MESSAGE = 0;
+        public static final int sNOTIFICATION_WERE_THANKS = 1;
+        public static final int sNOTIFICATION_TOPIC_COMPLETED = 2;
+        public static final int sNOTIFICATION_NEARBY_TASK = 3;
+        public static final String sFCM_URL = "https://fcm.googleapis.com/fcm/send";
+        public static final String sSERVER_KEY = "AAAAYgVZ9lU:APA91bExQ_X8TFudFkv5_5VJ9E70YQ6uB6hlZgkQENBNCOOZl8e_EHsD-WUkGQ2pFz78qZwLtwPvA_kJRNJfYK6r_tpANKwrOn7ZJeeVmCoJBLyO-aqOPQYEncPD05-UleyFfkiVYsPh";
+        public static final String sTo = "to";
+        public static final String sPriority = "priority";
+        public static final String sBody = "body";
+        public static final String sTitle = "title";
+        public static final String sSound = "sound";
+        public static final String sNotification = "notification";
+        public static final String sNotification_Type = "notification_type";
+        public static final String sSenderId = "sender_id";
+        public static final String sChannelId = "channelId";
+        public static final String sTaskDescription = "task_description";
+        public static final String sData = "data";
+        public static final String sTaskId = "taskID";
+
+        public static final String sNOTIFICATION_MESSAGE_App = "notification_message";
+        public static final String sNOTIFICATION_WERE_THANKS_App = "notification_were_thanks";
+        public static final String sNOTIFICATION_TOPIC_COMPLETED_App = "notification_topic_completed";
+        public static final String sNOTIFICATION_NEARBY_TASK_App = "notification_nearby_task";
+        public static final String sNOTIFICATION_TO_DEVICE = "notification_to_device";
+        public static final String sNOTIFICATION_TO_TOPIC = "notification_to_topic";
+    }
+
     public class GeoFencing {
         public static final String GEOFENCE_REQ_ID = "Geofence";
         public static final int sGEOFENCE_REQ_CODE = 0;

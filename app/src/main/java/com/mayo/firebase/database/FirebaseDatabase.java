@@ -18,6 +18,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.mayo.Notifications.PushNotificationManager;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 
@@ -66,6 +68,7 @@ public class FirebaseDatabase {
     private boolean sendMessageFromLocalDevice = false;
     private HashMap locationHashMap;
     private int locationHashMapValue = 0;
+    private PushNotificationManager mPushNotificationManager;
 
 
     public FirebaseDatabase(Context pContext) {
@@ -77,10 +80,11 @@ public class FirebaseDatabase {
         mGetAllUsers = new HashMap();
         //intialize database reference
         initDatabase();
+        getInstancePushNotificationManager();
     }
 
     private void initDatabase() {
-       // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
+        // mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
         mDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference();
     }
 
@@ -510,27 +514,31 @@ public class FirebaseDatabase {
             mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    HashMap usersValue = (HashMap) dataSnapshot.getValue();
-                    if (usersValue != null) {
-                        for (Object o : usersValue.entrySet()) {
-                            Map.Entry pair = (Map.Entry) o;
-                            if (pair.getKey().equals(CommonUtility.getUserId(mContext))) {
-                                currentUserColorIndex = Integer.parseInt(pair.getValue().toString());
-                                currentUserIsInConversation = true;
-                                break;
+                    try {
+                        HashMap usersValue = (HashMap) dataSnapshot.getValue();
+                        if (usersValue != null) {
+                            for (Object o : usersValue.entrySet()) {
+                                Map.Entry pair = (Map.Entry) o;
+                                if (pair.getKey().equals(CommonUtility.getUserId(mContext))) {
+                                    currentUserColorIndex = Integer.parseInt(pair.getValue().toString());
+                                    currentUserIsInConversation = true;
+                                    break;
+                                }
                             }
-                        }
 
-                        // if the user is not in the conversation
-                        if (!currentUserIsInConversation) {
-                            usersCountAndNewColorIndex = usersValue.size();
-                            //save the index
-                            currentUserColorIndex = usersCountAndNewColorIndex;
+                            // if the user is not in the conversation
+                            if (!currentUserIsInConversation) {
+                                usersCountAndNewColorIndex = usersValue.size();
+                                //save the index
+                                currentUserColorIndex = usersCountAndNewColorIndex;
+                            }
+                            Message message = setMessageData(pSenderId, pMessage);
+                            writeNewChannel(pTimeStamp, message);
                         }
-                        Message message = setMessageData(pSenderId, pMessage);
-                        writeNewChannel(pTimeStamp, message);
+                        ((ChatActivity) pContext).sendMessagesToUser(String.valueOf(currentUserColorIndex));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    ((ChatActivity) pContext).sendMessagesToUser(String.valueOf(currentUserColorIndex));
                 }
 
                 @Override
@@ -638,18 +646,18 @@ public class FirebaseDatabase {
         return task;
     }
 
-    public Task updateTaskOnFirebase(boolean pCompleteOrNot, String pCompleteType, Context pContext, boolean pUserMoveOutside) {
+    public Task updateTaskOnFirebase(boolean pCompleteOrNot, String pCompleteType, Context pContext, boolean pUserMoveOutside, boolean pRecentActivity, ArrayList<String> pArrayList) {
         Task task = CommonUtility.getTaskData(pContext);
         Task updateTaskData = new Task();
         updateTaskData.setCreatedby(CommonUtility.getUserId(pContext));
         updateTaskData.setTaskID(task.getTaskID());
-        updateTaskData.setHelpedBy(new ArrayList<String>());
+        updateTaskData.setHelpedBy(pArrayList);
         updateTaskData.setTimeCreated(task.getTimeCreated()); //this is time when we create task
         updateTaskData.setCompleted(pCompleteOrNot);
         updateTaskData.setTaskDescription(task.getTaskDescription());
         updateTaskData.setTimeUpdated(CommonUtility.getLocalTime()); //this is updating time but first time we showing create task time
         updateTaskData.setUserMovedOutside(pUserMoveOutside);
-        updateTaskData.setRecentActivity(false);
+        updateTaskData.setRecentActivity(pRecentActivity);
         updateTaskData.setStartColor(task.getStartColor());
         updateTaskData.setEndColor(task.getEndColor());
         updateTaskData.setCompleteType(pCompleteType);
@@ -849,11 +857,46 @@ public class FirebaseDatabase {
             }
         }
         clearMessageHashMap();
-        return messageArrayList;
+        return new ArrayList<>(messageArrayList.subList(Math.max(messageArrayList.size() - 5, 0), messageArrayList.size()));
     }
 
     private void clearMessageHashMap() {
         mMessageHashMap.clear();
     }
 
+    private void getInstancePushNotificationManager() {
+        if (mPushNotificationManager == null) {
+            mPushNotificationManager = new PushNotificationManager();
+        }
+    }
+
+    // Send Push notification to nearby users.
+    public void sendPushNotificationToNearbyUsers(HashSet<UserMarker> pNearByUsers, final String pTaskId) {
+        getInstancePushNotificationManager();
+        for (final UserMarker userMarker : pNearByUsers) {
+            mDatabaseReference.child("users").child(userMarker.getKey()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    try {
+                        if (dataSnapshot.getValue() != null) {
+                            HashMap hashMapUserData = (HashMap) dataSnapshot.getValue();
+                            if (hashMapUserData.containsKey("deviceToken")) {
+                                String deviceToken = hashMapUserData.get("deviceToken").toString();
+                                if (deviceToken != null && !deviceToken.equals(Constants.sConstantEmptyString) && !userMarker.getKey().equals(CommonUtility.getUserId(mContext))) {
+                                    mPushNotificationManager.sendNearbyTaskNotification(deviceToken, pTaskId);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
 }

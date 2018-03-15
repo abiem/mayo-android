@@ -1151,11 +1151,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             String startColor = mMapDataModels.get(pPosition).getGradientColor().getStartColor().substring(1);
                             String endColor = mMapDataModels.get(pPosition).getGradientColor().getEndColor().substring(1);
                             Task task = mFirebaseDatabase.setTask(pMessage, this, startColor, endColor);
+                            mhelpMessageList.clear();
                             mFirebaseDatabase.writeNewTask(task.getTaskID(), task);
                             mFirebaseDatabase.writeNewChannelForCurrentTask(task.getTaskID());
                             mFirebaseDatabase.writeTaskCreatedInUserNode(CommonUtility.getUserId(this), task.getTaskID());
                             mFirebaseDatabase.setListenerForEnteringTask(task.getTaskID());
                             mFirebaseDatabase.getAllMessagesOfTaskEnteredByUser(task.getTaskID(), this);
+                            mFirebaseDatabase.sendPushNotificationToNearbyUsers(mNearByUsers,task.getTaskID());
                             TaskLatLng taskLatLng = new TaskLatLng();
                             taskLatLng.setTask(task);
                             TaskLocations taskLocations = new TaskLocations();
@@ -1249,7 +1251,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     mGeoFencing.stopGeoFenceMonitoring(mGoogleApiClient);
                 }
                 isThanksDialogOpen = true;
-                updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
@@ -1281,13 +1282,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 if (mThanksTextView.getAlpha() == Constants.sNonTransparencyLevel) {
-                    Toast.makeText(MapActivity.this, "update helped by", Toast.LENGTH_SHORT).show();
+                    if (mhelpMessageList != null && mhelpMessageList.size() > 0) {
+                        Task task = CommonUtility.getTaskData(MapActivity.this);
+                        updateTaskData(getResources().getString(R.string.STATUS_FOR_THANKED), task);
+                        pDialog.dismiss();
+                    }
                 }
             }
         });
         noThanksTextView.findViewById(R.id.no_one_helped).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mhelpMessageList != null && mhelpMessageList.size() == 0) {
+                    Task task = CommonUtility.getTaskData(MapActivity.this);
+                    updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
+                }
                 pDialog.dismiss();
             }
         });
@@ -1314,6 +1323,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMapDataModels.get(0).getCardLatlng().getMarker().remove();
             mMapDataModels.get(0).getCardLatlng().setMarker(null);
         }
+
         if (pMessage.equals(getResources().getString(R.string.STATUS_FOR_TIME_EXPIRED))) {
             showLocalNotification(1);
         }
@@ -1345,7 +1355,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void updateTask(boolean pCompleteOrNot, String pCompleteType, boolean pUserMoveOutside) {
         getFirebaseInstance();
-        Task task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside);
+        Task task;
+        Task taskData = CommonUtility.getTaskData(MapActivity.this);
+        if (pCompleteType.equals(getResources().getString(R.string.STATUS_FOR_THANKED))) {
+            ArrayList<String> stringArrayList = new ArrayList<>();
+            if (mhelpMessageList.size() > 0) {
+                for (Message message : mhelpMessageList) {
+                    stringArrayList.add(message.getSenderId());
+                }
+            }
+            task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside, taskData.isRecentActivity(), stringArrayList);
+        } else {
+            task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside, taskData.isRecentActivity(), new ArrayList<String>());
+        }
         mFirebaseDatabase.updateTask(task.getTaskID(), task);
     }
 
