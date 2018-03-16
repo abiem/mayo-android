@@ -73,6 +73,9 @@
     <string name="notification_nearby">Someone has a new quest nearby</string>
     <string name="notification_posted_message">New Message Posted</string>
     <string name="notification_someone">Someone posted in</string>
+    <string name="out_of_range">You\'re out of range so the quest ended :(</string>
+    <string name="post_again">Post again if you still need help.</string>
+    <string name="quest_looking_completed">The quest you\'re looking for has completed</string>
 
     <!--GeoFences Details-->
     <string name="geofence_not_available">Geofencing Not Available</string>
@@ -80,4 +83,5 @@
     <string name="geofence_too_many_pending_intents">Geofences too many pending intent</string>
     <string name="unknown_geofence_error">Geofence Unknown error</string>
     <string name="geofences_added">GeoFence added successfully</string>
+
 </resources>

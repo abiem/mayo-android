@@ -6,6 +6,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,6 +26,7 @@ import com.mayo.Utility.Constants;
 import com.mayo.activities.ChatActivity;
 import com.mayo.activities.MapActivity;
 import com.mayo.adapters.ChatListAdapter;
+import com.mayo.application.MayoApplication;
 import com.mayo.models.Location;
 import com.mayo.models.Message;
 import com.mayo.models.Task;
@@ -551,6 +553,7 @@ public class FirebaseDatabase {
             writeNewChannel(pTimeStamp, message);
             ((ChatActivity) pContext).sendMessagesToUser(String.valueOf(currentUserColorIndex));
         }
+        sendPushNotificationToTopic(pTimeStamp);
     }
 
     private Message setMessageData(String pSenderId, String pMessage) {
@@ -665,7 +668,7 @@ public class FirebaseDatabase {
     }
 
     public void setUpdateTimeOfCurrentTask(String pKey) {
-        mDatabaseReference.child("tasks").child(pKey).addValueEventListener(new ValueEventListener() {
+        mDatabaseReference.child(swriteNew_UpdateTask).child(pKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
@@ -711,10 +714,10 @@ public class FirebaseDatabase {
      * fetch live users from firebase and show only that users which is less than 6 minutes
      */
     public void getUsersCurrentTimeFromFirebase(final String pKey, final UsersLocations pUserLocations, final GoogleMap pGoogleMap) {
-        mDatabaseReference.child("users").child(pKey).child("UpdatedAt").addListenerForSingleValueEvent(new ValueEventListener() {
+        mDatabaseReference.child("users").child(pKey).child("updatedAt").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                UserMarker userMarker = null;
+                UserMarker userMarker = null, userMarkerGet = null;
                 if (snapshot.getValue() != null) {
                     String updateTime = snapshot.getValue().toString();
                     Date taskUpdateTime = CommonUtility.convertStringToDateTime(updateTime);
@@ -731,8 +734,14 @@ public class FirebaseDatabase {
                             userMarker.setKey(pKey);
                         }
                     }
+                    userMarkerGet = new UserMarker();
+                    userMarkerGet.setStartTime(currentTime);
+                    userMarkerGet.setEndTime(taskUpdateTime);
+                    userMarkerGet.setLatLng(new LatLng(pUserLocations.getLatitude(), pUserLocations.getLongitude()));
+                    userMarkerGet.setKey(pKey);
                 }
                 ((MapActivity) mContext).setUsersIntoList(pKey, userMarker);
+                ((MapActivity) mContext).setAllUsersIntoList(userMarkerGet);
             }
 
             @Override
@@ -784,7 +793,7 @@ public class FirebaseDatabase {
 
 
     public void getTaskFromFirebase(final TaskLocations pTaskLocations) {
-        mDatabaseReference.child("tasks").child(pTaskLocations.getKey()).addValueEventListener(new ValueEventListener() {
+        mDatabaseReference.child(swriteNew_UpdateTask).child(pTaskLocations.getKey()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
@@ -820,7 +829,7 @@ public class FirebaseDatabase {
     }
 
     public void setListenerForEnteringTask(String pkey) {
-        mDatabaseReference.child("tasks").child(pkey).addValueEventListener(new ValueEventListener() {
+        mDatabaseReference.child(swriteNew_UpdateTask).child(pkey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
@@ -870,7 +879,7 @@ public class FirebaseDatabase {
         }
     }
 
-    // Send Push notification to nearby users.
+    // TODO: Send Push notification to nearby users.
     public void sendPushNotificationToNearbyUsers(HashSet<UserMarker> pNearByUsers, final String pTaskId) {
         getInstancePushNotificationManager();
         for (final UserMarker userMarker : pNearByUsers) {
@@ -898,5 +907,191 @@ public class FirebaseDatabase {
                 }
             });
         }
+    }
+
+    // TODO: send notification to the topic for specific channel id
+    public void sendPushNotificationToTopic(final String pChannelId) {
+        getInstancePushNotificationManager();
+        final String currentUserId = CommonUtility.getUserId(mContext);
+        // TODO: add application/json and add authorization key
+        final String channelTopicMessage = "";
+
+        mDatabaseReference.child(sChannel).child(pChannelId).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    try {
+                        HashMap usersHashMap = (HashMap) dataSnapshot.getValue();
+                        if (usersHashMap.size() > 0) {
+                            for (Object o : usersHashMap.entrySet()) {
+                                Map.Entry pair = (Map.Entry) o;
+                                if (!pair.getKey().toString().equals(CommonUtility.getUserId(mContext))) {
+                                    mDatabaseReference.child("users").child(pair.getKey().toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            if (dataSnapshot.getValue() != null) {
+                                                HashMap hashMapUserData = (HashMap) dataSnapshot.getValue();
+                                                if (hashMapUserData.containsKey("deviceToken")) {
+                                                    String deviceToken = hashMapUserData.get("deviceToken").toString();
+                                                    if (deviceToken != null && !deviceToken.equals(Constants.sConstantEmptyString)) {
+                                                        mPushNotificationManager.sendNotificationToDeviceForMessage(deviceToken, currentUserId, pChannelId, channelTopicMessage);
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    // action for when users complete task
+    // and some users helped
+    public void handleUsersHelpedButtonPressed(String pSenderId, final Task pTask) {
+        getInstancePushNotificationManager();
+        mDatabaseReference.child("users").child(pSenderId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if (dataSnapshot.getValue() != null) {
+                        HashMap hashMapUserData = (HashMap) dataSnapshot.getValue();
+                        if (hashMapUserData.containsKey("deviceToken")) {
+                            String deviceToken = hashMapUserData.get("deviceToken").toString();
+                            if (deviceToken != null && !deviceToken.equals(Constants.sConstantEmptyString)) {
+                                mPushNotificationManager.sendYouWereThankedNotification(deviceToken, pTask.getTaskDescription());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    //Send Push notification If task is Completed
+    //filter Admin and thank users
+    public void removeTaskAfterComplete(final Task pTask, final ArrayList<Message> pThanksUser) {
+        final String taskMessage = pTask.getTaskDescription();
+        if (taskMessage != null && mContext != null) {
+            if (pTask.getCompleteType().equals(mContext.getResources().getString(R.string.STATUS_FOR_THANKED)) || pTask.getCompleteType().equals(mContext.getResources().getString(R.string.STATUS_FOR_THANKED))) {
+                mDatabaseReference.child(sChannel).child(pTask.getTaskID()).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        try {
+                            if (dataSnapshot.getValue() != null) {
+                                HashMap hashMapUsers = (HashMap) dataSnapshot.getValue();
+                                if (hashMapUsers.size() > 0) {
+                                    for (Object o : hashMapUsers.entrySet()) {
+                                        Map.Entry pair = (Map.Entry) o;
+                                        if (!pair.getKey().toString().equals(CommonUtility.getUserId(mContext))) {
+                                            if (pThanksUser.size() > 0) {
+                                                for (Message message : pThanksUser) {
+                                                    if (message.getSenderId().equals(pair.getKey().toString())) {
+                                                        mDatabaseReference.child("users").child(pair.getKey().toString()).child("deviceToken").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                if (dataSnapshot.getValue() != null) {
+                                                                    String deviceToken = dataSnapshot.getValue().toString();
+                                                                    if (deviceToken != null && !deviceToken.equals(Constants.sConstantEmptyString)) {
+                                                                        mPushNotificationManager.sendNotificationToDevice(deviceToken, taskMessage, pTask.getTaskID());
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(DatabaseError databaseError) {
+
+                                                            }
+                                                        });
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        }
+    }
+
+    public void processMessageNotification(String pChannelId) {
+        mDatabaseReference.child(swriteNew_UpdateTask).child(pChannelId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    try {
+                        //Check Task Status
+                        boolean taskComplete = false;
+                        boolean needToPush = false;
+                        Task task = dataSnapshot.getValue(Task.class);
+                        if (task != null) {
+                            if (task.isCompleted()) {
+                                taskComplete = true;
+                            }
+                            String taskDescription = task.getTaskDescription();
+                            if (taskDescription != null) {
+                                MayoApplication mayoApplication = ((MapActivity) mContext).getmMayoApplication();
+                                if (mayoApplication != null) {
+                                    if (mayoApplication.getActivity() instanceof MapActivity) {
+                                       // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
+                                        needToPush = true;
+                                    }
+                                    if (mayoApplication.getActivity() instanceof ChatActivity) {
+                                        mayoApplication.getActivity().finish();
+                                       // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
+                                        needToPush = true;
+                                    }
+                                }
+                            }
+                            if (taskComplete) {
+                                ((MapActivity) mContext).taskExpireAlert();
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(mContext, "exception occur:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

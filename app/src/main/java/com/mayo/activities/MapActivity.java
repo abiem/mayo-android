@@ -174,7 +174,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private FakeMarker mFakeMarker;
     private UserLiveMarker mUserLiveMarker;
     private ApngDrawable mApngDrawable;
-    private HashSet<UserMarker> mNearByUsers;
+    private HashSet<UserMarker> mNearByUsers, mAllNearByUsers;
     private ArrayList<TaskLocations> mTaskLocationsArray;
     private ArrayList<TaskLatLng> mTasksArray;
     private ShownCardMarker mShownCardMarker;
@@ -192,12 +192,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private ArrayList<Message> mMessageList;
     private ArrayList<Message> mhelpMessageList;
     private TextView mThanksTextView;
+    private BroadcastReceiver mBroadCastReceiver;
 
     @AfterViews
     protected void init() {
         mMayoApplication.setActivity(this);
         mMapView.onCreate(null);
         mNearByUsers = new HashSet<>();
+        mAllNearByUsers = new HashSet<>();
         mTaskLocationsArray = new ArrayList<>();
         mTasksArray = new ArrayList<>();
         mhelpMessageList = new ArrayList<>();
@@ -232,6 +234,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Task task = CommonUtility.getTaskData(this);
             mFirebaseDatabase.getAllMessagesOfTaskEnteredByUser(task.getTaskID(), this);
         }
+        setNotificationReceiverBroadcast();
     }
 
     public void setViewPagerData() {
@@ -789,8 +792,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void removeUserMarkerAccordingToTime(UserMarker pUserMarker) {
-        pUserMarker.getMarker().remove();
-        mNearByUsers.remove(pUserMarker);
+        if (mNearByUsers.size() > 0) {
+            pUserMarker.getMarker().remove();
+            mNearByUsers.remove(pUserMarker);
+        }
         if (mNearByUsers.size() == 0) {
             if (mUserLiveMarker != null) {
                 mUserLiveMarker.stoptimertask();
@@ -832,6 +837,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         if (mReceiver != null) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        }
+        if (this.mBroadCastReceiver != null) {
+            unregisterReceiver(this.mBroadCastReceiver);
+            this.mBroadCastReceiver = null;
         }
     }
 
@@ -937,6 +946,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
      */
     private void setGeoQuery() {
         mNearByUsers.clear();
+        mAllNearByUsers.clear();
         mGeoQuery = mGeoFireClass.setGeoQuery(mCurrentLocation);
         mTaskGeoQuery = mGeoFireClass.setGeoQueryForTaskFetch(mCurrentLocation);
         mCardsDataModel.waitingTimeToFetchTaskArrayList(8000, 1000);
@@ -998,6 +1008,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void getFirebaseInstance() {
         if (mFirebaseDatabase == null) {
             mFirebaseDatabase = new FirebaseDatabase(this);
+        }
+    }
+
+    public void setAllUsersIntoList(UserMarker pUserMarker) {
+        if (pUserMarker != null) {
+            mAllNearByUsers.add(pUserMarker);
         }
     }
 
@@ -1157,7 +1173,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             mFirebaseDatabase.writeTaskCreatedInUserNode(CommonUtility.getUserId(this), task.getTaskID());
                             mFirebaseDatabase.setListenerForEnteringTask(task.getTaskID());
                             mFirebaseDatabase.getAllMessagesOfTaskEnteredByUser(task.getTaskID(), this);
-                            mFirebaseDatabase.sendPushNotificationToNearbyUsers(mNearByUsers,task.getTaskID());
+                            mFirebaseDatabase.sendPushNotificationToNearbyUsers(mAllNearByUsers, task.getTaskID());
                             TaskLatLng taskLatLng = new TaskLatLng();
                             taskLatLng.setTask(task);
                             TaskLocations taskLocations = new TaskLocations();
@@ -1252,13 +1268,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
                 isThanksDialogOpen = true;
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
-                } else {
-                    dialog.findViewById(R.id.thanksDialogBackground).setBackgroundDrawable(drawable);
-                }
+                dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
             }
-            mHelpRecyclerView = (RecyclerView) dialog.findViewById(R.id.helpPersonsRecyclerView);
             setThanksDialog(dialog);
             removeMessageListener();
         }
@@ -1266,6 +1277,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void setThanksDialog(final Dialog pDialog) {
         getFirebaseInstance();
+        mHelpRecyclerView = (RecyclerView) pDialog.findViewById(R.id.helpPersonsRecyclerView);
         mMessageList = mFirebaseDatabase.getLastFiveMessagesFromMessagesList();
         mThanksTextView = (TextView) pDialog.findViewById(R.id.thanks);
         TextView noThanksTextView = (TextView) pDialog.findViewById(R.id.no_one_helped);
@@ -1325,19 +1337,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
         if (pMessage.equals(getResources().getString(R.string.STATUS_FOR_TIME_EXPIRED))) {
-            showLocalNotification(1);
+            mFirebaseDatabase.removeTaskAfterComplete(task, mhelpMessageList);
+            showLocalNotification(1, getResources().getString(R.string.notification_expired_message), getResources().getString(R.string.notification_help_message));
         }
         if (task.isRecentActivity() && !isThanksDialogOpen) {
             Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
             if (dialog != null && !dialog.isShowing()) {
+                Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
+                dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
                 setThanksDialog(dialog);
             }
         }
     }
 
-    public void showLocalNotification(int pId) {
-        NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this,
-                getResources().getString(R.string.notification_expired_message), getResources().getString(R.string.notification_help_message));
+    public void showLocalNotification(int pId, String pTitle, String pBody) {
+        NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this, pTitle, pBody);
         Intent notificationIntent = new Intent(this, MapActivity_.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, pId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
@@ -1362,6 +1376,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (mhelpMessageList.size() > 0) {
                 for (Message message : mhelpMessageList) {
                     stringArrayList.add(message.getSenderId());
+                    mFirebaseDatabase.handleUsersHelpedButtonPressed(message.getSenderId(), taskData);
                 }
             }
             task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside, taskData.isRecentActivity(), stringArrayList);
@@ -1386,6 +1401,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         if (mTaskTimer != null) {
                             mTaskTimer.stoptimertask();
                         }
+                        showLocalNotification(2, getString(R.string.out_of_range), getString(R.string.post_again));
+                        mFirebaseDatabase.removeTaskAfterComplete(task, mhelpMessageList);
                         CommonUtility.setTaskApplied(true, this);
                         if (mMapViewPagerAdapter != null) {
                             mMapViewPagerAdapter.setPostMessageView();
@@ -1406,6 +1423,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }
 
+    public void openChatViewFromNotification(String pMessage, boolean pExpiredCard) {
+        ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage).start();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -1421,6 +1442,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    public void taskExpireAlert() {
+        final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.quest_completed);
+        if (dialog != null) {
+            dialog.findViewById(R.id.questCompleted).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+        }
+    }
 
     private void registerReceiver() {
         LocalBroadcastManager lbc = LocalBroadcastManager.getInstance(this);
@@ -1443,6 +1475,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 mGeoFencing.stopGeoFenceMonitoring(mGoogleApiClient);
             }
         }
+    }
+
+    public MayoApplication getmMayoApplication() {
+        return mMayoApplication;
+    }
+
+    public void setNotificationReceiverBroadcast() {
+        IntentFilter intentFilter = new IntentFilter("android.intent.action.MAIN");
+        mBroadCastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                getFirebaseInstance();
+                if (intent.getStringExtra(Constants.Notifications.sChannelId) != null) {
+                    String channelId = intent.getStringExtra(Constants.Notifications.sChannelId);
+                    mFirebaseDatabase.processMessageNotification(channelId);
+                }
+            }
+        };
+        this.registerReceiver(mBroadCastReceiver, intentFilter);
     }
 
 }

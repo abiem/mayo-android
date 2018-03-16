@@ -44,10 +44,14 @@ public class UserLiveMarker {
                 handler.post(new Runnable() {
                     public void run() {
                         //get the current timeStamp
-                        for (UserMarker userMarker : mUserLocationsMarker) {
-                            if (userMarker.getEndTime().before(CommonUtility.getCurrentTime())) {
-                                ((MapActivity) mContext).removeUserMarkerAccordingToTime(userMarker);
+                        try {
+                            for (UserMarker userMarker : mUserLocationsMarker) {
+                                if (userMarker.getEndTime().before(CommonUtility.getCurrentTime())) {
+                                    ((MapActivity) mContext).removeUserMarkerAccordingToTime(userMarker);
+                                }
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 });

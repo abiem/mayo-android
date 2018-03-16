@@ -8,7 +8,7 @@ import java.util.HashMap;
  */
 
 public class UserData {
-    private String UpdatedAt;
+    private String updatedAt;
     private String deviceToken;
     private boolean isDemoTaskShown;
     private int score;
@@ -18,11 +18,11 @@ public class UserData {
     private TaskParticipated taskParticipated;
 
     public String getUpdatedAt() {
-        return UpdatedAt;
+        return updatedAt;
     }
 
-    public void setUpdatedAt(String updatedAt) {
-        UpdatedAt = updatedAt;
+    public void setUpdatedAt(String UpdatedAt) {
+        updatedAt = UpdatedAt;
     }
 
     public String getDeviceToken() {
