@@ -57,6 +57,8 @@ public class Constants {
         public static final String sTaskDescription = "task_description";
         public static final String sData = "data";
         public static final String sTaskId = "taskID";
+        public static final String sAlarmManagerNotification = "alarmManagerNotification";
+        public static final String sAlarmManager_Cmg = "alarmManagerNotificationComing";
 
         public static final String sNOTIFICATION_MESSAGE_App = "notification_message";
         public static final String sNOTIFICATION_WERE_THANKS_App = "notification_were_thanks";
@@ -71,6 +73,10 @@ public class Constants {
         public static final int sGEOFENCE_REQ_CODE = 0;
         public static final float sGeoFenceRadius = 200.0f;
         public static final float sGeoFenceDitance = 0.1000f;
+    }
+
+    public class AlarmManager {
+        public static final int sAlarmCode = 101;
     }
 
     class sharedPreferences {

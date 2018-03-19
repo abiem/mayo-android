@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -67,6 +68,7 @@ public class FirebaseDatabase {
     private boolean currentUserIsInConversation = false;
     private int usersCountAndNewColorIndex;
     private ChildEventListener mMessagelistener, mMessagesGetReferences;
+    private ValueEventListener mPointsListener;
     private boolean sendMessageFromLocalDevice = false;
     private HashMap locationHashMap;
     private int locationHashMapValue = 0;
@@ -1048,6 +1050,60 @@ public class FirebaseDatabase {
         }
     }
 
+    //Update points at Firebase Server
+    public void updatePointsAtFirebaseServer(final String pUser) {
+        mDatabaseReference.child("users").child(pUser).child("score").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if (dataSnapshot.getValue() != null) {
+                        int scoreValue = dataSnapshot.getValue(Integer.class);
+                        scoreValue += 1;
+                        mDatabaseReference.child("users").child(pUser).child("score").setValue(scoreValue);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    //add observer to fetch score
+    public void getPointsFromFirebase(String pUser) {
+        mPointsListener = mDatabaseReference.child("users").child(pUser).child("score").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if (dataSnapshot.getValue() != null) {
+                        int scoreValue = dataSnapshot.getValue(Integer.class);
+                        if (mContext != null) {
+                            CommonUtility.setPoints(scoreValue, mContext);
+                            ((MapActivity) mContext).setScoreIntoView();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void removePointListener() {
+        if (mPointsListener != null) {
+            mDatabaseReference.removeEventListener(mPointsListener);
+        }
+    }
+
     public void processMessageNotification(String pChannelId) {
         mDatabaseReference.child(swriteNew_UpdateTask).child(pChannelId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -1067,12 +1123,12 @@ public class FirebaseDatabase {
                                 MayoApplication mayoApplication = ((MapActivity) mContext).getmMayoApplication();
                                 if (mayoApplication != null) {
                                     if (mayoApplication.getActivity() instanceof MapActivity) {
-                                       // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
+                                        // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
                                         needToPush = true;
                                     }
                                     if (mayoApplication.getActivity() instanceof ChatActivity) {
-                                        mayoApplication.getActivity().finish();
-                                       // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
+                                        //  mayoApplication.getActivity().finish();
+                                        // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
                                         needToPush = true;
                                     }
                                 }

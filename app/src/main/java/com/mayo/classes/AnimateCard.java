@@ -21,24 +21,30 @@ public class AnimateCard {
     private AnimatorSet mAnimatorSet;
     private CustomViewPager mCustomViewPager;
 
-    public AnimateCard(Context pContext, CardView pCardView,CustomViewPager pCustomViewPagerMap) {
+    public AnimateCard(Context pContext, CardView pCardView, CustomViewPager pCustomViewPagerMap) {
         mContext = pContext;
         mCardView = pCardView;
-        mCustomViewPager=pCustomViewPagerMap;
+        mCustomViewPager = pCustomViewPagerMap;
     }
 
     public void playFadeInOutAnimation() {
         new CountDown(6000, 1000);
         mAnimatorSet = CommonUtility.fadeInOutAnimation(mCardView);
-        mCardView.setVisibility(View.VISIBLE);
-        mAnimatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                mAnimatorSet.start();
-            }
-        });
-        mAnimatorSet.start();
+        if (mCardView != null) {
+            mCardView.setVisibility(View.VISIBLE);
+        }
+        if (mAnimatorSet != null) {
+            mAnimatorSet.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    if (mAnimatorSet != null) {
+                        mAnimatorSet.start();
+                    }
+                }
+            });
+            mAnimatorSet.start();
+        }
     }
 
     private class CountDown extends CountDownTimer {

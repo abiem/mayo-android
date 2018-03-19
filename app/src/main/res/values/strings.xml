@@ -60,6 +60,7 @@
     <string name="fourth_tutorial_screen">fourth</string>
     <string name="rotateimage">Rotate image in image view</string>
 
+
     <!--Task  Messages-->
     <string name="STATUS_FOR_THANKED">Owner marked as done and the people all thanked for</string>
     <string name="STATUS_FOR_NOT_HELPED">Owner marked as done and no one helped</string>
@@ -76,6 +77,8 @@
     <string name="out_of_range">You\'re out of range so the quest ended :(</string>
     <string name="post_again">Post again if you still need help.</string>
     <string name="quest_looking_completed">The quest you\'re looking for has completed</string>
+    <string name="quest_expire_soon">Your help quest expiring soon.</string>
+    <string name="helped_soon">Quests inactive for 1 hour automatically expires. Hope you get helped soon!</string>
 
     <!--GeoFences Details-->
     <string name="geofence_not_available">Geofencing Not Available</string>

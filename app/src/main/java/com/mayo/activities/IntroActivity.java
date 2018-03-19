@@ -178,19 +178,21 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
     }
 
     private void locationDialogView() {
-        final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.location_dialog_view);
-        if (dialog != null) {
-            Button gotItButton = (Button) dialog.findViewById(R.id.gotitbutton);
-            gotItButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    pauseRippleImage();
-                    playPinImageFirst();
-                    mApngDrawable = ApngDrawable.getFromView(imageRipple);
-                    mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
-                }
-            });
+        if (!isFinishing()) {
+            final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.location_dialog_view);
+            if (dialog != null) {
+                Button gotItButton = (Button) dialog.findViewById(R.id.gotitbutton);
+                gotItButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                        pauseRippleImage();
+                        playPinImageFirst();
+                        mApngDrawable = ApngDrawable.getFromView(imageRipple);
+                        mCustomViewPager.setCurrentItem(mCustomViewPager.getCurrentItem() + 1);
+                    }
+                });
+            }
         }
     }
 

@@ -21,6 +21,7 @@ import com.mayo.models.TaskLatLng;
 import com.mayo.models.TaskLocations;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -246,12 +247,22 @@ public class CardsDataModel {
         mapDataModel.setCardLatlng(cardLatlng);
         mapDataModel.setTaskLatLng(pTaskLatlng);
         Drawable drawable;
-        if (pTaskLatlng.getTask().isCompleted()) {
+        Date saveUpdatedate;
+        Calendar calendar = Calendar.getInstance();
+        Calendar calendarNewInstance = Calendar.getInstance();
+        saveUpdatedate = CommonUtility.convertStringToDateTime(pTaskLatlng.getTask().getTimeUpdated());
+        if (saveUpdatedate != null) {
+            calendar.setTime(saveUpdatedate);
+            calendar.add(Calendar.HOUR, 1);
+        }
+        if (pTaskLatlng.getTask().isCompleted() || calendar.getTime().before(calendarNewInstance.getTime())) {
             gradientColor.setStartColor(CardColor.expireCard[0]);
             gradientColor.setEndColor(CardColor.expireCard[1]);
             drawable = CommonUtility.getGradientDrawable("#" + CardColor.expireCard[0],
                     "#" + CardColor.expireCard[1], mContext);
             mapDataModel.setBackgroundView(drawable);
+            mapDataModel.getTaskLatLng().getTask().setCompleted(true);
+            mapDataModel.setCompleted(true);
             mLocalExpiredCardArrayModel.add(mapDataModel);
         } else {
             gradientColor.setStartColor(pTaskLatlng.getTask().getStartColor());

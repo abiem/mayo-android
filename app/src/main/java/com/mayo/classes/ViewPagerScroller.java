@@ -240,14 +240,18 @@ public class ViewPagerScroller {
                     !mMapDataModel.get(count).isCompleted()) {
                 cardLatlng = mMapDataModel.get(count).getCardLatlng();
                 if (count == pPosition) {
-                    cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMaximum);
-                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconLarge());
-                    CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(cardLatlng.getLatLng()).zoom(Constants.sKeyCameraZoom).build();
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    if (cardLatlng.getMarker() != null) {
+                        cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMaximum);
+                        setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconLarge());
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(cardLatlng.getLatLng()).zoom(Constants.sKeyCameraZoom).build();
+                        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    }
                 } else {
-                    cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
-                    setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                    if (cardLatlng.getMarker() != null) {
+                        cardLatlng.getMarker().setZIndex(Constants.sMarkerZIndexMinimum);
+                        setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconSmall());
+                    }
                 }
             }
             if (mMarker != null) {

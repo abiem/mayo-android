@@ -14,7 +14,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -110,7 +109,6 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -230,6 +228,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         getFirebaseInstance();
         mFirebaseDatabase.getTaskParticipatedByUsers(CommonUtility.getUserId(this));
         mFirebaseDatabase.getUserIdsFromFirebase();
+        mFirebaseDatabase.removePointListener();
+        mFirebaseDatabase.getPointsFromFirebase(CommonUtility.getUserId(this));
         if (CommonUtility.getTaskApplied(this)) {
             Task task = CommonUtility.getTaskData(this);
             mFirebaseDatabase.getAllMessagesOfTaskEnteredByUser(task.getTaskID(), this);
@@ -278,19 +278,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     private void showPointView() {
-        final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.score_screen);
-        if (dialog != null) {
-            ImageButton deleteView = (ImageButton) dialog.findViewById(R.id.delete_view);
-            TextView score = (TextView) dialog.findViewById(R.id.points);
-            deleteView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
-            });
-            score.setText(String.valueOf(CommonUtility.getPoints(MapActivity.this)));
+        if (!isFinishing()) {
+            final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.score_screen);
+            if (dialog != null) {
+                ImageButton deleteView = (ImageButton) dialog.findViewById(R.id.delete_view);
+                TextView score = (TextView) dialog.findViewById(R.id.points);
+                deleteView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                score.setText(String.valueOf(CommonUtility.getPoints(MapActivity.this)));
+            }
+            getCurrentLocation();
         }
-        getCurrentLocation();
     }
 
     public void getCurrentLocation() {
@@ -340,6 +342,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             value = mViewPagerScroller.getPostCard();
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
+                                getFirebaseInstance();
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
                             }
                             mMapViewPagerAdapter.setTaskCardViewVisible();
                             break;
@@ -350,12 +354,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             value = mViewPagerScroller.getFakeCardTwo(isScrollingRight);
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
+                                getFirebaseInstance();
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
                             }
                             break;
                         case FAKECARDTHREE:
                             value = mViewPagerScroller.getFakeCardThree(isScrollingRight);
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
+                                getFirebaseInstance();
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
                             }
                             break;
                         case DEFAULT:
@@ -472,21 +480,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void onItemClick(View view, int position, boolean isSelected) {
-        Message message = mMessageList.get(position);
-        if (isSelected) {
-            mhelpMessageList.add(message);
-        } else {
-            for (int i = 0; i < mhelpMessageList.size(); i++) {
-                if (mhelpMessageList.get(i).getSenderId().equals(message.getSenderId())) {
-                    mhelpMessageList.remove(i);
+        if (mMessageList != null && mMessageList.size() > 0) {
+            Message message = mMessageList.get(position);
+            if (isSelected) {
+                mhelpMessageList.add(message);
+            } else {
+                for (int i = 0; i < mhelpMessageList.size(); i++) {
+                    if (mhelpMessageList.get(i).getSenderId().equals(message.getSenderId())) {
+                        mhelpMessageList.remove(i);
+                    }
                 }
             }
-        }
-        if (mThanksTextView != null) {
-            if (mhelpMessageList.size() > 0) {
-                mThanksTextView.setAlpha(Constants.sNonTransparencyLevel);
-            } else {
-                mThanksTextView.setAlpha(Constants.sTransparencyLevelFade);
+            if (mThanksTextView != null) {
+                if (mhelpMessageList.size() > 0) {
+                    mThanksTextView.setAlpha(Constants.sNonTransparencyLevel);
+                } else {
+                    mThanksTextView.setAlpha(Constants.sTransparencyLevelFade);
+                }
             }
         }
     }
@@ -501,6 +511,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         public void onFinish() {
             mRotateImageOnMapView.setVisibility(View.GONE);
             mRotateImageOnMapView.clearAnimation();
+            getFirebaseInstance();
             if (mMapViewPagerAdapter != null) {
                 for (int i = 0; i < mMapDataModels.size(); i++) {
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
@@ -509,6 +520,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         int value = CommonUtility.getPoints(MapActivity.this) + 1;
                         CommonUtility.setPoints(value, MapActivity.this);
                         mCountButton.setText(String.valueOf(value));
+                        mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
                         CommonUtility.setFakeCardTwo(true, MapActivity.this);
                     }
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
@@ -1125,7 +1137,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void disableLocationDialogView(final int val) {
-        if (mDialog == null) {
+        if (mDialog == null && !isFinishing()) {
             mDialog = CommonUtility.showCustomDialog(this, R.layout.location_disable_dialog_view);
         }
         if (mDialog != null) {
@@ -1174,6 +1186,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             mFirebaseDatabase.setListenerForEnteringTask(task.getTaskID());
                             mFirebaseDatabase.getAllMessagesOfTaskEnteredByUser(task.getTaskID(), this);
                             mFirebaseDatabase.sendPushNotificationToNearbyUsers(mAllNearByUsers, task.getTaskID());
+                            CommonUtility.scheduleNotification(this);
                             TaskLatLng taskLatLng = new TaskLatLng();
                             taskLatLng.setTask(task);
                             TaskLocations taskLocations = new TaskLocations();
@@ -1258,6 +1271,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Task task = null;
         if (dialog != null) {
             if (CommonUtility.getTaskApplied(MapActivity.this)) {
+                CommonUtility.unScheduleNotifications(this);
                 CommonUtility.setTaskApplied(false, MapActivity.this);
                 task = CommonUtility.getTaskData(this);
                 if (mTaskTimer != null) {
@@ -1305,10 +1319,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         noThanksTextView.findViewById(R.id.no_one_helped).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mhelpMessageList != null && mhelpMessageList.size() == 0) {
-                    Task task = CommonUtility.getTaskData(MapActivity.this);
-                    updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
-                }
+                Task task = CommonUtility.getTaskData(MapActivity.this);
+                updateTaskData(getResources().getString(R.string.STATUS_FOR_NOT_HELPED), task);
                 pDialog.dismiss();
             }
         });
@@ -1340,7 +1352,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mFirebaseDatabase.removeTaskAfterComplete(task, mhelpMessageList);
             showLocalNotification(1, getResources().getString(R.string.notification_expired_message), getResources().getString(R.string.notification_help_message));
         }
-        if (task.isRecentActivity() && !isThanksDialogOpen) {
+        if (task.isRecentActivity() && !isThanksDialogOpen && !isFinishing()) {
             Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
             if (dialog != null && !dialog.isShowing()) {
                 Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
@@ -1377,6 +1389,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 for (Message message : mhelpMessageList) {
                     stringArrayList.add(message.getSenderId());
                     mFirebaseDatabase.handleUsersHelpedButtonPressed(message.getSenderId(), taskData);
+                    mFirebaseDatabase.updatePointsAtFirebaseServer(message.getSenderId());
                 }
             }
             task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside, taskData.isRecentActivity(), stringArrayList);
@@ -1443,14 +1456,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void taskExpireAlert() {
-        final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.quest_completed);
-        if (dialog != null) {
-            dialog.findViewById(R.id.questCompleted).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
-            });
+        if (!isFinishing()) {
+            final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.quest_completed);
+            if (dialog != null) {
+                dialog.findViewById(R.id.questCompleted).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+            }
         }
     }
 
@@ -1491,9 +1506,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     String channelId = intent.getStringExtra(Constants.Notifications.sChannelId);
                     mFirebaseDatabase.processMessageNotification(channelId);
                 }
+                if (intent.getStringExtra(Constants.Notifications.sAlarmManagerNotification) != null) {
+                    showLocalNotification(3, getString(R.string.quest_expire_soon), getString(R.string.helped_soon));
+                }
+
             }
         };
         this.registerReceiver(mBroadCastReceiver, intentFilter);
     }
 
+    public void setScoreIntoView() {
+        mCountButton.setText(String.valueOf(CommonUtility.getPoints(this)));
+    }
 }

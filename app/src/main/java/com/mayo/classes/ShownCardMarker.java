@@ -214,7 +214,7 @@ public class ShownCardMarker {
             }
         }
     }
-
+    //show live markers of tasks
     public void getAnotherUsersLiveMarker() {
         for (int i = 0; i < mMapDataModel.size(); i++) {
             if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.DEFAULT.getValue()) {

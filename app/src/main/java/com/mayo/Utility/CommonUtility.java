@@ -4,9 +4,11 @@ import android.Manifest;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -29,6 +31,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -40,6 +43,7 @@ import com.google.gson.Gson;
 import com.mayo.R;
 import com.mayo.activities.IntroActivity;
 import com.mayo.activities.MapActivity;
+import com.mayo.classes.AlarmReceiver;
 import com.mayo.models.Task;
 
 import java.text.ParseException;
@@ -49,6 +53,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static android.content.ContentValues.TAG;
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
@@ -456,6 +461,38 @@ public class CommonUtility {
         myAppSettings.addCategory(Intent.CATEGORY_DEFAULT);
         myAppSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         pContext.startActivity(myAppSettings);
+    }
+
+    public static void scheduleNotification(Context pContext) {
+        AlarmManager alarmManager = (AlarmManager) pContext.getSystemService(Context.ALARM_SERVICE);
+        Intent notificationIntent = new Intent("android.media.action.DISPLAY_NOTIFICATION");
+        notificationIntent.addCategory("android.intent.category.DEFAULT");
+        PendingIntent broadcast = PendingIntent.getBroadcast(pContext, Constants.AlarmManager.sAlarmCode, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.SECOND, 45 * 60); //45min* 60 sec
+        if (alarmManager != null) {
+            if (android.os.Build.VERSION.SDK_INT >= 19) {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), broadcast);
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), broadcast);
+            }
+        }
+    }
+
+    public static void unScheduleNotifications(Context context) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        Intent updateServiceIntent = new Intent(context, AlarmReceiver.class);
+        PendingIntent pendingUpdateIntent = PendingIntent.getService(context, Constants.AlarmManager.sAlarmCode, updateServiceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Cancel alarms
+        try {
+            if (alarmManager != null) {
+                alarmManager.cancel(pendingUpdateIntent);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "AlarmManager update was not canceled. " + e.toString());
+        }
     }
 
     public static Bitmap drawableToBitmap(Drawable pDrawable) {
