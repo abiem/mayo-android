@@ -2,6 +2,8 @@ package com.mayo.activities;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
@@ -85,7 +87,7 @@ public class ChatActivity extends AppCompatActivity {
     ChatListAdapter mChatAdapter;
     LinearLayoutManager mLayoutManager;
     FirebaseDatabase mFirebaseDatabase;
-    String mColorIndex;
+    String mColorIndex, mTaskId, mTaskDecription;
 
 
     private ArrayList<Message> mMessageList = new ArrayList<>();
@@ -100,6 +102,10 @@ public class ChatActivity extends AppCompatActivity {
             if (pBundle.getBoolean(Constants.sQuestMessageShow)) {
                 mQuestCompletedTextView.setVisibility(View.VISIBLE);
                 mParentLayoutOfMessageSend.setVisibility(View.GONE);
+            }
+            if (pBundle.getString(Constants.Notifications.sChannelId) != null) {
+                getFirebaseInstance();
+                mFirebaseDatabase.processMessageNotification(pBundle.getString(Constants.Notifications.sChannelId));
             }
         } else {
             setActionBar(Constants.sConstantEmptyString);
@@ -122,6 +128,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void setActionBar(String pMessage) {
+        mTaskDecription = pMessage;
         if (getSupportActionBar() != null) {
             LayoutInflater inflater = (LayoutInflater) getSupportActionBar().getThemedContext().getSystemService(LAYOUT_INFLATER_SERVICE);
             if (inflater != null) {
@@ -145,7 +152,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
                 mActionBarMessage.setText(pMessage);
-                if (pMessage.equals(Constants.sConstantEmptyString)) {
+                if (pMessage != null && pMessage.equals(Constants.sConstantEmptyString)) {
                     mActionBarMessage.setText(getResources().getString(R.string.ai_message));
                 }
                 textAdjustment();
@@ -167,27 +174,43 @@ public class ChatActivity extends AppCompatActivity {
         boolean isRecentActivity = true;
         if (!mMessageChatText.getText().toString().trim().isEmpty()) {
             // If we post a message in our created task then we need to add smily to it else post a message
-            if (pBundle != null && mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
-                Task task = mMapDataModel.getTaskLatLng().getTask();
-                Task taskData = CommonUtility.getTaskData(this);
-                if (CommonUtility.getTaskApplied(this) && taskData.getTaskID().equals(task.getTaskID())) {
-                    mColorIndex = "0";
-                    mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
-                            mMessageChatText.getText().toString().trim();
-                    isRecentActivity = false;
-                } else {
-                    mMessageText = mMessageChatText.getText().toString().trim();
-                }
-                if (task != null) {
-                    mFirebaseDatabase.setMessage(this, CommonUtility.getUserId(this),
-                            mMessageText, task.getTaskID());
-                }
-                if (task != null) {
-                    if (isRecentActivity) {
-                        task.setRecentActivity(true);
+            if (pBundle != null) {
+                if (mMapDataModel != null && mMapDataModel.getTaskLatLng() != null) {
+                    Task task = mMapDataModel.getTaskLatLng().getTask();
+                    Task taskData = CommonUtility.getTaskData(this);
+                    if (CommonUtility.getTaskApplied(this) && taskData.getTaskID().equals(task.getTaskID())) {
+                        mColorIndex = "0";
+                        mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
+                                mMessageChatText.getText().toString().trim();
+                        isRecentActivity = false;
+                    } else {
+                        mMessageText = mMessageChatText.getText().toString().trim();
                     }
-                    mFirebaseDatabase.updateTask(task.getTaskID(), task);
-                    mFirebaseDatabase.writeTaskParticipated(CommonUtility.getUserId(this), task.getTaskID());
+                    if (task != null) {
+                        mFirebaseDatabase.setMessage(this, CommonUtility.getUserId(this),
+                                mMessageText, task.getTaskID(),mTaskDecription);
+                    }
+                    if (task != null) {
+                        if (isRecentActivity) {
+                            task.setRecentActivity(true);
+                        }
+                        mFirebaseDatabase.updateTask(task.getTaskID(), task);
+                        mFirebaseDatabase.writeTaskParticipated(CommonUtility.getUserId(this), task.getTaskID());
+                    }
+                }
+                if (pBundle.getString(Constants.Notifications.sChannelId) != null) {
+                    if (mTaskId != null) {
+                        Task taskData = CommonUtility.getTaskData(this);
+                        if (CommonUtility.getTaskApplied(this) && taskData != null && taskData.getTaskID().equals(mTaskId)) {
+                            mColorIndex = "0";
+                            mMessageText = Constants.sSmileCode + Constants.sConstantSpaceString +
+                                    mMessageChatText.getText().toString().trim();
+                        } else {
+                            mMessageText = mMessageChatText.getText().toString().trim();
+                        }
+                        mFirebaseDatabase.setMessage(this, CommonUtility.getUserId(this),
+                                mMessageText, mTaskId, mTaskDecription);
+                    }
                 }
             } else {
                 mColorIndex = "0";
@@ -226,6 +249,20 @@ public class ChatActivity extends AppCompatActivity {
         mMessage.setColorIndex(pColorIndex);
         mMessageList.add(mMessage);
 
+    }
+
+    public void taskExpireAlert() {
+        if (!isFinishing()) {
+            final Dialog dialog = CommonUtility.showCustomDialog(this, R.layout.quest_completed);
+            if (dialog != null) {
+                dialog.findViewById(R.id.questCompleted).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+            }
+        }
     }
 
     private void execSchedular() {
@@ -307,5 +344,28 @@ public class ChatActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mMayoApplication.activityDestroyed();
+    }
+
+    public void setData(String pTaskDescription, boolean pIsCompleted, String pTaskId) {
+        setActionBar(pTaskDescription);
+        mTaskId = pTaskId;
+        if (pIsCompleted) {
+            mQuestCompletedTextView.setVisibility(View.VISIBLE);
+            mParentLayoutOfMessageSend.setVisibility(View.GONE);
+        } else {
+            mQuestCompletedTextView.setVisibility(View.GONE);
+            mParentLayoutOfMessageSend.setVisibility(View.VISIBLE);
+        }
+        if (mFirebaseDatabase != null)
+            mFirebaseDatabase.getMessagesFromFirebase(pTaskId, mChatAdapter, mMessageList, mChatRecyclerView);
+        if (pTaskId != null) {
+            processMessageNotification(pTaskId);
+        }
+    }
+
+    private void processMessageNotification(String pChannelId) {
+        Intent i = new Intent("android.intent.action.MAIN");
+        i.putExtra(Constants.Notifications.sChannelId, pChannelId);
+        sendBroadcast(i);
     }
 }

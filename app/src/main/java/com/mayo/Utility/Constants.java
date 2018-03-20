@@ -50,6 +50,7 @@ public class Constants {
         public static final String sBody = "body";
         public static final String sTitle = "title";
         public static final String sSound = "sound";
+        public static final String sClickAction = "click_action";
         public static final String sNotification = "notification";
         public static final String sNotification_Type = "notification_type";
         public static final String sSenderId = "sender_id";

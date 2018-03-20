@@ -441,7 +441,11 @@ public class CommonUtility {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mCustomDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             }
-            mCustomDialog.getWindow().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(pActivity, R.color.colorDarkTransparent)));
+            if (pLayout == R.layout.score_screen) {
+                mCustomDialog.getWindow().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(pActivity, R.color.colorDarkTransparentNew)));
+            } else {
+                mCustomDialog.getWindow().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(pActivity, R.color.colorDarkTransparent)));
+            }
             mCustomDialog.show();
             return mCustomDialog;
         }

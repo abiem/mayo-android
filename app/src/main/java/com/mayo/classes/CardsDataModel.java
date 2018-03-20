@@ -387,7 +387,7 @@ public class CardsDataModel {
         }
     }
 
-    public ArrayList<MapDataModel> sortTaskLists(ArrayList<MapDataModel> pMapDataModel) {
+    public void sortTaskLists(ArrayList<MapDataModel> pMapDataModel) {
         ArrayList<MapDataModel> pNonExpiryCard = new ArrayList<>();
         for (MapDataModel mapDataModelNew : pMapDataModel) {
             if (mapDataModelNew.getFakeCardPosition() == Constants.CardType.DEFAULT.getValue() && !mapDataModelNew.isCompleted()) {
@@ -414,6 +414,16 @@ public class CardsDataModel {
         pExpiryCard = sortExpiryCard(pExpiryCard);
         pMapDataModel = getDataModel();
         pNonExpiryCard = mergeArray(pNonExpiryCard, pExpiryCard);
-        return mergeArray(pMapDataModel, pNonExpiryCard);
+        mergeLiveAndExpireCard(pMapDataModel, pNonExpiryCard);
+    }
+
+    private void mergeLiveAndExpireCard(ArrayList<MapDataModel> pOriginalArray, ArrayList<MapDataModel> pTempArray) {
+        int secondArray = pTempArray.size();
+        int tempValue = 0;
+        while (tempValue < secondArray) {
+            pOriginalArray.add(pTempArray.get(tempValue));
+            tempValue++;
+        }
+        pTempArray.clear();
     }
 }

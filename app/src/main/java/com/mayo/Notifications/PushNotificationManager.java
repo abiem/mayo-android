@@ -30,6 +30,7 @@ public class PushNotificationManager {
             notificationObject.put(Constants.Notifications.sBody, "Someone posted in " + pTopic);
             notificationObject.put(Constants.Notifications.sTitle, " New Message Posted");
             notificationObject.put(Constants.Notifications.sSound, "default");
+            notificationObject.put(Constants.Notifications.sClickAction, "com.mayo.fcmwithappserver_target_notification");
 
             obj.put(Constants.Notifications.sNotification, notificationObject);
 

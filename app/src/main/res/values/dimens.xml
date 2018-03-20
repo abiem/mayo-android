@@ -33,6 +33,7 @@
     <dimen name="tx_24">24sp</dimen>
     <dimen name="tx_26">26sp</dimen>
     <dimen name="tx_30">30sp</dimen>
+    <dimen name="tx_34">34sp</dimen>
 
     <!--Heights of layouts-->
     <dimen name="height_200">200dp</dimen>

@@ -191,6 +191,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private ArrayList<Message> mhelpMessageList;
     private TextView mThanksTextView;
     private BroadcastReceiver mBroadCastReceiver;
+    private Bundle mBundle;
 
     @AfterViews
     protected void init() {
@@ -236,6 +237,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         setNotificationReceiverBroadcast();
     }
+
 
     public void setViewPagerData() {
         setViewPager();
@@ -1076,6 +1078,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void updateTaskCardFromViewPager(Task pTask, TaskLocations pTaskLocations) {
         mCardsDataModel.setListOnUpdationOfTask(pTask, mMapDataModels, pTaskLocations);
+        mCardsDataModel.sortExpiredCardViewList(mMapDataModels);
         if (mMapViewPagerAdapter != null) {
             mMapViewPagerAdapter.notifyDataSetChanged();
         }
@@ -1085,7 +1088,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             mMayoApplication.getActivity().finish();
             mMayoApplication.setActivity(this);
         }
-
     }
 
     private void showFakeMarker() {
@@ -1436,8 +1438,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         overridePendingTransition(R.anim.slide_out_left, R.anim.push_down_out);
     }
 
-    public void openChatViewFromNotification(String pMessage, boolean pExpiredCard) {
-        ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage).start();
+    public void openChatViewFromNotification(String pMessage, boolean pExpiredCard, String pTaskId) {
+        MapDataModel mapDataModel = null;
+        for (MapDataModel map : mMapDataModels) {
+            if (map.getTaskLatLng().getTask().getTaskID().equals(pTaskId)) {
+                mapDataModel = map;
+                break;
+            }
+        }
+        if (mapDataModel != null) {
+            ChatActivity_.intent(MapActivity.this).extra(Constants.sPostMessage, pMessage)
+                    .extra(Constants.sQuestMessageShow, pExpiredCard).
+                    extra(Constants.sCardsData, mapDataModel).start();
+        }
     }
 
     @Override
@@ -1492,10 +1505,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    public MayoApplication getmMayoApplication() {
-        return mMayoApplication;
-    }
-
     public void setNotificationReceiverBroadcast() {
         IntentFilter intentFilter = new IntentFilter("android.intent.action.MAIN");
         mBroadCastReceiver = new BroadcastReceiver() {
@@ -1504,7 +1513,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 getFirebaseInstance();
                 if (intent.getStringExtra(Constants.Notifications.sChannelId) != null) {
                     String channelId = intent.getStringExtra(Constants.Notifications.sChannelId);
-                    mFirebaseDatabase.processMessageNotification(channelId);
+                    if (mMapDataModels != null && mViewPagerMap != null) {
+                        for (int i = 0; i < mMapDataModels.size(); i++) {
+                            if (mMapDataModels.get(i).getTaskLatLng().getTask().getTaskID().equals(channelId)) {
+                                mViewPagerMap.setCurrentItem(i);
+                                break;
+                            }
+                        }
+                    }
                 }
                 if (intent.getStringExtra(Constants.Notifications.sAlarmManagerNotification) != null) {
                     showLocalNotification(3, getString(R.string.quest_expire_soon), getString(R.string.helped_soon));
@@ -1515,7 +1531,48 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         this.registerReceiver(mBroadCastReceiver, intentFilter);
     }
 
-    public void setScoreIntoView() {
-        mCountButton.setText(String.valueOf(CommonUtility.getPoints(this)));
+    private class CountDownNew extends CountDownTimer {
+        CountDownNew(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            start();
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+        }
+
+        @Override
+        public void onFinish() {
+            mRotateImageOnMapView.setVisibility(View.GONE);
+            mRotateImageOnMapView.clearAnimation();
+            if (mApngDrawable == null)
+                return;
+            if (mApngDrawable.isRunning()) {
+                mApngDrawable.stop(); // Stop animation
+            }
+            mImageHandsViewOnMap.setVisibility(View.GONE);
+        }
+    }
+
+
+    public void setScoreIntoView(int pScore, boolean isThanksDialogOpen) {
+        mCountButton.setText(String.valueOf(pScore));
+        if (CommonUtility.getPoints(this) == pScore) {
+            CommonUtility.setPoints(pScore, this);
+            return;
+        }
+        if (isThanksDialogOpen) {
+            CommonUtility.setPoints(pScore, this);
+            mImageHandsViewOnMap.setVisibility(View.VISIBLE);
+            mApngDrawable = ApngDrawable.getFromView(mImageHandsViewOnMap);
+            mRotateImageOnMapView.setVisibility(View.VISIBLE);
+            Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
+            mRotateImageOnMapView.startAnimation(animation);
+            new CountDownNew(4000, 1000);
+            if (mApngDrawable == null)
+                return;
+            mApngDrawable.setNumPlays(0);
+            mApngDrawable.start();
+        }
     }
 }

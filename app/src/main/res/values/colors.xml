@@ -34,6 +34,7 @@
     <color name="colorLightGrey">#888888</color>
     <color name="colorLightWhite">#F1F1F1</color>
     <color name="colorDarkTransparent">#26000000</color>
+    <color name="colorDarkTransparentNew">#66000000</color>
     <color name="colorTransparentBlue">#28508fbc</color>
     <color name="colorDarkSkyBlue">#1F8AFF</color>
     <color name="colorDefaultGrey">#128E8E93</color>

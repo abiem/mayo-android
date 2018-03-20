@@ -73,6 +73,8 @@ public class FirebaseDatabase {
     private HashMap locationHashMap;
     private int locationHashMapValue = 0;
     private PushNotificationManager mPushNotificationManager;
+    private boolean isThanksDialogAnimationRun = false;
+    private String channelTopicMessage;
 
 
     public FirebaseDatabase(Context pContext) {
@@ -261,24 +263,28 @@ public class FirebaseDatabase {
         mMessagesGetReferences = mDatabaseReference.child(sChannel).child(pTimeStamp).child("messages").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (dataSnapshot.getValue() != null) {
-                    HashMap messageHashList = (HashMap) dataSnapshot.getValue();
-                    if (messageHashList != null) {
-                        Message message = new Message();
-                        message.setColorIndex(messageHashList.get("colorIndex").toString());
-                        message.setDateCreated(messageHashList.get("dateCreated").toString());
-                        message.setSenderId(messageHashList.get("senderId").toString());
-                        message.setSenderName(messageHashList.get("senderName").toString());
-                        if (message.getSenderId().equals(CommonUtility.getUserId(mContext))) {
-                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
-                            message.setUserType(Constants.UserType.OTHER);
-                        } else {
-                            message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
-                            message.setUserType(Constants.UserType.SELF);
+                try {
+                    if (dataSnapshot.getValue() != null) {
+                        HashMap messageHashList = (HashMap) dataSnapshot.getValue();
+                        if (messageHashList != null) {
+                            Message message = new Message();
+                            message.setColorIndex(messageHashList.get("colorIndex").toString());
+                            message.setDateCreated(messageHashList.get("dateCreated").toString());
+                            message.setSenderId(messageHashList.get("senderId").toString());
+                            message.setSenderName(messageHashList.get("senderName").toString());
+                            if (message.getSenderId().equals(CommonUtility.getUserId(mContext))) {
+                                message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.yes);
+                                message.setUserType(Constants.UserType.OTHER);
+                            } else {
+                                message.setMessageFromLocalDevice(Constants.MessageFromLocalDevice.no);
+                                message.setUserType(Constants.UserType.SELF);
+                            }
+                            message.setText(messageHashList.get("text").toString());
+                            mMessageHashMap.put(message.getSenderId(), message);
                         }
-                        message.setText(messageHashList.get("text").toString());
-                        mMessageHashMap.put(message.getSenderId(), message);
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -512,7 +518,7 @@ public class FirebaseDatabase {
         });
     }
 
-    public void setMessage(final Context pContext, final String pSenderId, final String pMessage, final String pTimeStamp) {
+    public void setMessage(final Context pContext, final String pSenderId, final String pMessage, final String pTimeStamp,String pTaskDescription) {
         sendMessageFromLocalDevice = true;
         if (currentUserColorIndex == -1) {
             mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -555,7 +561,7 @@ public class FirebaseDatabase {
             writeNewChannel(pTimeStamp, message);
             ((ChatActivity) pContext).sendMessagesToUser(String.valueOf(currentUserColorIndex));
         }
-        sendPushNotificationToTopic(pTimeStamp);
+        sendPushNotificationToTopic(pTimeStamp, pTaskDescription);
     }
 
     private Message setMessageData(String pSenderId, String pMessage) {
@@ -912,11 +918,14 @@ public class FirebaseDatabase {
     }
 
     // TODO: send notification to the topic for specific channel id
-    public void sendPushNotificationToTopic(final String pChannelId) {
+    public void sendPushNotificationToTopic(final String pChannelId, String pMessage) {
         getInstancePushNotificationManager();
         final String currentUserId = CommonUtility.getUserId(mContext);
-        // TODO: add application/json and add authorization key
-        final String channelTopicMessage = "";
+
+        channelTopicMessage = "";
+        if (pMessage != null) {
+            channelTopicMessage = pMessage;
+        }
 
         mDatabaseReference.child(sChannel).child(pChannelId).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -1082,8 +1091,8 @@ public class FirebaseDatabase {
                     if (dataSnapshot.getValue() != null) {
                         int scoreValue = dataSnapshot.getValue(Integer.class);
                         if (mContext != null) {
-                            CommonUtility.setPoints(scoreValue, mContext);
-                            ((MapActivity) mContext).setScoreIntoView();
+                            ((MapActivity) mContext).setScoreIntoView(scoreValue, isThanksDialogAnimationRun);
+                            isThanksDialogAnimationRun = true;
                         }
                     }
                 } catch (Exception e) {
@@ -1120,21 +1129,22 @@ public class FirebaseDatabase {
                             }
                             String taskDescription = task.getTaskDescription();
                             if (taskDescription != null) {
-                                MayoApplication mayoApplication = ((MapActivity) mContext).getmMayoApplication();
-                                if (mayoApplication != null) {
-                                    if (mayoApplication.getActivity() instanceof MapActivity) {
-                                        // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
-                                        needToPush = true;
-                                    }
-                                    if (mayoApplication.getActivity() instanceof ChatActivity) {
-                                        //  mayoApplication.getActivity().finish();
-                                        // ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete);
-                                        needToPush = true;
-                                    }
+                                if (mContext instanceof MapActivity) {
+                                    ((MapActivity) mContext).openChatViewFromNotification(taskDescription, taskComplete, task.getTaskID());
+                                    needToPush = true;
+                                }
+                                if (mContext instanceof ChatActivity) {
+                                    ((ChatActivity) mContext).setData(taskDescription, taskComplete, task.getTaskID());
+                                    needToPush = true;
                                 }
                             }
                             if (taskComplete) {
-                                ((MapActivity) mContext).taskExpireAlert();
+                                if (mContext instanceof MapActivity) {
+                                    ((MapActivity) mContext).taskExpireAlert();
+                                }
+                                if (mContext instanceof ChatActivity) {
+                                    ((ChatActivity) mContext).taskExpireAlert();
+                                }
                             }
                         }
                     } catch (Exception e) {
