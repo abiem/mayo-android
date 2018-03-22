@@ -27,9 +27,9 @@ import com.mayo.Utility.Constants;
 import com.mayo.activities.ChatActivity;
 import com.mayo.activities.MapActivity;
 import com.mayo.adapters.ChatListAdapter;
-import com.mayo.application.MayoApplication;
 import com.mayo.models.Location;
 import com.mayo.models.Message;
+import com.mayo.models.ScoreDetail;
 import com.mayo.models.Task;
 import com.mayo.models.TaskCreated;
 import com.mayo.models.TaskLocations;
@@ -200,7 +200,83 @@ public class FirebaseDatabase {
                         }
                         taskCreated.setTasks(hashMap);
                         userData.setTaskCreated(taskCreated);
-
+                    }
+                    if (hashMapUserData.containsKey("score")) {
+                        userData.setScore(Integer.parseInt(hashMapUserData.get("score").toString()));
+                    }
+                    if (hashMapUserData.containsKey("scoreDetail")) {
+                        try {
+                            ArrayList arrayListScoreDetail = (ArrayList) hashMapUserData.get("scoreDetail");
+                            ArrayList<ScoreDetail> arrayListNewScoreDetail = new ArrayList<>();
+                            for (int i = 0; i < arrayListScoreDetail.size(); i++) {
+                                HashMap hashMap = (HashMap) arrayListScoreDetail.get(i);
+                                ScoreDetail scoreDetail = new ScoreDetail();
+                                if (hashMap.containsKey("createdDate")) {
+                                    scoreDetail.setCreatedDate(hashMap.get("createdDate").toString());
+                                }
+                                if (hashMap.containsKey("taskID")) {
+                                    scoreDetail.setTaskID(hashMap.get("taskID").toString());
+                                }
+                                if (hashMap.containsKey("points")) {
+                                    scoreDetail.setPoints(Integer.parseInt(hashMap.get("points").toString()));
+                                }
+                                arrayListNewScoreDetail.add(scoreDetail);
+                            }
+                            userData.setScoreDetail(arrayListNewScoreDetail);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (hashMapUserData.containsKey("taskParticipated")) {
+                        HashMap hashMapTaskParticipated = (HashMap) hashMapUserData.get("taskParticipated");
+                        TaskParticipated taskParticipated = new TaskParticipated();
+                        taskParticipated.setCount(Integer.parseInt(hashMapTaskParticipated.get("count").toString()));
+                        ArrayList arraylistTasksFetch = (ArrayList) hashMapTaskParticipated.get("tasks");
+                        HashMap hashMap = new HashMap();
+                        for (int i = 0; i < arraylistTasksFetch.size(); i++) {
+                            hashMap.put(String.valueOf(i), arraylistTasksFetch.get(i));
+                        }
+                        taskParticipated.setTasks(hashMap);
+                        userData.setTaskParticipated(taskParticipated);
+                    }
+                    if (hashMapUserData.containsKey("friends")) {
+                        try {
+                            ArrayList arrayList = (ArrayList) hashMapUserData.get("friends");
+                            HashMap<String, String> hashMapFriendList = new HashMap<>();
+                            for (int i = 0; i < arrayList.size(); i++) {
+                                hashMapFriendList.put(String.valueOf(i), arrayList.get(i).toString());
+                            }
+                            userData.setFriends(hashMapFriendList);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (hashMapUserData.containsKey("location")) {
+                        try {
+                            ArrayList arrayList = (ArrayList) hashMapUserData.get("location");
+                            if (arrayList != null && arrayList.size() > 0) {
+                                for (int i = 0; i < arrayList.size(); i++) {
+                                    Location location = new Location();
+                                    HashMap hashMap = (HashMap) arrayList.get(i);
+                                    if (hashMap.containsKey("lat")) {
+                                        location.setLat(Double.parseDouble(hashMap.get("lat").toString()));
+                                    }
+                                    if (hashMap.containsKey("long")) {
+                                        location.setLong(Double.parseDouble(hashMap.get("long").toString()));
+                                    }
+                                    if (hashMap.containsKey("updatedAt")) {
+                                        location.setUpdatedAt(hashMap.get("updatedAt").toString());
+                                    }
+                                    locationHashMap.put(String.valueOf(locationHashMapValue), location);
+                                    locationHashMapValue++;
+                                }
+                                if (locationHashMapValue > 4) {
+                                    locationHashMapValue = 0;
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     userData.setDeviceToken(pDeviceToken);
                     userData.setUpdatedAt(pUpdateTime);
@@ -402,7 +478,39 @@ public class FirebaseDatabase {
                             userData.setTaskParticipated(taskParticipated);
                         }
                         if (hashMapUserData.containsKey("scoreDetail")) {
-
+                            try {
+                                ArrayList arrayListScoreDetail = (ArrayList) hashMapUserData.get("scoreDetail");
+                                ArrayList<ScoreDetail> arrayListNewScoreDetail = new ArrayList<>();
+                                for (int i = 0; i < arrayListScoreDetail.size(); i++) {
+                                    HashMap hashMap = (HashMap) arrayListScoreDetail.get(i);
+                                    ScoreDetail scoreDetail = new ScoreDetail();
+                                    if (hashMap.containsKey("createdDate")) {
+                                        scoreDetail.setCreatedDate(hashMap.get("createdDate").toString());
+                                    }
+                                    if (hashMap.containsKey("taskID")) {
+                                        scoreDetail.setTaskID(hashMap.get("taskID").toString());
+                                    }
+                                    if (hashMap.containsKey("points")) {
+                                        scoreDetail.setPoints(Integer.parseInt(hashMap.get("points").toString()));
+                                    }
+                                    arrayListNewScoreDetail.add(scoreDetail);
+                                }
+                                userData.setScoreDetail(arrayListNewScoreDetail);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (hashMapUserData.containsKey("friends")) {
+                            try {
+                                ArrayList arrayList = (ArrayList) hashMapUserData.get("friends");
+                                HashMap<String, String> hashMapFriendList = new HashMap<>();
+                                for (int i = 0; i < arrayList.size(); i++) {
+                                    hashMapFriendList.put(String.valueOf(i), arrayList.get(i).toString());
+                                }
+                                userData.setFriends(hashMapFriendList);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                         if (hashMapUserData.containsKey("taskCreated")) {
                             HashMap hashMapTaskCreated = (HashMap) hashMapUserData.get("taskCreated");
@@ -476,7 +584,39 @@ public class FirebaseDatabase {
                             userData.setTaskParticipated(taskParticipated);
                         }
                         if (hashMapUserData.containsKey("scoreDetail")) {
-
+                            try {
+                                ArrayList arrayListScoreDetail = (ArrayList) hashMapUserData.get("scoreDetail");
+                                ArrayList<ScoreDetail> arrayListNewScoreDetail = new ArrayList<>();
+                                for (int i = 0; i < arrayListScoreDetail.size(); i++) {
+                                    HashMap hashMap = (HashMap) arrayListScoreDetail.get(i);
+                                    ScoreDetail scoreDetail = new ScoreDetail();
+                                    if (hashMap.containsKey("createdDate")) {
+                                        scoreDetail.setCreatedDate(hashMap.get("createdDate").toString());
+                                    }
+                                    if (hashMap.containsKey("taskID")) {
+                                        scoreDetail.setTaskID(hashMap.get("taskID").toString());
+                                    }
+                                    if (hashMap.containsKey("points")) {
+                                        scoreDetail.setPoints(Integer.parseInt(hashMap.get("points").toString()));
+                                    }
+                                    arrayListNewScoreDetail.add(scoreDetail);
+                                }
+                                userData.setScoreDetail(arrayListNewScoreDetail);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (hashMapUserData.containsKey("friends")) {
+                            try {
+                                ArrayList arrayList = (ArrayList) hashMapUserData.get("friends");
+                                HashMap<String, String> hashMapFriendList = new HashMap<>();
+                                for (int i = 0; i < arrayList.size(); i++) {
+                                    hashMapFriendList.put(String.valueOf(i), arrayList.get(i).toString());
+                                }
+                                userData.setFriends(hashMapFriendList);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                         if (hashMapUserData.containsKey("taskCreated")) {
                             boolean isNewTaskParticipated = true;
@@ -518,7 +658,7 @@ public class FirebaseDatabase {
         });
     }
 
-    public void setMessage(final Context pContext, final String pSenderId, final String pMessage, final String pTimeStamp,String pTaskDescription) {
+    public void setMessage(final Context pContext, final String pSenderId, final String pMessage, final String pTimeStamp, String pTaskDescription) {
         sendMessageFromLocalDevice = true;
         if (currentUserColorIndex == -1) {
             mDatabaseReference.child(sChannel).child(pTimeStamp).child("users").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -651,8 +791,8 @@ public class FirebaseDatabase {
         task.setTimeUpdated(CommonUtility.getLocalTime()); //this is updating time but first time we showing create task time
         task.setUserMovedOutside(false);
         task.setRecentActivity(false);
-        task.setStartColor(pStartColor);
-        task.setEndColor(pEndColor);
+        task.setStartColor(pEndColor);
+        task.setEndColor(pStartColor);
         task.setCompleteType(Constants.sConstantEmptyString);
         return task;
     }
@@ -1060,7 +1200,10 @@ public class FirebaseDatabase {
     }
 
     //Update points at Firebase Server
-    public void updatePointsAtFirebaseServer(final String pUser) {
+    /*
+    pUser: all the users that helps me
+     */
+    public void updatePointsAtFirebaseServer(final String pUser, final boolean pIsFakeCard) {
         mDatabaseReference.child("users").child(pUser).child("score").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -1069,6 +1212,105 @@ public class FirebaseDatabase {
                         int scoreValue = dataSnapshot.getValue(Integer.class);
                         scoreValue += 1;
                         mDatabaseReference.child("users").child(pUser).child("score").setValue(scoreValue);
+                        updateScoreDetailAtFirebaseServer(pUser, 1, pIsFakeCard);
+                        if (!pIsFakeCard) {
+                            updateFriendsAtFirebaseServer(pUser);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void updateFriendsAtFirebaseServer(final String pHelpUsers) {
+        final String user = CommonUtility.getUserId(mContext);
+        if (user != null && !user.equals(Constants.sConstantEmptyString)) {
+            mDatabaseReference.child("users").child(user).child("friends").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    try {
+                        int i = 0;
+                        if (dataSnapshot.getValue() != null) {
+                            ArrayList arrayList = (ArrayList) dataSnapshot.getValue();
+                            HashMap<String, String> hashMapFriendsList = new HashMap<>();
+                            for (i = 0; i < arrayList.size(); i++) {
+                                hashMapFriendsList.put(String.valueOf(i), arrayList.get(i).toString());
+                            }
+                            if (!hashMapFriendsList.containsValue(pHelpUsers)) {
+                                hashMapFriendsList.put(String.valueOf(i), pHelpUsers);
+                                mDatabaseReference.child("users").child(user).child("friends").setValue(hashMapFriendsList);
+                            }
+                        } else {
+                            HashMap<String, String> hashMap = new HashMap<>();
+                            hashMap.put(String.valueOf(0), pHelpUsers);
+                            mDatabaseReference.child("users").child(user).child("friends").setValue(hashMap);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    public void updateScoreDetailAtFirebaseServer(final String pUser, final int pPoints, final boolean pIsFakeCard) {
+        mDatabaseReference.child("users").child(pUser).child("scoreDetail").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if (dataSnapshot.getValue() != null) {
+                        ArrayList arrayList = (ArrayList) dataSnapshot.getValue();
+                        ArrayList<ScoreDetail> arrayListNewScoreDetail = new ArrayList<>();
+                        for (int i = 0; i < arrayList.size(); i++) {
+                            HashMap hashMap = (HashMap) arrayList.get(i);
+                            ScoreDetail scoreDetail = new ScoreDetail();
+                            if (hashMap.containsKey("createdDate")) {
+                                scoreDetail.setCreatedDate(hashMap.get("createdDate").toString());
+                            }
+                            if (hashMap.containsKey("taskID")) {
+                                scoreDetail.setTaskID(hashMap.get("taskID").toString());
+                            }
+                            if (hashMap.containsKey("points")) {
+                                scoreDetail.setPoints(Integer.parseInt(hashMap.get("points").toString()));
+                            }
+                            arrayListNewScoreDetail.add(scoreDetail);
+                        }
+                        ScoreDetail scoreDetail = new ScoreDetail();
+                        if (pIsFakeCard) {
+                            scoreDetail.setTaskID(CommonUtility.convertLocalTimeToUTC());
+                        } else {
+                            Task task = CommonUtility.getTaskData(mContext);
+                            scoreDetail.setTaskID(task.getTaskID());
+                        }
+                        scoreDetail.setPoints(pPoints);
+                        scoreDetail.setCreatedDate(CommonUtility.getLocalTime());
+                        arrayListNewScoreDetail.add(scoreDetail);
+                        mDatabaseReference.child("users").child(pUser).child("scoreDetail").setValue(arrayListNewScoreDetail);
+                    } else {
+                        ScoreDetail scoreDetail = new ScoreDetail();
+                        if (pIsFakeCard) {
+                            scoreDetail.setTaskID(CommonUtility.convertLocalTimeToUTC());
+                        } else {
+                            Task task = CommonUtility.getTaskData(mContext);
+                            scoreDetail.setTaskID(task.getTaskID());
+                        }
+                        scoreDetail.setPoints(pPoints);
+                        scoreDetail.setCreatedDate(CommonUtility.getLocalTime());
+                        ArrayList<ScoreDetail> arrayList = new ArrayList<>();
+                        arrayList.add(scoreDetail);
+                        mDatabaseReference.child("users").child(pUser).child("scoreDetail").setValue(arrayList);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -21,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.github.curioustechizen.ago.RelativeTimeTextView;
 import com.google.android.gms.maps.model.LatLng;
 import com.mayo.R;
 import com.mayo.Utility.CommonUtility;
@@ -38,6 +39,7 @@ import com.mayo.models.TaskLatLng;
 import com.mayo.models.TaskLocations;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 
 /**
@@ -51,6 +53,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     private ViewClickListener mClickListener;
     private CustomViewPager mCustomViewPager;
     private TextView mImageTextView, mTextView, mTextViewNew, mCanHelped;
+    private RelativeTimeTextView mTimeMainCard, mTimeFakeCard, mTimeExpireCard, mTimeLiveCard;
     private LinearLayout mChatPopupLayout, mDoneParentLayout, mPostParentLayout;
     private ImageButton mImageButton, mMessageButton, mDoneButton, mExpiredImageButton;
     private EditText mEditText, mEdiTextNew;
@@ -58,6 +61,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
     private CardView mCardView, mCardViewFakeCards, mCardViewNewCards;
     private MayoApplication mMayoApplication;
     private boolean isPostViewVisible = false;
+    private static final long NOW = new Date().getTime();
 
     public MapViewPagerAdapter(Context pContext, ArrayList<MapDataModel> pMapDataModel, ViewClickListener pClickListener,
                                CustomViewPager pCustomViewPager, Activity pActivity, MayoApplication pMayoApplication) {
@@ -90,6 +94,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mDoneParentLayout = (LinearLayout) layout.findViewById(R.id.parentImagesButton);
                 mMessageButton = (ImageButton) layout.findViewById(R.id.messageIcon);
                 mDoneButton = (ImageButton) layout.findViewById(R.id.doneIcon);
+                mTimeMainCard = (RelativeTimeTextView) layout.findViewById(R.id.timeshownmaincard);
                 mMapDataModelArrayList.get(position).setCardView(mCardView);
                 break;
             case FAKECARDONE:
@@ -101,6 +106,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mChatPopupLayout = (LinearLayout) layout.findViewById(R.id.chatPopupLayout);
                 mTextView = (TextView) layout.findViewById(R.id.viewText);
                 mMapDataModelArrayList.get(position).setCardView(mCardViewFakeCards);
+                mTimeFakeCard = (RelativeTimeTextView) layout.findViewById(R.id.timeshownfakecard);
                 break;
             case DEFAULT:
                 layout = (ViewGroup) inflater.inflate(R.layout.map_viewpager_screen_three, collection, false);
@@ -109,6 +115,8 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                 mExpiredImageButton = (ImageButton) layout.findViewById(R.id.expiryImageView);
                 mCanHelped = (TextView) layout.findViewById(R.id.canHelped);
                 mMapDataModelArrayList.get(position).setCardView(mCardViewNewCards);
+                mTimeExpireCard = (RelativeTimeTextView) layout.findViewById(R.id.timeshownexpirecard);
+                mTimeLiveCard = (RelativeTimeTextView) layout.findViewById(R.id.timeshownlivecardnew);
                 break;
         }
         RelativeLayout backgroundView = (RelativeLayout) layout.findViewById(R.id.backgroundmapviewpager);
@@ -117,6 +125,7 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
         switch (cardTypeCheck) {
             case POST: //first card
                 mEditText.setCursorVisible(false);
+                mTimeMainCard.setText(mContext.getResources().getString(R.string.expire_msg));
                 if (mMapDataModelArrayList.size() != 1) {
                     if (!isPostViewVisible && CommonUtility.getFakeCardShownOrNot(mContext)) {
                         mCardView.setVisibility(View.INVISIBLE);
@@ -132,7 +141,10 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     mDoneParentLayout.setVisibility(View.VISIBLE);
                     mPostParentLayout.setVisibility(View.GONE);
                     Task task = CommonUtility.getTaskData(mContext);
-                    Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getStartColor(), "#" + task.getEndColor(), mContext);
+                    String endColor = task.getStartColor();
+                    task.setStartColor(task.getEndColor());
+                    task.setEndColor(endColor);
+                    Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), mContext);
                     mMapDataModelArrayList.get(position).setBackgroundView(drawable);
                     GradientColor gradientColor = new GradientColor();
                     gradientColor.setStartColor("#" + task.getStartColor());
@@ -162,15 +174,18 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
             case FAKECARDONE: //first fake card
                 mChatPopupLayout.setVisibility(View.GONE);
                 mTextView.setText(mMapDataModelArrayList.get(position).getTextMessage());
+                mTimeFakeCard.setReferenceTime(NOW);
                 break;
             case FAKECARDTWO: //second fake card
                 mChatPopupLayout.setVisibility(View.VISIBLE);
                 mChatPopupLayout.setOnClickListener(this);
                 mTextView.setText(mMapDataModelArrayList.get(position).getTextMessage());
+                mTimeFakeCard.setReferenceTime(NOW);
                 break;
             case FAKECARDTHREE: //third fake card
                 mChatPopupLayout.setVisibility(View.GONE);
                 mTextView.setText(mMapDataModelArrayList.get(position).getTextMessage());
+                mTimeFakeCard.setReferenceTime(NOW);
                 break;
             case DEFAULT: // all cards that is fetch from firebase
                 mCardViewNewCards.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
@@ -178,20 +193,28 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
                     mExpiredImageButton.setVisibility(View.VISIBLE);
                     mCanHelped.setVisibility(View.GONE);
                     mExpiredImageButton.setOnClickListener(this);
+                    Date date = CommonUtility.convertStringToDateTime(mMapDataModelArrayList.
+                            get(position).getTaskLatLng().getTask().getTimeUpdated());
+                    if (date != null) {
+                        mTimeExpireCard.setReferenceTime(date.getTime());
+                        mTimeLiveCard.setVisibility(View.GONE);
+                    }
                 } else {
                     mExpiredImageButton.setVisibility(View.GONE);
                     mCanHelped.setVisibility(View.VISIBLE);
                     mCanHelped.setOnClickListener(this);
+                    Date date = CommonUtility.convertStringToDateTime(mMapDataModelArrayList.
+                            get(position).getTaskLatLng().getTask().getTimeCreated());
+                    if (date != null) {
+                        mTimeLiveCard.setReferenceTime(date.getTime());
+                        mTimeExpireCard.setVisibility(View.GONE);
+                    }
                 }
                 mTextViewNew.setText(mMapDataModelArrayList.get(position).getTextMessage());
                 break;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            backgroundView.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
-        } else {
-            backgroundView.setBackgroundDrawable(mMapDataModelArrayList.get(position).getBackgroundView());
-        }
+        backgroundView.setBackground(mMapDataModelArrayList.get(position).getBackgroundView());
         collection.addView(layout);
         return layout;
     }

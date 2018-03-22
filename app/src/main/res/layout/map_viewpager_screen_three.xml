@@ -14,7 +14,9 @@
         android:layout_height="match_parent"
         android:background="@drawable/background_expiry_card"
         android:orientation="vertical"
-        android:padding="@dimen/padding_16">
+        android:paddingLeft="@dimen/padding_16"
+        android:paddingRight="@dimen/padding_16"
+        android:paddingTop="@dimen/padding_16">
 
         <TextView
             android:id="@+id/viewTextOfThree"
@@ -29,7 +31,7 @@
             android:id="@+id/expiryImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_above="@+id/timeshownexpirecard"
             android:layout_centerHorizontal="true"
             android:background="@drawable/expire_card" />
 
@@ -37,7 +39,7 @@
             android:id="@+id/canHelped"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_above="@+id/timeshownlivecardnew"
             android:layout_centerHorizontal="true"
             android:layout_gravity="center"
             android:drawableLeft="@drawable/icon_chat"
@@ -47,6 +49,32 @@
             android:textColor="@color/white"
             android:textSize="@dimen/tx_24"
             android:visibility="gone" />
+
+        <com.github.curioustechizen.ago.RelativeTimeTextView
+            android:id="@+id/timeshownexpirecard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:visibility="invisible"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_14"
+            app:relative_time_prefix="Completed " />
+
+        <com.github.curioustechizen.ago.RelativeTimeTextView
+            android:id="@+id/timeshownlivecardnew"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:visibility="invisible"
+            android:textColor="@color/white"
+            android:textSize="@dimen/tx_14" />
+        <!--<TextView-->
+        <!--android:id="@+id/timeshownexpirecard"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentBottom="true" />-->
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

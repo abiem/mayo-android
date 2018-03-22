@@ -12,6 +12,7 @@ public class UserData {
     private String deviceToken;
     private boolean isDemoTaskShown;
     private int score;
+    private HashMap<String, String> friends;
     private HashMap location;
     private ArrayList<ScoreDetail> scoreDetail;
     private TaskCreated taskCreated;
@@ -63,6 +64,14 @@ public class UserData {
 
     public void setScoreDetail(ArrayList<ScoreDetail> scoreDetail) {
         this.scoreDetail = scoreDetail;
+    }
+
+    public HashMap<String, String> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(HashMap<String, String> friends) {
+        this.friends = friends;
     }
 
     public TaskCreated getTaskCreated() {

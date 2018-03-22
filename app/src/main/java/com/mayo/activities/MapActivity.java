@@ -345,7 +345,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                                 getFirebaseInstance();
-                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
                             }
                             mMapViewPagerAdapter.setTaskCardViewVisible();
                             break;
@@ -357,7 +357,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                                 getFirebaseInstance();
-                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
                             }
                             break;
                         case FAKECARDTHREE:
@@ -365,7 +365,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                                 getFirebaseInstance();
-                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
                             }
                             break;
                         case DEFAULT:
@@ -456,10 +456,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 mDialog.dismiss();
                 mDialog = null;
             }
-            if (!isLocationEnabled(this)) {
-                locationNotEnabled();
-                disableLocationDialogView(Constants.PermissionDialog.LocationDialog.ordinal());
-            }
+            checkLocationEnabledOrNot();
+        }
+    }
+
+    private void checkLocationEnabledOrNot() {
+        if (!isLocationEnabled(this)) {
+            locationNotEnabled();
+            disableLocationDialogView(Constants.PermissionDialog.LocationDialog.ordinal());
         }
     }
 
@@ -522,7 +526,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         int value = CommonUtility.getPoints(MapActivity.this) + 1;
                         CommonUtility.setPoints(value, MapActivity.this);
                         mCountButton.setText(String.valueOf(value));
-                        mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this));
+                        mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
                         CommonUtility.setFakeCardTwo(true, MapActivity.this);
                     }
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
@@ -1283,7 +1287,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     mGeoFencing.stopGeoFenceMonitoring(mGoogleApiClient);
                 }
                 isThanksDialogOpen = true;
-                Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
+                Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getStartColor(), "#" + task.getEndColor(), this);
                 dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
             }
             setThanksDialog(dialog);
@@ -1357,7 +1361,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (task.isRecentActivity() && !isThanksDialogOpen && !isFinishing()) {
             Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
             if (dialog != null && !dialog.isShowing()) {
-                Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getEndColor(), "#" + task.getStartColor(), this);
+                Drawable drawable = CommonUtility.getGradientDrawable("#" + task.getStartColor(), "#" + task.getEndColor(), this);
                 dialog.findViewById(R.id.thanksDialogBackground).setBackground(drawable);
                 setThanksDialog(dialog);
             }
@@ -1391,7 +1395,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 for (Message message : mhelpMessageList) {
                     stringArrayList.add(message.getSenderId());
                     mFirebaseDatabase.handleUsersHelpedButtonPressed(message.getSenderId(), taskData);
-                    mFirebaseDatabase.updatePointsAtFirebaseServer(message.getSenderId());
+                    mFirebaseDatabase.updatePointsAtFirebaseServer(message.getSenderId(),false);
                 }
             }
             task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside, taskData.isRecentActivity(), stringArrayList);

@@ -235,7 +235,6 @@ public class CardsDataModel {
     private void setMapModelData(TaskLatLng pTaskLatlng) {
         MapDataModel mapDataModel = new MapDataModel();
         GradientColor gradientColor = new GradientColor();
-        mapDataModel.setGradientColor(gradientColor);
         mapDataModel.setFakeCard(false);
         mapDataModel.setTextMessage(pTaskLatlng.getTask().getTaskDescription());
         mapDataModel.setFakeCardPosition(Constants.CardType.DEFAULT.getValue());
@@ -263,13 +262,15 @@ public class CardsDataModel {
             mapDataModel.setBackgroundView(drawable);
             mapDataModel.getTaskLatLng().getTask().setCompleted(true);
             mapDataModel.setCompleted(true);
+            mapDataModel.setGradientColor(gradientColor);
             mLocalExpiredCardArrayModel.add(mapDataModel);
         } else {
-            gradientColor.setStartColor(pTaskLatlng.getTask().getStartColor());
-            gradientColor.setEndColor(pTaskLatlng.getTask().getEndColor());
-            drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getEndColor(),
-                    "#" + pTaskLatlng.getTask().getStartColor(), mContext);
+            gradientColor.setStartColor(pTaskLatlng.getTask().getEndColor());
+            gradientColor.setEndColor(pTaskLatlng.getTask().getStartColor());
+            drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getStartColor(),
+                    "#" + pTaskLatlng.getTask().getEndColor(), mContext);
             mapDataModel.setBackgroundView(drawable);
+            mapDataModel.setGradientColor(gradientColor);
             mMapDataModels.add(mapDataModel);
         }
     }
@@ -299,8 +300,8 @@ public class CardsDataModel {
         } else {
             gradientColor.setStartColor(pTaskLatlng.getTask().getStartColor());
             gradientColor.setEndColor(pTaskLatlng.getTask().getEndColor());
-            drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getEndColor(),
-                    "#" + pTaskLatlng.getTask().getStartColor(), mContext);
+            drawable = CommonUtility.getGradientDrawable("#" + pTaskLatlng.getTask().getStartColor(),
+                    "#" + pTaskLatlng.getTask().getEndColor(), mContext);
             mapDataModel.setBackgroundView(drawable);
         }
         return mapDataModel;

@@ -25,16 +25,16 @@
     <ImageView
         android:id="@+id/imageHandsView"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="@dimen/height_270"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_50"
         android:contentDescription="@string/show_gif_image"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
     <ImageView
         android:id="@+id/imageRippleNew"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
+        android:layout_width="@dimen/height_270"
+        android:layout_height="@dimen/height_270"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_50"
         android:contentDescription="@string/show_gif_image"
@@ -42,8 +42,8 @@
 
     <ImageView
         android:id="@+id/imagePinView"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
+        android:layout_width="@dimen/height_270"
+        android:layout_height="@dimen/height_270"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin_50"
         android:contentDescription="@string/show_gif_image"

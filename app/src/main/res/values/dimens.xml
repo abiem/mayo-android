@@ -30,6 +30,8 @@
     <dimen name="tx_20">20sp</dimen>
     <dimen name="tx_16">16sp</dimen>
     <dimen name="tx_14">14sp</dimen>
+    <dimen name="tx_12">12sp</dimen>
+    <dimen name="tx_10">10sp</dimen>
     <dimen name="tx_24">24sp</dimen>
     <dimen name="tx_26">26sp</dimen>
     <dimen name="tx_30">30sp</dimen>
@@ -40,6 +42,7 @@
     <dimen name="height_240">240dp</dimen>
     <dimen name="height_250">250dp</dimen>
     <dimen name="height_270">270dp</dimen>
+    <dimen name="height_280">280dp</dimen>
     <dimen name="height_300">300dp</dimen>
     <dimen name="height_320">320dp</dimen>
     <dimen name="height_350">350dp</dimen>

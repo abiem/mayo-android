@@ -75,7 +75,7 @@ public class IntroActivity extends AppCompatActivity implements ClickListener {
 
     private void setApngImages() {
         mApngImages.add("assets://apng/fist_bump_720p.png");
-        mApngImages.add("assets://apng/ripple_seq_720p.png");
+        mApngImages.add("assets://apng/ripple_seq_480p.png");
         mApngImages.add("assets://apng/fatpin_seq01_720p.png");
         mApngImages.add("assets://apng/fatpin_seq02_720p.png");
         ApngImageLoader.getInstance().displayImage(mApngImages.get(0), imageHands);
