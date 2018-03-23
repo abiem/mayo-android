@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -14,7 +13,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -52,7 +50,7 @@ import java.util.Map;
  */
 
 public class FirebaseDatabase {
-    private DatabaseReference mDatabaseReference;
+    private DatabaseReference mDatabaseReference, mAndroidDatabaseReference;
     private GeoFire mGeoFire, mTaskGeoFire;
     private Context mContext;
 
@@ -86,7 +84,12 @@ public class FirebaseDatabase {
         mGetAllUsers = new HashMap();
         //intialize database reference
         initDatabase();
+        initAndroidDatabaseReference();
         getInstancePushNotificationManager();
+    }
+
+    private void initAndroidDatabaseReference() {
+        mAndroidDatabaseReference = com.google.firebase.database.FirebaseDatabase.getInstance().getReference().child(sInitDatabaseChild);
     }
 
     private void initDatabase() {

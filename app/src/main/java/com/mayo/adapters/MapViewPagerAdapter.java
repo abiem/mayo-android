@@ -354,9 +354,12 @@ public class MapViewPagerAdapter extends PagerAdapter implements View.OnClickLis
 
                 @Override
                 public void run() {
-                    // TODO Auto-generated method stub
-                    mMapDataModelArrayList.remove(pIndex);
-                    notifyDataSetChanged();
+                    try {
+                        mMapDataModelArrayList.remove(pIndex);
+                        notifyDataSetChanged();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }, 100);
         }

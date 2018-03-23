@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -345,7 +346,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                                 getFirebaseInstance();
-                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this), true);
                             }
                             mMapViewPagerAdapter.setTaskCardViewVisible();
                             break;
@@ -353,11 +354,16 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             mViewPagerScroller.getFakeCardOne();
                             break;
                         case FAKECARDTWO:
-                            value = mViewPagerScroller.getFakeCardTwo(isScrollingRight);
-                            if (value != -1) {
-                                mCountButton.setText(String.valueOf(value));
-                                getFirebaseInstance();
-                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
+                            try {
+                                value = mViewPagerScroller.getFakeCardTwo(isScrollingRight);
+                                if (value != -1) {
+                                    mCountButton.setText(String.valueOf(value));
+                                    getFirebaseInstance();
+                                    mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this), true);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                mMayoApplication.showToast(MapActivity.this, "Exception occur on scroll fake card one");
                             }
                             break;
                         case FAKECARDTHREE:
@@ -365,7 +371,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
                                 getFirebaseInstance();
-                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
+                                mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this), true);
                             }
                             break;
                         case DEFAULT:
@@ -526,7 +532,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         int value = CommonUtility.getPoints(MapActivity.this) + 1;
                         CommonUtility.setPoints(value, MapActivity.this);
                         mCountButton.setText(String.valueOf(value));
-                        mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this),true);
+                        mFirebaseDatabase.updatePointsAtFirebaseServer(CommonUtility.getUserId(MapActivity.this), true);
                         CommonUtility.setFakeCardTwo(true, MapActivity.this);
                     }
                     if (mMapDataModels.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
@@ -770,13 +776,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void setFakeMarker(Location location) {
         if (mFakeUserMarker != null && mFakeUserMarker.size() > 0) {
-            removeFakeMarkers(mFakeUserMarker);
+            //remove all previous fake markers
+            try {
+                for (UserMarker userMarker : mFakeUserMarker) {
+                    if (userMarker.getMarker() != null) {
+                        userMarker.getMarker().remove();
+                    }
+                }
+                mFakeUserMarker.clear();
+            } catch (Exception e) {
+                e.printStackTrace();
+                mMayoApplication.showToast(this, "remove marker exception");
+            }
         }
         int numOfFakeUsers = FakeMarker.generateRandomMarkerOfFakeUsers();
         for (int i = 0; i < numOfFakeUsers; i++) {
             addFakeUserMaker(location);
         }
         if (mFakeUserMarker.size() > 0) {
+            Log.d("fake_user_marker_add:", String.valueOf(mFakeUserMarker.size()));
             CommonUtility.setFakeMarkerShown(true, MapActivity.this);
             mFakeMarker = new FakeMarker(MapActivity.this, mFakeUserMarker);
             mFakeMarker.startTimer();
@@ -800,6 +818,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (mFakeUserMarker.size() > 0) {
             mFakeUserMarker.get(pIndex).getMarker().remove();
             mFakeUserMarker.remove(pIndex);
+            Log.d("fake_user_marker_timer:", String.valueOf(pIndex));
         }
         if (mFakeUserMarker.size() == 0) {
             CommonUtility.setFakeMarkerShown(true, MapActivity.this);
@@ -831,16 +850,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mFakeUserMarker.add(fakeUsersShown);
     }
 
-    //remove all fake markers
-    private void removeFakeMarkers(ArrayList<UserMarker> pFakeMarker) {
-        ArrayList<UserMarker> fakeMarkerLocal = new ArrayList<>();
-        fakeMarkerLocal.addAll(pFakeMarker);
-        for (int i = 0; i < fakeMarkerLocal.size(); i++) {
-            fakeMarkerLocal.get(i).getMarker().remove();
-        }
-        fakeMarkerLocal.removeAll(pFakeMarker);
-        mFakeUserMarker = fakeMarkerLocal;
-    }
 
     @Override
     public void onDestroy() {
@@ -1041,6 +1050,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 mNearByUsers.add(pUserMarker);
             }
             if (mNearByUsers.size() > 0) {
+                Log.d("live_user_marker", String.valueOf(mNearByUsers.size()));
                 if (mUserLiveMarker == null) {
                     mUserLiveMarker = new UserLiveMarker(this, mNearByUsers);
                     mUserLiveMarker.startTimer();
@@ -1133,6 +1143,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void removeUserMarker(String pKey) {
         HashSet<UserMarker> hashSetUserMarker = new HashSet<>();
         hashSetUserMarker.addAll(mNearByUsers);
+        Log.d("live_user_marker_timer", String.valueOf(hashSetUserMarker.size()));
         for (UserMarker userMarker : hashSetUserMarker) {
             if (userMarker.getKey().equals(pKey)) {
                 userMarker.getMarker().remove();
@@ -1395,7 +1406,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 for (Message message : mhelpMessageList) {
                     stringArrayList.add(message.getSenderId());
                     mFirebaseDatabase.handleUsersHelpedButtonPressed(message.getSenderId(), taskData);
-                    mFirebaseDatabase.updatePointsAtFirebaseServer(message.getSenderId(),false);
+                    mFirebaseDatabase.updatePointsAtFirebaseServer(message.getSenderId(), false);
                 }
             }
             task = mFirebaseDatabase.updateTaskOnFirebase(pCompleteOrNot, pCompleteType, this, pUserMoveOutside, taskData.isRecentActivity(), stringArrayList);

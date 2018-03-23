@@ -47,34 +47,48 @@ public class ViewPagerScroller {
     public int getPostCard() {
         clearExpireCardMarker();
         int value = -1;
+        boolean isScroll = true;
         for (int i = 0; i < mMapDataModel.size(); i++) {
             if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTHREE.getValue()) {
                 mMapDataModel.get(i).getCardLatlng().getMarker().remove();
-                mMapViewPagerAdapter.deleteItemFromArrayList(i);
-                mMapViewPagerAdapter.notifyDataSetChanged();
+                try {
+                    mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                    mMapViewPagerAdapter.notifyDataSetChanged();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 value = CommonUtility.getPoints(mContext) + 1;
                 CommonUtility.setPoints(value, mContext);
                 CommonUtility.setFakeCardThree(true, mContext);
+                isScroll = false;
             } else {
                 if (mMapDataModel.get(i).getCardLatlng() != null)
                     setFakeCardSmallIcon(mMapDataModel.get(i).getCardLatlng());
             }
-
-            if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
-                CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
-                if (cardLatlng != null) {
-                    if (cardLatlng.getMarker() == null && mContext != null) {
-                        ((MapActivity) mContext).getCurrentLocation();
-                    } else {
-                        setPostIconLarge(cardLatlng);
-                        CameraPosition cameraPosition = new CameraPosition.Builder()
-                                .target(cardLatlng.getLatLng()).zoom(Constants.sKeyCameraZoom).build();
-                        mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            try {
+                if (isScroll) {
+                    if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.POST.getValue()) {
+                        CardLatlng cardLatlng = mMapDataModel.get(i).getCardLatlng();
+                        if (cardLatlng != null) {
+                            if (cardLatlng.getMarker() == null && mContext != null) {
+                                ((MapActivity) mContext).getCurrentLocation();
+                            } else {
+                                setPostIconLarge(cardLatlng);
+                                CameraPosition cameraPosition = new CameraPosition.Builder()
+                                        .target(cardLatlng.getLatLng()).zoom(Constants.sKeyCameraZoom).build();
+                                mGoogleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                            }
+                        } else {
+                            if (mContext != null)
+                                ((MapActivity) mContext).getCurrentLocation();
+                        }
                     }
                 } else {
                     if (mContext != null)
                         ((MapActivity) mContext).getCurrentLocation();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return value;
@@ -119,18 +133,22 @@ public class ViewPagerScroller {
                     if (CommonUtility.getFakeCardThree(mContext)) {
                         pScrollingCheck = false;
                     }
-                    if (!pScrollingCheck) {
-                        mMapViewPagerAdapter.deleteItemFromArrayList(i);
-                        mMapDataModel.get(i).getCardLatlng().getMarker().remove();
-                        value = CommonUtility.getPoints(mContext) + 1;
-                        CommonUtility.setPoints(value, mContext);
-                        CommonUtility.setFakeCardOne(true, mContext);
-                        mViewPagerMap.setCurrentItem(1);
-                    }
-                    CardLatlng cardLatlng = mMapDataModel.get(i + 1).getCardLatlng();
-                    if (mShownCardMarker != null) {
-                        setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconLarge());
-                        mShownCardMarker.setGoogleMapPosition(mCurrentLocationForCardMarker, cardLatlng);
+                    try {
+                        if (!pScrollingCheck) {
+                            mMapViewPagerAdapter.deleteItemFromArrayList(i);
+                            mMapDataModel.get(i).getCardLatlng().getMarker().remove();
+                            value = CommonUtility.getPoints(mContext) + 1;
+                            CommonUtility.setPoints(value, mContext);
+                            CommonUtility.setFakeCardOne(true, mContext);
+                            mViewPagerMap.setCurrentItem(1);
+                        }
+                        CardLatlng cardLatlng = mMapDataModel.get(i + 1).getCardLatlng();
+                        if (mShownCardMarker != null) {
+                            setCardLatlngMarker(cardLatlng, mShownCardMarker.getIconLarge());
+                            mShownCardMarker.setGoogleMapPosition(mCurrentLocationForCardMarker, cardLatlng);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
                 if (mMapDataModel.get(i).getFakeCardPosition() == Constants.CardType.FAKECARDTWO.getValue()) {
