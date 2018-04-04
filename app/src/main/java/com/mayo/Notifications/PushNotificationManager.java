@@ -59,6 +59,7 @@ public class PushNotificationManager {
             notificationObject.put(Constants.Notifications.sBody, pTaskDescription + " " + "was completed. Thanks for helping! ");
             notificationObject.put(Constants.Notifications.sTitle, "You were thanked!");
             notificationObject.put(Constants.Notifications.sSound, "default");
+            notificationObject.put(Constants.Notifications.sClickAction, "com.mayo.fcmwithappserver_target_notification_mapactivity");
 
             obj.put(Constants.Notifications.sNotification, notificationObject);
 
@@ -83,6 +84,7 @@ public class PushNotificationManager {
             notificationObject.put(Constants.Notifications.sBody, "Someone has a new quest nearby");
             notificationObject.put(Constants.Notifications.sTitle, "New quest available");
             notificationObject.put(Constants.Notifications.sSound, "default");
+            notificationObject.put(Constants.Notifications.sClickAction, "com.mayo.fcmwithappserver_target_notification_mapactivity");
 
             obj.put(Constants.Notifications.sNotification, notificationObject);
 

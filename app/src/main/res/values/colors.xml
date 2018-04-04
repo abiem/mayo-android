@@ -54,4 +54,6 @@
     <color name="colorDarkGrey">#4A4A4A</color>
     <!--60% tranparency-->
     <color name="colorWhiteTransparentNew">#99FFFFFF</color>
+    <!--100% transparency-->
+    <color name="colorFullWhiteTransprant">#FFFFFFFF</color>
 </resources>

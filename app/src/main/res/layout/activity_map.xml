@@ -16,26 +16,21 @@
         android:apiKey="@string/google_maps_key"
         android:enabled="true" />
 
-    <LinearLayout
-        android:layout_width="@dimen/width_80"
-        android:layout_height="@dimen/width_80"
+    <Button
+        android:id="@+id/countbutton"
+        android:layout_width="@dimen/width_65"
+        android:layout_height="@dimen/width_65"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginEnd="@dimen/margin_20"
         android:layout_marginRight="@dimen/margin_20"
-        android:layout_marginTop="@dimen/margin_40">
-
-        <Button
-            android:id="@+id/countbutton"
-            android:layout_width="@dimen/width_80"
-            android:layout_height="@dimen/height_80"
-            android:background="@drawable/background_oval"
-            android:contentDescription="@string/count"
-            android:gravity="center"
-            android:text="0"
-            android:textColor="@color/white"
-            android:textSize="@dimen/tx_22" />
-    </LinearLayout>
+        android:layout_marginTop="@dimen/margin_40"
+        android:background="@drawable/background_oval"
+        android:contentDescription="@string/count"
+        android:gravity="center"
+        android:text="@string/zero"
+        android:textColor="@color/white"
+        android:textSize="@dimen/tx_22" />
 
     <ImageView
         android:id="@+id/rotateImageOnMapView"

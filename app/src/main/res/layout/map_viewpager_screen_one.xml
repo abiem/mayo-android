@@ -15,6 +15,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/background_tutorial_one"
         android:orientation="vertical"
+        android:paddingBottom="@dimen/padding_4"
         android:paddingLeft="@dimen/padding_16"
         android:paddingRight="@dimen/padding_16"
         android:paddingTop="@dimen/padding_16">
@@ -37,7 +38,7 @@
                 android:maxLength="81"
                 android:textColor="@color/white"
                 android:textColorHint="#99FFFFFF"
-                android:textSize="@dimen/tx_20" />
+                android:textSize="@dimen/tx_25" />
 
             <EditText
                 android:id="@+id/editText"
@@ -141,7 +142,7 @@
             android:text="@string/expire_msg"
             android:textColor="@color/white"
             android:textSize="@dimen/tx_10"
-            android:visibility="invisible" />
+            android:visibility="visible" />
     </RelativeLayout>
 </android.support.v7.widget.CardView>
 

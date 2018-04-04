@@ -193,6 +193,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private TextView mThanksTextView;
     private BroadcastReceiver mBroadCastReceiver;
     private Bundle mBundle;
+    private View mDecorView;
 
     @AfterViews
     protected void init() {
@@ -606,7 +607,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void locationNotEnabled() {
         if (mGoogleMap != null) {
             LatLng latLng = CommonUtility.getUserLocation(this);
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, Constants.sKeyCameraZoom));
+            if (latLng.latitude != 0.0 && latLng.longitude != 0.0) {
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, Constants.sKeyCameraZoom));
+            }
         }
     }
 
@@ -1329,6 +1332,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         Task task = CommonUtility.getTaskData(MapActivity.this);
                         updateTaskData(getResources().getString(R.string.STATUS_FOR_THANKED), task);
                         pDialog.dismiss();
+
                     }
                 }
             }
@@ -1530,7 +1534,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     String channelId = intent.getStringExtra(Constants.Notifications.sChannelId);
                     if (mMapDataModels != null && mViewPagerMap != null) {
                         for (int i = 0; i < mMapDataModels.size(); i++) {
-                            if (mMapDataModels.get(i).getTaskLatLng().getTask().getTaskID().equals(channelId)) {
+                            if (mMapDataModels.get(i).getTaskLatLng() != null && mMapDataModels.get(i).getTaskLatLng().getTask() != null && mMapDataModels.get(i).getTaskLatLng().getTask().getTaskID().equals(channelId)) {
                                 mViewPagerMap.setCurrentItem(i);
                                 break;
                             }

@@ -59,6 +59,7 @@
     <string name="third_tutorial_screen">third</string>
     <string name="fourth_tutorial_screen">fourth</string>
     <string name="rotateimage">Rotate image in image view</string>
+    <string name="zero">0</string>
 
 
     <!--Task  Messages-->

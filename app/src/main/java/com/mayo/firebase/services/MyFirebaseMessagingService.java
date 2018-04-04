@@ -1,18 +1,17 @@
 package com.mayo.firebase.services;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.mayo.Utility.CommonUtility;
 import com.mayo.Utility.Constants;
-import com.mayo.activities.MapActivity_;
-import com.mayo.firebase.database.FirebaseDatabase;
+import com.mayo.activities.MapActivity;
 
 import org.json.JSONObject;
 
@@ -52,15 +51,23 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     }
                     break;
                 case Constants.Notifications.sNOTIFICATION_WERE_THANKS:
-                    if (title != null && body != null) {
-                        setNotificationForNearByTask(title, body);
+                    if (title != null && body != null && click_action != null) {
+                        setNotificationForOpenMapActivity(title, body, click_action);
+                    } else {
+                        if (title != null && body != null) {
+                            setNotificationWithoutAction(title, body);
+                        }
                     }
                     break;
                 case Constants.Notifications.sNOTIFICATION_TOPIC_COMPLETED:
                     break;
                 case Constants.Notifications.sNOTIFICATION_NEARBY_TASK:
-                    if (title != null && body != null) {
-                        setNotificationForNearByTask(title, body);
+                    if (title != null && body != null && click_action != null) {
+                        setNotificationForOpenMapActivity(title, body, click_action);
+                    } else {
+                        if (title != null && body != null) {
+                            setNotificationWithoutAction(title, body);
+                        }
                     }
                     break;
             }
@@ -73,7 +80,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this, pMessageBody, pSubTitle);
         Intent notificationIntent = new Intent(pClickAction);
         notificationIntent.putExtra(Constants.Notifications.sChannelId, pChannelId);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 100, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
@@ -81,11 +88,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-    private void setNotificationForNearByTask(String pMessageBody, String pSubTitle) {
+    private void setNotificationForOpenMapActivity(String pMessageBody, String pSubTitle, String pClickAction) {
+        NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this, pMessageBody, pSubTitle);
+        Intent notificationIntent = new Intent(pClickAction);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 101, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            notificationManager.notify(1, builder.build());
+        }
+    }
+
+    private void setNotificationWithoutAction(String pMessageBody, String pSubTitle) {
         NotificationCompat.Builder builder = CommonUtility.notificationBuilder(this, pMessageBody, pSubTitle);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
-            notificationManager.notify(0, builder.build());
+            notificationManager.notify(2, builder.build());
         }
     }
 

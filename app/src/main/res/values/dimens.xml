@@ -60,6 +60,7 @@
     <dimen name="width_35">35dp</dimen>
     <dimen name="width_15">15dp</dimen>
     <dimen name="width_80">80dp</dimen>
+    <dimen name="width_65">65dp</dimen>
     <dimen name="width_5">5dp</dimen>
     <dimen name="width_10">10dp</dimen>
 

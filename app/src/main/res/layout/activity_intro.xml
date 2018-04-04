@@ -22,33 +22,38 @@
         android:textSize="@dimen/tx_20"
         android:visibility="gone" />
 
-    <ImageView
-        android:id="@+id/imageHandsView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/height_270"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_50"
-        android:contentDescription="@string/show_gif_image"
-        android:visibility="gone" />
+        android:layout_height="match_parent"
+        android:layout_above="@+id/viewPagerTutorial">
 
-    <ImageView
-        android:id="@+id/imageRippleNew"
-        android:layout_width="@dimen/height_270"
-        android:layout_height="@dimen/height_270"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_50"
-        android:contentDescription="@string/show_gif_image"
-        android:visibility="gone" />
+        <ImageView
+            android:id="@+id/imageHandsView"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/height_270"
+            android:layout_centerInParent="true"
+            android:contentDescription="@string/show_gif_image"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
 
-    <ImageView
-        android:id="@+id/imagePinView"
-        android:layout_width="@dimen/height_270"
-        android:layout_height="@dimen/height_270"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/margin_50"
-        android:contentDescription="@string/show_gif_image"
-        android:scaleType="fitCenter"
-        android:visibility="gone" />
+        <ImageView
+            android:id="@+id/imageRippleNew"
+            android:layout_width="@dimen/height_270"
+            android:layout_height="@dimen/height_270"
+            android:layout_centerInParent="true"
+            android:contentDescription="@string/show_gif_image"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/imagePinView"
+            android:layout_width="@dimen/height_270"
+            android:layout_height="@dimen/height_270"
+            android:layout_centerInParent="true"
+            android:contentDescription="@string/show_gif_image"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+    </RelativeLayout>
 
     <com.mayo.classes.CustomViewPager
         android:id="@+id/viewPagerTutorial"
