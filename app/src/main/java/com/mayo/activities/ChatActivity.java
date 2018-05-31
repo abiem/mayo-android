@@ -104,7 +104,7 @@ public class ChatActivity extends AppCompatActivity {
                 mQuestCompletedTextView.setVisibility(View.VISIBLE);
                 mParentLayoutOfMessageSend.setVisibility(View.GONE);
                 /*
-                * Modify rules and layout param - Gurwinder
+                * Modify rules and layout param - 
                 * */
                 layoutParams.addRule(RelativeLayout.ABOVE, R.id.parentQuestCompleted);
                 mChatRecyclerView.setLayoutParams(layoutParams);
@@ -125,7 +125,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onResume();
         mMayoApplication.activityResumed();
         /*
-        * Reload chat on Resume calling -Gurwinder
+        * Reload chat on Resume calling -
         **/
         setRecyclerView();
         getFirebaseInstance();
@@ -154,7 +154,7 @@ public class ChatActivity extends AppCompatActivity {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 getSupportActionBar().setHomeButtonEnabled(false);
                 /*
-                * Convert Frame Layout and assign Padding - Gurwinder
+                * Convert Frame Layout and assign Padding -
                 * */
                 mBackChatButton = (ImageButton) view.findViewById(R.id.parentBackChatButton);
                 mActionBarMessage = (TextView) view.findViewById(R.id.actionBarMessage);

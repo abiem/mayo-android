@@ -450,7 +450,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onResume();
         mMapView.onResume();
         /*
-        * Reload points from Shared Preferences- Gurwinder
+        * Reload points from Shared Preferences- 
         * */
         if (CommonUtility.getHandsAnimationShownOnMap(MapActivity.this)) {
             mApngDrawable = ApngDrawable.getFromView(mImageHandsViewOnMap);
@@ -1589,7 +1589,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void setScoreIntoView(int pScore, boolean isThanksDialogOpen) {
         /*
-        * Show animation when FakeCard Tasks completed - Gurwinder
+        * Show animation when FakeCard Tasks completed - 
         * */
         mCountButton.setText(String.valueOf(pScore));
         if (isFakeCardCompleted) {
@@ -1608,7 +1608,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }
         /*
-        * update points in Shared Preferences - Gurwinder
+        * update points in Shared Preferences - 
         * */
         if (CommonUtility.getPoints(this) != pScore) {
             CommonUtility.setPoints(pScore, this);
