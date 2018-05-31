@@ -8,10 +8,8 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Display;
@@ -20,7 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -35,7 +33,6 @@ import com.mayo.firebase.database.FirebaseDatabase;
 import com.mayo.models.MapDataModel;
 import com.mayo.models.Message;
 import com.mayo.models.Task;
-import com.mayo.models.TaskLatLng;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
@@ -55,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 @EActivity(R.layout.activity_chat)
 public class ChatActivity extends AppCompatActivity {
 
-    FrameLayout mBackChatButton;
+    ImageButton mBackChatButton;
     TextView mActionBarMessage;
 
     @ViewById(R.id.messageChat)
@@ -82,6 +79,9 @@ public class ChatActivity extends AppCompatActivity {
     @Extra(Constants.sCardsData)
     MapDataModel mMapDataModel;
 
+    @ViewById(R.id.root_layout)
+    RelativeLayout mRelativeLayout;
+
     String mMessageText;
     Message mMessage;
     ChatListAdapter mChatAdapter;
@@ -95,6 +95,7 @@ public class ChatActivity extends AppCompatActivity {
 
     @AfterViews
     protected void init() {
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(mChatRecyclerView.getLayoutParams());
         pBundle = getIntent().getExtras();
         mMayoApplication.setActivity(this);
         if (pBundle != null) {
@@ -102,6 +103,11 @@ public class ChatActivity extends AppCompatActivity {
             if (pBundle.getBoolean(Constants.sQuestMessageShow)) {
                 mQuestCompletedTextView.setVisibility(View.VISIBLE);
                 mParentLayoutOfMessageSend.setVisibility(View.GONE);
+                /*
+                * Modify rules and layout param - Gurwinder
+                * */
+                layoutParams.addRule(RelativeLayout.ABOVE, R.id.parentQuestCompleted);
+                mChatRecyclerView.setLayoutParams(layoutParams);
             }
             if (pBundle.getString(Constants.Notifications.sChannelId) != null) {
                 getFirebaseInstance();
@@ -118,6 +124,11 @@ public class ChatActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mMayoApplication.activityResumed();
+        /*
+        * Reload chat on Resume calling -Gurwinder
+        **/
+        setRecyclerView();
+        getFirebaseInstance();
     }
 
     private void setRecyclerView() {
@@ -142,7 +153,10 @@ public class ChatActivity extends AppCompatActivity {
                 getSupportActionBar().setDisplayShowTitleEnabled(false);
                 getSupportActionBar().setDisplayHomeAsUpEnabled(false);
                 getSupportActionBar().setHomeButtonEnabled(false);
-                mBackChatButton = (FrameLayout) view.findViewById(R.id.parentBackChatButton);
+                /*
+                * Convert Frame Layout and assign Padding - Gurwinder
+                * */
+                mBackChatButton = (ImageButton) view.findViewById(R.id.parentBackChatButton);
                 mActionBarMessage = (TextView) view.findViewById(R.id.actionBarMessage);
                 mBackChatButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -188,7 +202,7 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     if (task != null) {
                         mFirebaseDatabase.setMessage(this, CommonUtility.getUserId(this),
-                                mMessageText, task.getTaskID(),mTaskDecription);
+                                mMessageText, task.getTaskID(), mTaskDecription);
                     }
                     if (task != null) {
                         if (isRecentActivity) {

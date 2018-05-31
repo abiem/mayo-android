@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="com.github.sahasbhop:formatted-log-0.0.5">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/formatted-log-0.0.5.aar/97612e168206432fbdb76bdf74335173/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/formatted-log-0.0.5.aar/97612e168206432fbdb76bdf74335173/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.sahasbhop/formatted-log/0.0.5/5a6fe7c4d0fafd7bedb78d8e9c022f8d3cc4ccef/formatted-log-0.0.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

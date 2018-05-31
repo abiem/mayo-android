@@ -25,7 +25,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/notification_icon_mayo" />
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="cfc67a07b87045dfd902fad7b1bf796b642fce33" />

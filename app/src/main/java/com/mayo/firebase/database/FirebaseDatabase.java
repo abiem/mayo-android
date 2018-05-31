@@ -71,6 +71,15 @@ public class FirebaseDatabase {
     private HashMap locationHashMap;
     private int locationHashMapValue = 0;
     private PushNotificationManager mPushNotificationManager;
+
+    public boolean isThanksDialogAnimationRun() {
+        return isThanksDialogAnimationRun;
+    }
+
+    public void setThanksDialogAnimationRun(boolean thanksDialogAnimationRun) {
+        isThanksDialogAnimationRun = thanksDialogAnimationRun;
+    }
+
     private boolean isThanksDialogAnimationRun = false;
     private String channelTopicMessage;
 
@@ -1206,7 +1215,7 @@ public class FirebaseDatabase {
     /*
     pUser: all the users that helps me
      */
-    public void updatePointsAtFirebaseServer(final String pUser, final boolean pIsFakeCard) {
+    public synchronized void updatePointsAtFirebaseServer(final String pUser, final boolean pIsFakeCard) {
         mDatabaseReference.child("users").child(pUser).child("score").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -1337,7 +1346,7 @@ public class FirebaseDatabase {
                         int scoreValue = dataSnapshot.getValue(Integer.class);
                         if (mContext != null) {
                             ((MapActivity) mContext).setScoreIntoView(scoreValue, isThanksDialogAnimationRun);
-                            isThanksDialogAnimationRun = true;
+                            isThanksDialogAnimationRun=true;
                         }
                     }
                 } catch (Exception e) {

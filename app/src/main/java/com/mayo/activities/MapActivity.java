@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -24,7 +25,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -81,7 +81,10 @@ import com.mayo.application.MayoApplication;
 import com.mayo.backgroundservice.BackgroundLocationService;
 import com.mayo.classes.AnimateCard;
 import com.mayo.classes.CardsDataModel;
+import com.mayo.classes.CustomViewPager;
+import com.mayo.classes.FakeMarker;
 import com.mayo.classes.GeoFencing;
+import com.mayo.classes.GeoFireClass;
 import com.mayo.classes.MarkerClick;
 import com.mayo.classes.ShownCardMarker;
 import com.mayo.classes.TaskTimer;
@@ -92,16 +95,13 @@ import com.mayo.interfaces.LocationUpdationInterface;
 import com.mayo.interfaces.OnItemClickListener;
 import com.mayo.interfaces.ViewClickListener;
 import com.mayo.models.CardLatlng;
+import com.mayo.models.MapDataModel;
 import com.mayo.models.MarkerTag;
 import com.mayo.models.Message;
+import com.mayo.models.Task;
 import com.mayo.models.TaskLatLng;
 import com.mayo.models.TaskLocations;
 import com.mayo.models.UserMarker;
-import com.mayo.models.MapDataModel;
-import com.mayo.models.Task;
-import com.mayo.classes.CustomViewPager;
-import com.mayo.classes.FakeMarker;
-import com.mayo.classes.GeoFireClass;
 import com.mayo.models.UsersLocations;
 
 import org.androidannotations.annotations.AfterViews;
@@ -194,6 +194,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private BroadcastReceiver mBroadCastReceiver;
     private Bundle mBundle;
     private View mDecorView;
+    public static boolean isFakeCardCompleted = false;
 
     @AfterViews
     protected void init() {
@@ -352,9 +353,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             mMapViewPagerAdapter.setTaskCardViewVisible();
                             break;
                         case FAKECARDONE:
+                            isFakeCardCompleted = false;
                             mViewPagerScroller.getFakeCardOne();
                             break;
                         case FAKECARDTWO:
+                            isFakeCardCompleted = false;
                             try {
                                 value = mViewPagerScroller.getFakeCardTwo(isScrollingRight);
                                 if (value != -1) {
@@ -368,6 +371,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             }
                             break;
                         case FAKECARDTHREE:
+                            isFakeCardCompleted = false;
                             value = mViewPagerScroller.getFakeCardThree(isScrollingRight);
                             if (value != -1) {
                                 mCountButton.setText(String.valueOf(value));
@@ -376,6 +380,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                             }
                             break;
                         case DEFAULT:
+                            isFakeCardCompleted = true;
                             mViewPagerScroller.setLiveCardViewMarker(mViewPagerMap.getCurrentItem());
                             getFirebaseInstance();
                             if (mMapDataModels.get(mViewPagerMap.getCurrentItem()).getTaskLatLng() != null) {
@@ -444,19 +449,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onResume() {
         super.onResume();
         mMapView.onResume();
+        /*
+        * Reload points from Shared Preferences- Gurwinder
+        * */
         if (CommonUtility.getHandsAnimationShownOnMap(MapActivity.this)) {
-            mImageHandsViewOnMap.setVisibility(View.VISIBLE);
             mApngDrawable = ApngDrawable.getFromView(mImageHandsViewOnMap);
-            mRotateImageOnMapView.setVisibility(View.VISIBLE);
-            Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
-            mRotateImageOnMapView.startAnimation(animation);
-            CommonUtility.setHandsAnimationShownOnMap(false, MapActivity.this);
-            mRelativeMapLayout.setFitsSystemWindows(false);
-            new CountDown(4000, 1000);
-            if (mApngDrawable == null)
-                return;
-            mApngDrawable.setNumPlays(0);
-            mApngDrawable.start();
+            if (mApngDrawable != null) {
+                mImageHandsViewOnMap.setVisibility(View.VISIBLE);
+                mRotateImageOnMapView.setVisibility(View.VISIBLE);
+                Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
+                mRotateImageOnMapView.startAnimation(animation);
+                CommonUtility.setHandsAnimationShownOnMap(false, MapActivity.this);
+                mRelativeMapLayout.setFitsSystemWindows(false);
+                new CountDown(4000, 1000);
+                if (mApngDrawable == null)
+                    return;
+                mApngDrawable.setNumPlays(0);
+                mApngDrawable.start();
+            }
         }
         if (mGoogleMap != null) {
             if (mDialog != null && checkPermissions()) {
@@ -546,8 +556,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 }
             }
             mRelativeMapLayout.setFitsSystemWindows(true);
-            if (mApngDrawable == null)
+            if (mApngDrawable == null) {
+                mImageHandsViewOnMap.setVisibility(View.GONE);
                 return;
+            }
             if (mApngDrawable.isRunning()) {
                 mApngDrawable.stop(); // Stop animation
             }
@@ -1288,6 +1300,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMapViewPagerAdapter.setPostMessageView();
         setParentAnmationOfQuest(R.anim.slide_down);
         final Dialog dialog = CommonUtility.showCustomDialog(MapActivity.this, R.layout.thanks_dialog);
+        dialog.setCancelable(false);
         Task task = null;
         if (dialog != null) {
             if (CommonUtility.getTaskApplied(MapActivity.this)) {
@@ -1332,7 +1345,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         Task task = CommonUtility.getTaskData(MapActivity.this);
                         updateTaskData(getResources().getString(R.string.STATUS_FOR_THANKED), task);
                         pDialog.dismiss();
-
                     }
                 }
             }
@@ -1424,8 +1436,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (CommonUtility.getTaskApplied(this)) {
             Task task = CommonUtility.getTaskData(this);
             if (task != null) {
-                if (!task.getTaskDescription().equals(Constants.sConstantEmptyString) &&
-                        !task.isUserMovedOutside()) {
+                if (!task.getTaskDescription().equals(Constants.sConstantEmptyString) && !task.isUserMovedOutside()) {
                     task.setUserMovedOutside(true);
                     CommonUtility.setTaskData(task, this);
                     if (task.isRecentActivity()) {
@@ -1534,7 +1545,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     String channelId = intent.getStringExtra(Constants.Notifications.sChannelId);
                     if (mMapDataModels != null && mViewPagerMap != null) {
                         for (int i = 0; i < mMapDataModels.size(); i++) {
-                            if (mMapDataModels.get(i).getTaskLatLng() != null && mMapDataModels.get(i).getTaskLatLng().getTask() != null && mMapDataModels.get(i).getTaskLatLng().getTask().getTaskID().equals(channelId)) {
+                            if (mMapDataModels.get(i).getTaskLatLng() != null
+                                    && mMapDataModels.get(i).getTaskLatLng().getTask() != null
+                                    && mMapDataModels.get(i).getTaskLatLng().getTask().getTaskID().equals(channelId)) {
                                 mViewPagerMap.setCurrentItem(i);
                                 break;
                             }
@@ -1575,23 +1588,31 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     public void setScoreIntoView(int pScore, boolean isThanksDialogOpen) {
+        /*
+        * Show animation when FakeCard Tasks completed - Gurwinder
+        * */
         mCountButton.setText(String.valueOf(pScore));
-        if (CommonUtility.getPoints(this) == pScore) {
+        if (isFakeCardCompleted) {
+            if (isThanksDialogOpen) {
+                CommonUtility.setPoints(pScore, this);
+                mImageHandsViewOnMap.setVisibility(View.VISIBLE);
+                mApngDrawable = ApngDrawable.getFromView(mImageHandsViewOnMap);
+                mRotateImageOnMapView.setVisibility(View.VISIBLE);
+                Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
+                mRotateImageOnMapView.startAnimation(animation);
+                new CountDownNew(4000, 1000);
+                if (mApngDrawable == null)
+                    return;
+                mApngDrawable.setNumPlays(0);
+                mApngDrawable.start();
+            }
+        }
+        /*
+        * update points in Shared Preferences - Gurwinder
+        * */
+        if (CommonUtility.getPoints(this) != pScore) {
             CommonUtility.setPoints(pScore, this);
             return;
-        }
-        if (isThanksDialogOpen) {
-            CommonUtility.setPoints(pScore, this);
-            mImageHandsViewOnMap.setVisibility(View.VISIBLE);
-            mApngDrawable = ApngDrawable.getFromView(mImageHandsViewOnMap);
-            mRotateImageOnMapView.setVisibility(View.VISIBLE);
-            Animation animation = AnimationUtils.loadAnimation(MapActivity.this, R.anim.rotate);
-            mRotateImageOnMapView.startAnimation(animation);
-            new CountDownNew(4000, 1000);
-            if (mApngDrawable == null)
-                return;
-            mApngDrawable.setNumPlays(0);
-            mApngDrawable.start();
         }
     }
 }

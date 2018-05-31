@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.mayo.activities.ChatActivity">
@@ -10,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/parentMessageSend"
-        android:layout_marginBottom="4dp"
+        android:layout_toEndOf="@+id/progressBar"
+        android:layout_toRightOf="@+id/progressBar"
         android:clipToPadding="false"
         android:paddingBottom="4dp"
         android:paddingTop="8dp"
@@ -32,7 +34,8 @@
         android:layout_alignParentBottom="true"
         android:background="@drawable/background_chat"
         android:orientation="horizontal"
-        android:padding="@dimen/padding_8">
+        android:padding="@dimen/padding_8"
+        android:visibility="visible">
 
         <EditText
             android:id="@+id/messageChat"
